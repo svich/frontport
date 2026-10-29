@@ -1,0 +1,25 @@
+// Signing for Frontport.app and frontport-primer, in every configuration.
+//
+// By default both are signed ad-hoc ("Sign to Run Locally") without the hardened runtime: under it, library
+// validation rejects ad-hoc nested code (Sparkle, the debug dylib) as "different Team IDs" and the app crashes
+// at launch. To sign with a Developer ID, put the identity and team in App/Signing.local.xcconfig, which git
+// ignores:
+//
+//     CODE_SIGN_IDENTITY = Developer ID Application
+//     DEVELOPMENT_TEAM = <your team ID>
+//
+// Any identity other than ad-hoc turns the hardened runtime on for both targets.
+
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+DEVELOPMENT_TEAM =
+
+#include? "Signing.local.xcconfig"
+
+// "-" reads as "_" here, so only the ad-hoc identity finds a value; every other one falls back to YES.
+FRONTPORT_HARDENED_RUNTIME__ = NO
+ENABLE_HARDENED_RUNTIME = $(FRONTPORT_HARDENED_RUNTIME_$(CODE_SIGN_IDENTITY:identifier):default=YES)
+
+// No get-task-allow entitlement outside Debug, so a Release build can't be attached to.
+CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO
+CODE_SIGN_INJECT_BASE_ENTITLEMENTS[config=Debug] = YES

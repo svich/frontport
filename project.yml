@@ -1,0 +1,143 @@
+name: Frontport
+
+options:
+  bundleIdPrefix: dev.frontport
+  deploymentTarget:
+    macOS: "26.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+
+# Signing for both targets: ad-hoc without the hardened runtime by default, a Developer ID with it. See the file.
+configFiles:
+  Debug: App/Signing.xcconfig
+  Release: App/Signing.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    ARCHS: arm64
+    EXCLUDED_ARCHS: x86_64
+
+packages:
+  FrontportKit:
+    path: FrontportKit
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.9.0"
+
+targets:
+  Frontport:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Sources
+      - path: App/Resources
+        excludes:
+          - "catalog"
+          - "catalog/**"
+      # The bundled signed Catalog, copied as a folder to Contents/Resources/catalog.
+      - path: App/Resources/catalog
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: Frontport
+        PRODUCT_BUNDLE_IDENTIFIER: dev.frontport.Frontport
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_FILE: App/Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Unsandboxed by design: Frontport runs builds, re-signs Ports and writes into their containers.
+        CODE_SIGN_ENTITLEMENTS: App/UITests/FrontportUITests.entitlements
+    dependencies:
+      # Copied to Contents/MacOS, already signed by its own target: the Library runs it as a stand-in for a
+      # Port to recreate deleted Data.
+      - target: FrontportPrimer
+        embed: true
+        codeSign: false
+        copy:
+          destination: executables
+      - package: FrontportKit
+        products:
+          - FrontportCore
+          - FrontportCatalog
+          - FrontportReleases
+          - FrontportROMs
+          - FrontportBuilder
+          - FrontportPackager
+          - FrontportLibrary
+          - FrontportLauncher
+          - FrontportArtwork
+      - package: Sparkle
+        product: Sparkle
+
+  FrontportPrimer:
+    type: tool
+    platform: macOS
+    sources:
+      - path: App/Primer
+    settings:
+      base:
+        PRODUCT_NAME: frontport-primer
+        SKIP_INSTALL: YES
+
+  # A stand-in Port for the UI tests, which publish it from a local server. Not part of Frontport.
+  Testport:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Testport
+    settings:
+      base:
+        PRODUCT_NAME: Testport
+        PRODUCT_BUNDLE_IDENTIFIER: dev.frontport.testport
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: YES
+
+  # Drives the Debug app end to end over a scratch FRONTPORT_ROOT: installs and launches Testport, served from a
+  # local server, in its real container; the Catalog and Releases tests reach GitHub. Run with `mise run uitest`.
+  FrontportUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: App/UITests
+      # The loopback HTTP server the FrontportKit integration tests use.
+      - path: FrontportKit/Tests/FrontportIntegrationTests/LocalServer.swift
+    dependencies:
+      - target: Frontport
+      # Copied into the test bundle's resources, already signed by its own target, for the tests to publish.
+      - target: Testport
+        embed: true
+        codeSign: false
+        copy:
+          destination: resources
+      - package: FrontportKit
+        products:
+          - FrontportCore
+          - FrontportCatalog
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.frontport.FrontportUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Frontport
+        CODE_SIGN_ENTITLEMENTS: App/UITests/FrontportUITests.entitlements
+
+schemes:
+  Frontport:
+    build:
+      targets:
+        Frontport: all
+        FrontportUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - FrontportUITests
+    archive:
+      config: Release

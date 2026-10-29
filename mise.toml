@@ -1,0 +1,34 @@
+[tools]
+xcodegen = "2.46.0"
+
+[tasks.generate]
+description = "Generate Frontport.xcodeproj from project.yml"
+run = "xcodegen generate --quiet"
+
+[tasks.build]
+description = "Build the app (Debug) into build/"
+run = "xcodebuild -project Frontport.xcodeproj -scheme Frontport -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath build -quiet build"
+
+[tasks.test]
+description = "Run the FrontportKit tests"
+dir = "FrontportKit"
+run = "swift test"
+
+[tasks.run]
+description = "Build and open the app"
+depends = ["build"]
+run = "open build/Build/Products/Debug/Frontport.app"
+
+[tasks.uitest]
+description = "Drive the Debug app's UI end to end (installs and launches Testport; the Catalog and Releases tests reach GitHub)"
+run = "xcodebuild -project Frontport.xcodeproj -scheme Frontport -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath build test"
+
+[tasks.test-synthetic]
+description = "Run the synthetic end-to-end test: real modules, synthetic ROMs and Ports, a local server"
+dir = "FrontportKit"
+env = { FRONTPORT_SYNTHETIC_TESTS = "1" }
+run = "swift test --filter SyntheticEndToEndTests"
+
+[tasks.release]
+description = "Build, sign, notarize and staple a release, and update the Sparkle appcast (see scripts/README.md)"
+run = "scripts/release.sh"

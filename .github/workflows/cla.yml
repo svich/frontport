@@ -1,0 +1,39 @@
+name: CLA
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, closed, synchronize]
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  cla:
+    name: CLA
+    runs-on: ubuntu-latest
+    steps:
+      # When the CLA version changes, update the sign comment here and in CLA.md
+      # and CONTRIBUTING.md, and point path-to-signatures at a new version folder.
+      - name: Check CLA acceptance
+        if: >-
+          github.event_name == 'pull_request_target' ||
+          (github.event.issue.pull_request &&
+            (github.event.comment.body == 'recheck' ||
+             github.event.comment.body == 'I have read the Frontport Individual Contributor License Agreement version 1.0 and I accept it'))
+        # step-security/contributor-assistant-github-action v2.6.1
+        uses: step-security/contributor-assistant-github-action@b9bd60bf1b766fa48dae03427059187137236239
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-document: "https://github.com/svich/frontport/blob/main/CLA.md"
+          path-to-signatures: "signatures/version1/cla.json"
+          # Must exist and must not be protected
+          branch: "cla-signatures"
+          # `*[bot]` matches only GitHub App bot accounts; `bot*` would match any login containing "bot"
+          allowlist: "svich,*[bot]"
+          custom-pr-sign-comment: "I have read the Frontport Individual Contributor License Agreement version 1.0 and I accept it"

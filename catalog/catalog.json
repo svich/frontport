@@ -1,0 +1,668 @@
+{
+  "version": 4,
+  "issued": "2026-10-31T00:40:00Z",
+  "platforms": [
+    { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
+    { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
+    { "id": "ps2", "name": "PlayStation 2", "shortName": "PS2", "medium": "iso" },
+    { "id": "dos", "name": "MS-DOS", "shortName": "DOS", "medium": "file" }
+  ],
+  "genres": [
+    { "id": "platformer", "name": "Platformer" },
+    { "id": "adventure", "name": "Adventure" },
+    { "id": "racing", "name": "Racing" },
+    { "id": "shooter", "name": "Shooter" },
+    { "id": "rpg", "name": "Role-playing" }
+  ],
+  "games": [
+    { "id": "majoras-mask", "name": "The Legend of Zelda: Majora’s Mask", "shortName": "Majora’s Mask", "platform": "n64", "genres": ["adventure"], "steamgriddb": 34302 },
+    { "id": "star-fox-64", "name": "Star Fox 64", "platform": "n64", "genres": ["shooter"], "steamgriddb": 36615 },
+    { "id": "super-mario-64", "name": "Super Mario 64", "platform": "n64", "genres": ["platformer"], "steamgriddb": 37177 },
+    { "id": "banjo-kazooie", "name": "Banjo-Kazooie", "platform": "n64", "genres": ["platformer"], "steamgriddb": 35564 },
+    { "id": "a-link-to-the-past", "name": "The Legend of Zelda: A Link to the Past", "shortName": "A Link to the Past", "platform": "snes", "genres": ["adventure"], "steamgriddb": 38124 },
+    { "id": "jak-and-daxter", "name": "Jak and Daxter: The Precursor Legacy", "shortName": "Jak and Daxter", "platform": "ps2", "genres": ["platformer"], "steamgriddb": 37452 },
+    { "id": "jak-ii", "name": "Jak II", "platform": "ps2", "genres": ["platformer"], "steamgriddb": 36801 },
+    { "id": "jak-3", "name": "Jak 3", "platform": "ps2", "genres": ["platformer"], "steamgriddb": 35757 },
+    { "id": "doom", "name": "Doom", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2460 },
+    { "id": "doom-ii", "name": "Doom II: Hell on Earth", "shortName": "Doom II", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2492 },
+    { "id": "heretic", "name": "Heretic", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2711 },
+    { "id": "hexen", "name": "Hexen: Beyond Heretic", "shortName": "Hexen", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2642 },
+    { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
+    { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
+    { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 }
+  ],
+  "roms": [
+    { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
+    { "sha1": "9743aa026e9269b339eb0e3044cd5830a440c1fd", "game": "majoras-mask", "name": "NTSC GameCube (US)", "format": "z64" },
+    { "sha1": "09f0d105f476b00efa5303a3ebc42e60a7753b7a", "game": "star-fox-64", "name": "NTSC 1.1 (US)", "format": "z64" },
+    { "sha1": "d8b1088520f7c5f81433292a9258c1184afa1457", "game": "star-fox-64", "name": "NTSC 1.0 (US)", "format": "z64" },
+    { "sha1": "f7475fb11e7e6830f82883412638e8390791ab87", "game": "star-fox-64", "name": "NTSC 1.1 (US), decompressed", "format": "z64" },
+    { "sha1": "63b69f0ef36306257481afc250f9bc304c7162b2", "game": "star-fox-64", "name": "NTSC 1.0 (US), decompressed", "format": "z64" },
+    { "sha1": "9bef1128717f958171a4afac3ed78ee2bb4e86ce", "game": "super-mario-64", "name": "NTSC (US)", "format": "z64" },
+    { "sha1": "8a20a5c83d6ceb0f0506cfc9fa20d8f438cafe51", "game": "super-mario-64", "name": "NTSC (JP)", "format": "z64" },
+    { "sha1": "1fe1632098865f639e22c11b9a81ee8f29c75d7a", "game": "banjo-kazooie", "name": "NTSC 1.0 (US)", "format": "z64" },
+    { "sha1": "6d4f10a8b10e10dbe624cb23cf03b88bb8252973", "game": "a-link-to-the-past", "name": "NTSC (US)", "format": "sfc" },
+    { "sha1": "0db5976cdf9ea188bd64d8efdb4de095c38ea65f", "game": "jak-and-daxter", "name": "NTSC (US), Black Label", "format": "iso" },
+    { "sha1": "6fbe90e0b1317cdba8c19220939f9d4cc2328ea2", "game": "jak-ii", "name": "NTSC (US)", "format": "iso" },
+    { "sha1": "f8b1ed096628be006db4d098e6fe02b463e54e4e", "game": "jak-3", "name": "PAL (Europe)", "format": "iso" },
+    { "sha1": "9b07b02ab3c275a6a7570c3f73cc20d63a0e3833", "game": "doom", "name": "The Ultimate Doom 1.9", "format": "wad" },
+    { "sha1": "87651324502044f9a6eed403e48853aa16c93e49", "game": "doom", "name": "2024 re-release (KEX)", "format": "wad" },
+    { "sha1": "08ab2507e1d525c4c06b6df4f6d5862568a6b009", "game": "doom", "name": "Unity port (2019)", "format": "wad" },
+    { "sha1": "e5ec79505530e151ff0e6f517f3ce1fd65969c46", "game": "doom", "name": "BFG Edition", "format": "wad" },
+    { "sha1": "7742089b4468a736cadb659a7deca3320fe6dcbd", "game": "doom", "name": "Registered 1.9", "format": "wad" },
+    { "sha1": "2c8212631b37f21ad06d18b5638c733a75e179ff", "game": "doom", "name": "Registered 1.8", "format": "wad" },
+    { "sha1": "2e89b86859acd9fc1e552f587b710751efcffa8e", "game": "doom", "name": "Registered 1.666", "format": "wad" },
+    { "sha1": "5b2e249b9c5133ec987b3ea77596381dc0d6bc1d", "game": "doom", "name": "Shareware 1.9", "format": "wad" },
+    { "sha1": "7ec7652fcfce8ddc6e801839291f0e28ef1d5ae7", "game": "doom-ii", "name": "1.9", "format": "wad" },
+    { "sha1": "2921cf667359fd3a80aba3c0cf62ab39297e7e9e", "game": "doom-ii", "name": "2024 re-release (KEX)", "format": "wad" },
+    { "sha1": "b723882122e90b61a1d92a11dcfcf9cbf95a407e", "game": "doom-ii", "name": "Unity port (2019)", "format": "wad" },
+    { "sha1": "f1b6ba94352d53f646b67c01d2da88c5c40e3179", "game": "doom-ii", "name": "Bethesda.net", "format": "wad" },
+    { "sha1": "a59548125f59f6aa1a41c22f615557d3dd2e85a9", "game": "doom-ii", "name": "BFG Edition", "format": "wad" },
+    { "sha1": "79c283b18e61b9a989cfd3e0f19a42ea98fda551", "game": "doom-ii", "name": "1.8", "format": "wad" },
+    { "sha1": "70192b8d5aba65c7e633a7c7bcfe7e3e90640c97", "game": "doom-ii", "name": "1.7a", "format": "wad" },
+    { "sha1": "78009057420b792eacff482021db6fe13b370dcc", "game": "doom-ii", "name": "1.7", "format": "wad" },
+    { "sha1": "6d559b7ceece4f5ad457415049711992370d520a", "game": "doom-ii", "name": "1.666", "format": "wad" },
+    { "sha1": "f489d479371df32f6d280a0cb23b59a35ba2b833", "game": "heretic", "name": "Shadow of the Serpent Riders 1.3", "format": "wad" },
+    { "sha1": "a54c5d30629976a649119c5ce8babae2ddfb1a60", "game": "heretic", "name": "1.2", "format": "wad" },
+    { "sha1": "b5a6cc79cde48d97905b44282e82c4c966a23a87", "game": "heretic", "name": "1.0", "format": "wad" },
+    { "sha1": "b4c50ca9bea07f7c35250a1a11906091971c05ae", "game": "heretic", "name": "Shareware 1.2", "format": "wad" },
+    { "sha1": "4b53832f0733c1e29e5f1de2428e5475e891af29", "game": "hexen", "name": "1.1", "format": "wad" },
+    { "sha1": "ac129c4331bf26f0f080c4a56aaa40d64969c98a", "game": "hexen", "name": "1.0", "format": "wad" },
+    { "sha1": "fa89a2475855e43c7f7e3198d6e4c4bee23bfab9", "game": "hexen", "name": "Demo", "format": "wad" },
+    { "sha1": "bb1197cb7342a1f2026cc8b5d03e81e9ad17be4a", "game": "carmageddon", "name": "Max Pack (GOG)", "format": "folder" },
+    { "sha1": "05f131a70794e2a210b00587d4a918c0907712b9", "game": "carmageddon", "name": "Demo (April 1997)", "format": "folder" },
+    { "sha1": "fbad1d1108ce23a0d7fc6adbe06814da121efc37", "game": "carmageddon-splat-pack", "name": "Max Pack (GOG)", "format": "folder" },
+    {
+      "sha1": "4853fa11194392c960888ad963c65b0f402cd43f", "platform": "dos", "name": "Carmageddon Max Pack installer (GOG, build 77629)", "format": "exe",
+      "unpack": {
+        "recipe": "recipes/innoextract.sh",
+        "recipeSHA256": "1547b8a62cae087547519f9c81ec26964821082a140424a05538d7ee400984ce",
+        "yields": ["bb1197cb7342a1f2026cc8b5d03e81e9ad17be4a", "fbad1d1108ce23a0d7fc6adbe06814da121efc37"]
+      }
+    },
+    { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
+    {
+      "sha1": "a55070f0c75bf620062384445e05c4f482945ec4", "game": "fallout", "name": "Russian CD image (1C, 2008)", "format": "iso",
+      "unpack": {
+        "recipe": "recipes/iso.sh",
+        "recipeSHA256": "4cecde55ef55ff1ea0214a48fa98bb18408b1f0b4ffed615f62fd3ef4b7b61b6",
+        "yields": ["b8ab7632030c62079ab22c1f7b4e69818d98db41"]
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "2ship",
+      "name": "2 Ship 2 Harkinian",
+      "kind": "decomp",
+      "game": "majoras-mask",
+      "developer": "HarbourMasters",
+      "summary": "Majora’s Mask, rebuilt from its decompiled source as a native Mac app, with enhancements and a randomizer.",
+      "description": "2 Ship 2 Harkinian is a native port of Majora’s Mask built from the zeldaret decompilation on libultraship, from the team behind Ship of Harkinian. It extracts its assets from your ROM on first launch and adds frame interpolation, widescreen and a long list of optional changes to the camera, the three-day cycle, masks and saving. A randomizer and asset mods are built in.",
+      "source": "https://github.com/2ship2harkinian/2ship2harkinian",
+      "bundleId": "dev.frontport.port.2ship",
+      "releases": {
+        "type": "github-release",
+        "repo": "2ship2harkinian/2ship2harkinian",
+        "asset": "2Ship-*-Mac.zip",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Majora’s Mask",
+          "stage": "runtime",
+          "oneOf": ["d6133ace5afaa0882cf214cf88daba39e266c078", "9743aa026e9269b339eb0e3044cd5830a440c1fd"],
+          "seedPath": "Library/Application Support/com.2ship2harkinian.2s2h/"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "steamgriddb": 5453061, "fallback": 34302 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "environment": { "SHIP_HOME": "~/Library/Application Support/com.2ship2harkinian.2s2h" } },
+      "screenshots": [],
+      "tags": ["randomizer", "60fps", "widescreen", "mods"],
+      "firstRelease": "2024-05-27T01:01:57Z"
+    },
+    {
+      "id": "starship",
+      "name": "Starship",
+      "kind": "decomp",
+      "game": "star-fox-64",
+      "developer": "HarbourMasters",
+      "summary": "Star Fox 64, rebuilt from its decompiled source, with high frame rates and widescreen.",
+      "description": "Starship is a native port of Star Fox 64 built from the sonicdcer decompilation on libultraship. Frontport builds it from source and turns your ROM into its asset archive during the build. It renders with Metal, interpolates to your display’s frame rate, supports widescreen and loads asset packs from its mods folder.",
+      "source": "https://github.com/HarbourMasters/Starship",
+      "bundleId": "dev.frontport.port.starship",
+      "releases": {
+        "type": "git",
+        "repo": "HarbourMasters/Starship",
+        "refs": { "stable": "v2.0.0" },
+        "recipe": "recipes/starship.sh",
+        "recipeSHA256": "b8d0f38fbe1be338c69a6fcb35e74a617ca15eaea99105dc08edce57c25ffdec"
+      },
+      "requirements": [
+        {
+          "label": "Star Fox 64",
+          "stage": "build",
+          "oneOf": [
+            "09f0d105f476b00efa5303a3ebc42e60a7753b7a",
+            "d8b1088520f7c5f81433292a9258c1184afa1457",
+            "f7475fb11e7e6830f82883412638e8390791ab87",
+            "63b69f0ef36306257481afc250f9bc304c7162b2"
+          ]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 36615 },
+      "codeSigning": { "exceptions": [] },
+      "buildAssets": { "path": "Contents/Resources/sf64.o2r", "format": "1" },
+      "screenshots": [],
+      "tags": ["60fps", "widescreen", "mods"],
+      "firstRelease": "2024-12-22T22:44:26Z"
+    },
+    {
+      "id": "zelda64recomp",
+      "name": "Zelda 64: Recompiled",
+      "kind": "recomp",
+      "game": "majoras-mask",
+      "developer": "Zelda64Recomp",
+      "summary": "Majora’s Mask, statically recompiled to native code, with high frame rates, widescreen and mod support.",
+      "description": "Zelda 64: Recompiled translates Majora’s Mask’s original N64 machine code into native code with N64Recomp and draws it with the RT64 renderer. It reads the game’s assets straight from your ROM, so there is no extraction step. It runs at any frame rate and in widescreen or ultrawide, and adds a dual-analog camera, gyro aiming and autosave. Code and texture mods load from its mods folder.",
+      "source": "https://github.com/Zelda64Recomp/Zelda64Recomp",
+      "bundleId": "dev.frontport.port.zelda64recomp",
+      "releases": {
+        "type": "github-release",
+        "repo": "Zelda64Recomp/Zelda64Recomp",
+        "asset": "Zelda64Recompiled-*-macOS.zip",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Majora’s Mask",
+          "stage": "runtime",
+          "oneOf": ["d6133ace5afaa0882cf214cf88daba39e266c078"],
+          "seedPath": "Library/Application Support/Zelda64Recompiled/mm.n64.us.1.0.z64"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "steamgriddb": 5451974, "fallback": 34302 },
+      "codeSigning": {
+        "exceptions": [
+          "allow-jit",
+          "allow-unsigned-executable-memory",
+          "disable-executable-page-protection",
+          "disable-library-validation"
+        ]
+      },
+      "screenshots": [],
+      "tags": ["60fps", "widescreen", "mods", "gyro"],
+      "firstRelease": "2024-05-10T05:07:15Z"
+    },
+    {
+      "id": "ghostship",
+      "name": "Ghostship",
+      "kind": "decomp",
+      "game": "super-mario-64",
+      "developer": "HarbourMasters",
+      "summary": "Super Mario 64, rebuilt from its decompiled source, with a modern renderer and C mods compiled on the fly.",
+      "description": "Ghostship is a native port of Super Mario 64 built from the n64decomp decompilation on libultraship. It extracts its assets from your ROM, then renders with Metal at any frame rate and in widescreen. Its mod system compiles mods written in C while the game runs, and an online service signs mods and powers online mod features, so it needs the network. Extras include achievements, mirror mode and trackers.",
+      "website": "https://ghostship.net64.dev/",
+      "source": "https://github.com/HarbourMasters/Ghostship",
+      "bundleId": "dev.frontport.port.ghostship",
+      "releases": {
+        "type": "github-release",
+        "repo": "HarbourMasters/Ghostship",
+        "asset": "*-Mac.zip",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Super Mario 64",
+          "stage": "runtime",
+          "oneOf": ["9bef1128717f958171a4afac3ed78ee2bb4e86ce", "8a20a5c83d6ceb0f0506cfc9fa20d8f438cafe51"],
+          "seedPath": "Library/Application Support/com.ghostship/"
+        }
+      ],
+      "permissions": { "network": true, "controllers": true, "files": false },
+      "artwork": { "steamgriddb": 5515765, "fallback": 37177 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "environment": { "SHIP_HOME": "~/Library/Application Support/com.ghostship" } },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen", "online"],
+      "firstRelease": "2026-01-18T03:32:47Z"
+    },
+    {
+      "id": "opengoal-jak1",
+      "name": "OpenGOAL",
+      "kind": "decomp",
+      "game": "jak-and-daxter",
+      "developer": "OpenGOAL",
+      "summary": "Jak and Daxter, decompiled and rebuilt as a native game.",
+      "description": "OpenGOAL decompiles Naughty Dog’s GOAL code for the Jak games back into readable source and compiles it with its own GOAL compiler into a native game. Frontport builds it from source, and its extractor turns your disc image into the playable game during the build. Jak and Daxter is complete, and the project has a live REPL and mod support.",
+      "website": "https://opengoal.dev",
+      "source": "https://github.com/open-goal/jak-project",
+      "bundleId": "dev.frontport.port.opengoal-jak1",
+      "releases": {
+        "type": "git",
+        "repo": "open-goal/jak-project",
+        "refs": { "stable": "v0.3.9" },
+        "recipe": "recipes/opengoal.sh",
+        "recipeSHA256": "bace40e0f6abc9691183467a02841451e48980604e75bf26fe9b63a35c968dae"
+      },
+      "requirements": [
+        {
+          "label": "Jak and Daxter",
+          "stage": "build",
+          "oneOf": ["0db5976cdf9ea188bd64d8efdb4de095c38ea65f"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 37452 },
+      "codeSigning": { "exceptions": ["allow-unsigned-executable-memory"] },
+      "buildAssets": { "path": "Contents/Resources/data/out/jak1", "format": "1" },
+      "redirects": [{ "path": "Contents/Resources/data/log", "to": "Library/Application Support/OpenGOAL/log" }],
+      "screenshots": [],
+      "tags": ["speedrun", "mods"],
+      "firstRelease": "2022-04-03T23:24:19Z"
+    },
+    {
+      "id": "opengoal-jak2",
+      "name": "OpenGOAL",
+      "kind": "decomp",
+      "game": "jak-ii",
+      "developer": "OpenGOAL",
+      "summary": "Jak II, decompiled and rebuilt as a native game.",
+      "description": "OpenGOAL decompiles Naughty Dog’s GOAL code for the Jak games back into readable source and compiles it with its own GOAL compiler into a native game. Frontport builds it from source, and its extractor turns your disc image into the playable game during the build. Upstream calls Jak II a beta: playable from start to finish, with a few known issues left to fix.",
+      "website": "https://opengoal.dev",
+      "source": "https://github.com/open-goal/jak-project",
+      "bundleId": "dev.frontport.port.opengoal-jak2",
+      "releases": {
+        "type": "git",
+        "repo": "open-goal/jak-project",
+        "refs": { "stable": "v0.3.9" },
+        "recipe": "recipes/opengoal.sh",
+        "recipeSHA256": "bace40e0f6abc9691183467a02841451e48980604e75bf26fe9b63a35c968dae"
+      },
+      "requirements": [
+        {
+          "label": "Jak II",
+          "stage": "build",
+          "oneOf": ["6fbe90e0b1317cdba8c19220939f9d4cc2328ea2"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 36801 },
+      "codeSigning": { "exceptions": ["allow-unsigned-executable-memory"] },
+      "buildAssets": { "path": "Contents/Resources/data/out/jak2", "format": "1" },
+      "redirects": [{ "path": "Contents/Resources/data/log", "to": "Library/Application Support/OpenGOAL/log" }],
+      "screenshots": [],
+      "tags": ["speedrun", "mods"],
+      "firstRelease": "2023-11-02T05:22:28Z"
+    },
+    {
+      "id": "opengoal-jak3",
+      "name": "OpenGOAL",
+      "kind": "decomp",
+      "game": "jak-3",
+      "developer": "OpenGOAL",
+      "summary": "Jak 3, decompiled and rebuilt as a native game.",
+      "description": "OpenGOAL decompiles Naughty Dog’s GOAL code for the Jak games back into readable source and compiles it with its own GOAL compiler into a native game. Frontport builds it from source, and its extractor turns your disc image into the playable game during the build. Upstream calls Jak 3 a beta: playable, with minor bugs and some instability left to fix.",
+      "website": "https://opengoal.dev",
+      "source": "https://github.com/open-goal/jak-project",
+      "bundleId": "dev.frontport.port.opengoal-jak3",
+      "releases": {
+        "type": "git",
+        "repo": "open-goal/jak-project",
+        "refs": { "stable": "v0.3.9" },
+        "recipe": "recipes/opengoal.sh",
+        "recipeSHA256": "bace40e0f6abc9691183467a02841451e48980604e75bf26fe9b63a35c968dae"
+      },
+      "requirements": [
+        {
+          "label": "Jak 3",
+          "stage": "build",
+          "oneOf": ["f8b1ed096628be006db4d098e6fe02b463e54e4e"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 35757 },
+      "codeSigning": { "exceptions": ["allow-unsigned-executable-memory"] },
+      "buildAssets": { "path": "Contents/Resources/data/out/jak3", "format": "1" },
+      "redirects": [{ "path": "Contents/Resources/data/log", "to": "Library/Application Support/OpenGOAL/log" }],
+      "screenshots": [],
+      "tags": ["speedrun", "mods"],
+      "firstRelease": "2026-04-01T05:56:11Z"
+    },
+    {
+      "id": "banjorecomp",
+      "name": "Banjo: Recompiled",
+      "kind": "recomp",
+      "game": "banjo-kazooie",
+      "developer": "BanjoRecomp",
+      "summary": "Banjo-Kazooie, statically recompiled to native code, with high frame rates, widescreen and mod support.",
+      "description": "Banjo: Recompiled translates Banjo-Kazooie’s original N64 machine code into native code with N64Recomp, rendered by RT64. It reads the game’s assets straight from your ROM. It runs at high frame rates and in widescreen, and adds a dual-analog camera and optional note saving. Code and texture mods load from its mods folder.",
+      "source": "https://github.com/BanjoRecomp/BanjoRecomp",
+      "bundleId": "dev.frontport.port.banjorecomp",
+      "releases": {
+        "type": "github-release",
+        "repo": "BanjoRecomp/BanjoRecomp",
+        "asset": "BanjoRecompiled-*-macOS.zip",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Banjo-Kazooie",
+          "stage": "runtime",
+          "oneOf": ["1fe1632098865f639e22c11b9a81ee8f29c75d7a"],
+          "seedPath": "Library/Application Support/BanjoRecompiled/bk.n64.us.1.0.z64"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "steamgriddb": 5515330, "fallback": 35564 },
+      "codeSigning": {
+        "exceptions": [
+          "allow-jit",
+          "allow-unsigned-executable-memory",
+          "disable-executable-page-protection",
+          "disable-library-validation"
+        ]
+      },
+      "screenshots": [],
+      "tags": ["60fps", "widescreen", "mods"],
+      "firstRelease": "2026-01-24T19:29:09Z"
+    },
+    {
+      "id": "sm64coopdx",
+      "name": "sm64coopdx",
+      "kind": "decomp",
+      "game": "super-mario-64",
+      "developer": "Coop Deluxe Team",
+      "summary": "Online multiplayer Super Mario 64, built from its decompilation.",
+      "description": "sm64coopdx turns the Super Mario 64 PC port into an online co-op game in which every level, enemy and object stays in sync between players. You can host a game yourself or find one through its CoopNet lobbies. A large Lua modding API, model and level packs, and built-in mods such as Star Road and Hide and Seek come with it.",
+      "website": "https://sm64coopdx.com",
+      "source": "https://github.com/coop-deluxe/sm64coopdx",
+      "bundleId": "dev.frontport.port.sm64coopdx",
+      "releases": {
+        "type": "github-release",
+        "repo": "coop-deluxe/sm64coopdx",
+        "asset": "sm64coopdx_*macOS_ARM.zip",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Super Mario 64",
+          "stage": "runtime",
+          "oneOf": ["9bef1128717f958171a4afac3ed78ee2bb4e86ce"],
+          "seedPath": "Library/Application Support/sm64coopdx/baserom.us.z64"
+        }
+      ],
+      "permissions": { "network": true, "controllers": true, "files": false },
+      "artwork": { "steamgriddb": 5440143, "fallback": 37177 },
+      "codeSigning": { "exceptions": [] },
+      "strip": ["Contents/MacOS/coopdx_updater"],
+      "screenshots": [],
+      "tags": ["multiplayer", "online", "mods", "lua"],
+      "firstRelease": "2024-07-02T00:02:31Z"
+    },
+    {
+      "id": "zelda3",
+      "name": "zelda3",
+      "kind": "decomp",
+      "game": "a-link-to-the-past",
+      "developer": "snesrev",
+      "summary": "A Link to the Past, reimplemented in C from its reverse-engineered code.",
+      "description": "zelda3 is a reimplementation of A Link to the Past in tens of thousands of lines of C, reverse-engineered from the original SNES code and playable from start to finish. Frontport builds it from source and extracts its assets from your ROM during the build. It adds widescreen, shaders, higher-resolution Mode 7, MSU-1 audio, item switching and fixes for many of the original’s bugs.",
+      "source": "https://github.com/snesrev/zelda3",
+      "bundleId": "dev.frontport.port.zelda3",
+      "releases": {
+        "type": "git",
+        "repo": "snesrev/zelda3",
+        "refs": { "stable": "45a149d8b4bb8098f53d1009f76e76e7d8b79bbf" },
+        "recipe": "recipes/zelda3.sh",
+        "recipeSHA256": "d3b0fff872d8c737330e33a25308a1f99f7ed0af9b5e286901519eda869b24ed"
+      },
+      "requirements": [
+        {
+          "label": "A Link to the Past",
+          "stage": "build",
+          "oneOf": ["6d4f10a8b10e10dbe624cb23cf03b88bb8252973"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 38124 },
+      "codeSigning": { "exceptions": [] },
+      "buildAssets": { "path": "Contents/Resources/zelda3_assets.dat", "format": "1" },
+      "screenshots": [],
+      "tags": ["widescreen", "shaders", "msu-1", "bugfixes"],
+      "firstRelease": "2023-08-17T01:18:40Z"
+    },
+    {
+      "id": "uzdoom-doom",
+      "name": "UZDoom",
+      "kind": "sourceport",
+      "game": "doom",
+      "developer": "UZDoom",
+      "summary": "Doom on the most capable Doom engine, in widescreen at any frame rate.",
+      "description": "UZDoom carries on ZDoom and GZDoom, the Doom engine built up from the source code id Software released in 1997. It plays Doom with an OpenGL or Vulkan renderer at any frame rate, in widescreen and with mouselook, and its ZScript and ACS scripting run the largest library of mods any Doom engine has. Frontport installs it once per game, each with its own saves and settings, and Seeds your IWAD where UZDoom looks for it.\n\nIt takes Doom from 1.666 on, The Ultimate Doom, the BFG, Unity and 2024 releases, and the shareware episode.",
+      "website": "https://zdoom.org/",
+      "source": "https://github.com/UZDoom/UZDoom",
+      "bundleId": "dev.frontport.port.uzdoom-doom",
+      "releases": {
+        "type": "github-release",
+        "repo": "UZDoom/UZDoom",
+        "asset": "MacOS-UZDoom-Release-*.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Doom",
+          "stage": "runtime",
+          "oneOf": ["9b07b02ab3c275a6a7570c3f73cc20d63a0e3833", "87651324502044f9a6eed403e48853aa16c93e49", "08ab2507e1d525c4c06b6df4f6d5862568a6b009", "e5ec79505530e151ff0e6f517f3ce1fd65969c46", "7742089b4468a736cadb659a7deca3320fe6dcbd", "2c8212631b37f21ad06d18b5638c733a75e179ff", "2e89b86859acd9fc1e552f587b710751efcffa8e", "5b2e249b9c5133ec987b3ea77596381dc0d6bc1d"],
+          "seedPath": "Library/Application Support/UZDoom/doom.wad"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2460 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["-iwad", "doom.wad"] },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen"],
+      "firstRelease": "2025-11-28T23:53:01Z"
+    },
+    {
+      "id": "uzdoom-doom2",
+      "name": "UZDoom",
+      "kind": "sourceport",
+      "game": "doom-ii",
+      "developer": "UZDoom",
+      "summary": "Doom II: Hell on Earth on the most capable Doom engine, in widescreen at any frame rate.",
+      "description": "UZDoom carries on ZDoom and GZDoom, the Doom engine built up from the source code id Software released in 1997. It plays Doom II with an OpenGL or Vulkan renderer at any frame rate, in widescreen and with mouselook, and its ZScript and ACS scripting run the largest library of mods any Doom engine has. Frontport installs it once per game, each with its own saves and settings, and Seeds your IWAD where UZDoom looks for it.\n\nIt takes Doom II from 1.666 on and the BFG, Unity, Bethesda.net and 2024 releases.",
+      "website": "https://zdoom.org/",
+      "source": "https://github.com/UZDoom/UZDoom",
+      "bundleId": "dev.frontport.port.uzdoom-doom2",
+      "releases": {
+        "type": "github-release",
+        "repo": "UZDoom/UZDoom",
+        "asset": "MacOS-UZDoom-Release-*.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Doom II",
+          "stage": "runtime",
+          "oneOf": ["7ec7652fcfce8ddc6e801839291f0e28ef1d5ae7", "2921cf667359fd3a80aba3c0cf62ab39297e7e9e", "b723882122e90b61a1d92a11dcfcf9cbf95a407e", "f1b6ba94352d53f646b67c01d2da88c5c40e3179", "a59548125f59f6aa1a41c22f615557d3dd2e85a9", "79c283b18e61b9a989cfd3e0f19a42ea98fda551", "70192b8d5aba65c7e633a7c7bcfe7e3e90640c97", "78009057420b792eacff482021db6fe13b370dcc", "6d559b7ceece4f5ad457415049711992370d520a"],
+          "seedPath": "Library/Application Support/UZDoom/doom2.wad"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2492 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["-iwad", "doom2.wad"] },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen"],
+      "firstRelease": "2025-11-28T23:53:01Z"
+    },
+    {
+      "id": "uzdoom-heretic",
+      "name": "UZDoom",
+      "kind": "sourceport",
+      "game": "heretic",
+      "developer": "UZDoom",
+      "summary": "Heretic on the Doom engine it was built with, in widescreen at any frame rate.",
+      "description": "UZDoom carries on ZDoom and GZDoom, the Doom engine built up from the source code id Software released in 1997. It plays Heretic with an OpenGL or Vulkan renderer at any frame rate, in widescreen and with mouselook, and its ZScript and ACS scripting run the largest library of mods any Doom engine has. Frontport installs it once per game, each with its own saves and settings, and Seeds your IWAD where UZDoom looks for it.\n\nIt takes Heretic 1.0, 1.2 and Shadow of the Serpent Riders, and the shareware episode. The 2025 re-release waits until UZDoom recognizes its IWAD.",
+      "website": "https://zdoom.org/",
+      "source": "https://github.com/UZDoom/UZDoom",
+      "bundleId": "dev.frontport.port.uzdoom-heretic",
+      "releases": {
+        "type": "github-release",
+        "repo": "UZDoom/UZDoom",
+        "asset": "MacOS-UZDoom-Release-*.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Heretic",
+          "stage": "runtime",
+          "oneOf": ["f489d479371df32f6d280a0cb23b59a35ba2b833", "a54c5d30629976a649119c5ce8babae2ddfb1a60", "b5a6cc79cde48d97905b44282e82c4c966a23a87", "b4c50ca9bea07f7c35250a1a11906091971c05ae"],
+          "seedPath": "Library/Application Support/UZDoom/heretic.wad"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2711 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["-iwad", "heretic.wad"] },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen"],
+      "firstRelease": "2025-11-28T23:53:01Z"
+    },
+    {
+      "id": "uzdoom-hexen",
+      "name": "UZDoom",
+      "kind": "sourceport",
+      "game": "hexen",
+      "developer": "UZDoom",
+      "summary": "Hexen: Beyond Heretic, with its hubs and three classes, in widescreen at any frame rate.",
+      "description": "UZDoom carries on ZDoom and GZDoom, the Doom engine built up from the source code id Software released in 1997. It plays Hexen with an OpenGL or Vulkan renderer at any frame rate, in widescreen and with mouselook, and its ZScript and ACS scripting run the largest library of mods any Doom engine has. Frontport installs it once per game, each with its own saves and settings, and Seeds your IWAD where UZDoom looks for it.\n\nIt takes Hexen 1.0 and 1.1, and the demo. The 2025 re-release waits until UZDoom recognizes its IWAD.",
+      "website": "https://zdoom.org/",
+      "source": "https://github.com/UZDoom/UZDoom",
+      "bundleId": "dev.frontport.port.uzdoom-hexen",
+      "releases": {
+        "type": "github-release",
+        "repo": "UZDoom/UZDoom",
+        "asset": "MacOS-UZDoom-Release-*.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Hexen",
+          "stage": "runtime",
+          "oneOf": ["4b53832f0733c1e29e5f1de2428e5475e891af29", "ac129c4331bf26f0f080c4a56aaa40d64969c98a", "fa89a2475855e43c7f7e3198d6e4c4bee23bfab9"],
+          "seedPath": "Library/Application Support/UZDoom/hexen.wad"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2642 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["-iwad", "hexen.wad"] },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen"],
+      "firstRelease": "2025-11-28T23:53:01Z"
+    },
+    {
+      "id": "dethrace",
+      "name": "Dethrace",
+      "kind": "decomp",
+      "game": "carmageddon",
+      "developer": "dethrace-labs",
+      "summary": "Carmageddon rebuilt in C, function by function, from the original Windows 95 game.",
+      "description": "Dethrace is a rebuild of Carmageddon, reverse-engineered from the original Windows 95 executable one function at a time and running natively on modern systems. Frontport builds it from source with SDL inside the app, because upstream’s Mac app expects SDL installed separately.\n\nThe game comes as a folder of files, or its zip. Frontport keeps a copy in the Port’s Data, where dethrace also keeps its options, key maps and saves, and settings such as Windowed = 1 go in dethrace.ini beside them. It accepts GOG’s Max Pack, which brings the CD music too, and the freeware demo from April 1997; the earlier demo from February doesn’t run. From GOG, add the installer you downloaded, setup_carmageddon_max_pack_1.0_gog_(77629).exe: Frontport unpacks it, and adds both Carmageddon and the Splat Pack. The first time, that builds the unpacker from source, which takes a few minutes.",
+      "source": "https://github.com/dethrace-labs/dethrace",
+      "bundleId": "dev.frontport.port.dethrace",
+      "releases": {
+        "type": "git",
+        "repo": "dethrace-labs/dethrace",
+        "refs": { "stable": "v0.10.1" },
+        "recipe": "recipes/dethrace.sh",
+        "recipeSHA256": "0f9c56fd7cbd96c2de4d672c7c54d526185ad03497c4e225517d31efc52fcddf"
+      },
+      "requirements": [
+        {
+          "label": "Carmageddon",
+          "stage": "runtime",
+          "oneOf": ["bb1197cb7342a1f2026cc8b5d03e81e9ad17be4a", "05f131a70794e2a210b00587d4a918c0907712b9"],
+          "seedPath": "Library/Application Support/dethrace"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 36973 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["bugfixes"],
+      "firstRelease": "2022-09-21T04:13:32Z"
+    },
+    {
+      "id": "dethrace-splat-pack",
+      "name": "Dethrace",
+      "kind": "decomp",
+      "game": "carmageddon-splat-pack",
+      "developer": "dethrace-labs",
+      "summary": "The Splat Pack, Carmageddon’s expansion, rebuilt in C from the original game’s code.",
+      "description": "Dethrace rebuilds Carmageddon from the original Windows 95 executable, reverse-engineered one function at a time, and plays the Splat Pack expansion too: its 20 new races, new cars and new environments. Frontport builds it from source with SDL inside the app, because upstream’s Mac app expects SDL installed separately.\n\nThe Splat Pack comes as a folder of files. Frontport keeps a copy in the Port’s Data, where dethrace also keeps its options, key maps and saves, and settings such as Windowed = 1 go in dethrace.ini beside them. It accepts GOG’s Max Pack: add the installer you downloaded, setup_carmageddon_max_pack_1.0_gog_(77629).exe, and Frontport unpacks it and adds both the Splat Pack and Carmageddon. The first time, that builds the unpacker from source, which takes a few minutes.",
+      "source": "https://github.com/dethrace-labs/dethrace",
+      "bundleId": "dev.frontport.port.dethrace-splat-pack",
+      "releases": {
+        "type": "git",
+        "repo": "dethrace-labs/dethrace",
+        "refs": { "stable": "v0.10.1" },
+        "recipe": "recipes/dethrace.sh",
+        "recipeSHA256": "0f9c56fd7cbd96c2de4d672c7c54d526185ad03497c4e225517d31efc52fcddf"
+      },
+      "requirements": [
+        {
+          "label": "Splat Pack",
+          "stage": "runtime",
+          "oneOf": ["fbad1d1108ce23a0d7fc6adbe06814da121efc37"],
+          "seedPath": "Library/Application Support/dethrace"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 5412716 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["bugfixes"],
+      "firstRelease": "2022-09-21T04:13:32Z"
+    },
+    {
+      "id": "fallout-ce",
+      "name": "Fallout Community Edition",
+      "kind": "decomp",
+      "game": "fallout",
+      "developer": "alexbatalov",
+      "summary": "Fallout’s engine, re-implemented from its reverse-engineered code, with bug fixes and higher resolutions.",
+      "description": "Fallout Community Edition re-implements the engine of Fallout from its reverse-engineered code, with the original gameplay, fixes for the engine’s bugs and some quality-of-life improvements. Frontport builds it from source with SDL inside the app, and makes it play from the Port’s Data instead of the folder the app sits in.\n\nThe game comes as the folder of its CD, or the CD’s image (.iso), which Frontport unpacks. Frontport keeps a copy of the disc’s files in the Port’s Data, where Fallout also writes fallout.cfg and its saves, and the window’s size and full screen are set in f1_res.ini beside them. So far it accepts the Russian CD published by 1C in 2008.",
+      "source": "https://github.com/alexbatalov/fallout1-ce",
+      "bundleId": "dev.frontport.port.fallout-ce",
+      "releases": {
+        "type": "git",
+        "repo": "alexbatalov/fallout1-ce",
+        "refs": { "stable": "0609bcfd0ec40ff0571d0f57fab2821eb461dc8b" },
+        "recipe": "recipes/fallout-ce.sh",
+        "recipeSHA256": "f935cdffedee420395a20998f1f5426d6a1e23e2bd8715da22e5f17898e77a67"
+      },
+      "requirements": [
+        {
+          "label": "Fallout",
+          "stage": "runtime",
+          "oneOf": ["b8ab7632030c62079ab22c1f7b4e69818d98db41"],
+          "seedPath": "Library/Application Support/Fallout"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 8280 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["bugfixes"],
+      "firstRelease": "2023-02-09T19:54:12Z"
+    }
+  ]
+}

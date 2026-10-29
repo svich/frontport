@@ -1,0 +1,77 @@
+;; Frontport build sandbox: a Recipe's build step.
+;;
+;; No network. Reads the system, the developer tools, the Toolchain and Builds/<port>; writes only
+;; Builds/<port> and its private tmp. Nothing else of the user's home, not even metadata.
+;;
+;; Parameters (canonical paths, symlinks resolved):
+;;   HOME           the user's home folder, denied as a whole
+;;   DEVELOPER_DIR  the active developer directory's root (Xcode.app, or the Command Line Tools)
+;;   TOOLCHAIN      Toolchain/<version>
+;;   RECIPE         the Recipe script
+;;   BUILDS         Builds/<port>
+;;   TMP            the step's private tmp folder
+;;   METAL          Xcode's Metal toolchain (Metal.xctoolchain), or DEVELOPER_DIR when it has none
+
+(version 1)
+(deny default)
+(import "system.sb")
+
+(allow process-fork process-exec)
+(allow signal (target same-sandbox))
+(allow process-info* (target same-sandbox))
+(allow ipc-posix-sem ipc-posix-shm)
+(allow user-preference-read (preference-domain "com.apple.dt.Xcode"))
+
+;; Stat anywhere so tools can resolve paths, but nothing at all inside the home folder, nor where
+;; package managers install (a build must not pick up Homebrew or MacPorts libraries).
+(allow file-read-metadata)
+(deny file-read* file-test-existence
+  (subpath (param "HOME"))
+  (subpath "/usr/local")
+  (subpath "/opt")
+  (subpath "/Library/Frameworks"))
+
+;; The system and the developer tools.
+(allow file-read* file-test-existence
+  (subpath "/bin")
+  (subpath "/sbin")
+  (subpath "/usr/bin")
+  (subpath "/usr/sbin")
+  (subpath "/usr/libexec")
+  (subpath "/usr/include")
+  (subpath "/private/etc")
+  (subpath "/private/var/select")
+  (literal "/private/var/db/xcode_select_link")
+  (literal "/Library/Preferences/com.apple.dt.Xcode.plist")
+  (subpath "/Library/Developer/CommandLineTools")
+  (subpath (param "DEVELOPER_DIR")))
+(allow file-map-executable
+  (subpath "/Library/Developer/CommandLineTools")
+  (subpath (param "DEVELOPER_DIR")))
+
+;; Xcode's Metal toolchain, a separate download that Xcode mounts inside the home folder.
+(allow file-read* file-test-existence file-map-executable (subpath (param "METAL")))
+
+;; The GPU, for builds that run the game to capture what it makes at run time, such as the shaders it compiles.
+;; Apple silicon's Metal device, and IOSurface, without which Metal 4 command queues and shared events fail;
+;; system.sb already reaches Metal's compiler service.
+(allow iokit-open (iokit-user-client-class "AGXDeviceUserClient" "IOSurfaceRootUserClient"))
+
+;; The Toolchain and the Recipe, read-only.
+(allow file-read* file-test-existence file-map-executable (subpath (param "TOOLCHAIN")))
+(allow file-read* file-test-existence (literal (param "RECIPE")))
+
+;; Builds/<port> and the tmp folder, read-write.
+(allow file-read* file-test-existence file-map-executable file-write*
+  (subpath (param "BUILDS"))
+  (subpath (param "TMP")))
+
+;; Path components leading to the allowed folders, which may lie inside the home folder.
+(allow file-read-metadata file-test-existence
+  (path-ancestors (param "METAL"))
+  (path-ancestors (param "TOOLCHAIN"))
+  (path-ancestors (param "RECIPE"))
+  (path-ancestors (param "BUILDS"))
+  (path-ancestors (param "TMP")))
+
+(allow file-write-data file-ioctl (literal "/dev/tty"))

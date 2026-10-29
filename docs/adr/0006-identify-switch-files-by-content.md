@@ -1,0 +1,33 @@
+# Identify Switch files by their content, and keep only the console keys every console shares
+
+**Status:** accepted with the first Switch Ports, nxnative's Super Mario Bros. Wonder and Tears of the Kingdom. Amended with Fire Emblem: Three Houses to put back converted game card dumps; that amendment is superseded by [ADR 0011](0011-keep-unlisted-files-unverified.md), and nothing in Frontport decrypts.
+
+A Switch Port needs three kinds of file, all Build Stage: the game's NSP (or XCI), the update the Port was brought up on, and the user's console keys (`prod.keys`), which decrypt both. Frontport identifies a ROM by the SHA-1 of its standard form and accepts only hashes a Requirement lists. Neither kind of Switch file fits that as it is:
+- **An NSP's bytes vary with its dumper.** The same game version comes with or without a ticket and certificate, with or without the XML and icons some tools add, in another order, or converted from a game card. A hash of the file would list one dumper's NSP and refuse every other dump of the same game.
+- **`prod.keys` holds the console's own keys** (device, BIS and SD card keys, the eTicket RSA key pair), different on every console, beside the keys every console shares. A hash of the file matches nobody else's.
+
+So:
+- **An NSP or XCI is identified by its NCAs.** Each NCA is named by its content ID, the first half of its SHA-256. Frontport hashes every NCA and refuses one that doesn't match its name, then takes the SHA-1 of the sorted content IDs, one per line, leaving out the meta NCA (`.cnmt.nca`). Anyone can check it: `ls *.nca | grep -v cnmt | cut -c1-32 | sort | shasum` over the unpacked NCAs. The file is stored as it is, since its ticket, when it has one, holds the key to its NCAs.
+- **A converted game card dump is put back.** *Superseded by ADR 0011: such a dump is kept Unverified, as the ROM the user chooses.* Tools that turn a game card dump into an NSP mark each NCA's header as downloaded (distribution type 0) instead of from a game card (1), so no NCA matches its content ID. With console keys in ROMs, intake decrypted a mismatching NCA's header with the shared `header_key` (AES-128-XTS, sector 1); when it said downloaded, it hashed the NCA with that byte set back to 1 in the same pass, and accepted the NCA when that matched its content ID. ROMs then kept a copy with those headers as they were on the card, the form whose identity the Catalog lists.
+- **The meta NCA is left out** because public title databases ([blawar/titledb](https://github.com/blawar/titledb)'s `cnmts.json`) list every other content ID of each version, with the build ID of its program. So the Catalog can list a version from public data when nobody dumped it for the Catalog, and check the build ID against the one the Recipe was brought up on.
+- **Console keys become a ROM of the Platform.** Their standard form is the five keys every console shares that decrypting games needs (`aes_kek_generation_source`, `aes_key_generation_source`, `header_key`, `key_area_key_application_source`, `titlekek_source`), then `master_key_00` onwards without a gap, one `name = value` line each in that order. Everything else is dropped and never stored. A `KnownROM` names a `platform` instead of a `game` for such files.
+- **Each master key is one key generation.** A console with newer firmware has more of them, so the file can take several standard forms, one per number of master keys. The Catalog lists the forms a game's version may need (from the master key of its required firmware on), and intake keeps the longest form a Requirement lists. A console updated after the Catalog still yields a listed form.
+
+## Considered Options
+
+- **Hash the NSP file.** Simple and what every other Platform does, but it accepts only one dumper's file, and a Catalog can list only files someone dumped for it.
+- **Hash every NCA's full SHA-256.** As strong as content IDs, but no public source lists full hashes, so every version would have to be dumped for the Catalog.
+- **Identify by title ID and version,** as nxnative does. The title ID and version are in the encrypted meta NCA, so reading them needs the keys, and they say nothing about whether the files are whole.
+- **Keys outside ROMs**, entered in Settings, unchecked. They'd escape the Requirements model (the Store page, the ROMs screen, the Builder's ROM folder), and a mistyped key would surface only as a failed build.
+- **Hash the whole keys file.** It holds console-unique keys, so no two users' hashes match, and Frontport would store keys it never needs.
+
+## Consequences
+
+- **The ticket isn't part of the identity.** An eShop NSP needs its ticket to decrypt, so one dumped without it is accepted and fails only when the Recipe extracts it; the user then removes it from ROMs and adds a whole dump, since the same NCAs count as the same ROM. A personalized ticket (one console's, whose title key only that console's eTicket key decrypts) is refused at intake, because the shared keys can't decrypt it: tickets are read for their title key type, which needs no keys.
+- **Lists run newest first.** Intake keeps the longest form any Requirement accepts, so `roms` lists a Platform's keys newest first, and each Requirement accepts them from the newest down to the oldest it can use, without a gap; the lint checks it. A Requirement that skipped the newest would refuse the form a newer console's file is stored in.
+- **Schema version 2.** A `KnownROM` without a Game is new, so the Catalog's `version` went from 1 to 2.
+- **The NCAs must be untouched.** A dump whose NCAs were altered no longer matches its content IDs, so no ROM in the Catalog has its identity, as for any altered ROM. Since ADR 0011 it can still be kept Unverified, and a converted game card dump is one. Before that, a converted dump needed the console keys first, and Fire Emblem: Three Houses' game card base was the first put back.
+- **Delta fragments change the identity.** An update NSP that kept its delta fragment NCAs, which installers discard, lists more content IDs than the database's version. None of the Ports' updates has them.
+- **A game card dump differs from the eShop version.** Its NCAs are encrypted for the card, so the Catalog lists it apart, as with Tears of the Kingdom's and Super Mario Bros. Wonder's.
+- **ROMs keep the keys every console shares.** They're the same for everyone and published nowhere by Frontport. The keys file in ROMs is read-only like every ROM, and the Builder hands it to the Recipe only during the build.
+- **Content IDs are 128 bits of SHA-256.** Forging an NCA that matches one is out of reach, so the check stands in for a hash of the whole file.

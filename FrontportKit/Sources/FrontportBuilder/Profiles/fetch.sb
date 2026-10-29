@@ -1,0 +1,76 @@
+;; Frontport fetch sandbox: a Recipe's fetch step.
+;;
+;; Network allowed, to remote hosts only: no Unix sockets, which would reach local agents. Reads the
+;; system, the developer tools and the Toolchain; writes only Builds/<port>/src and Builds/<port>/tmp.
+;; Nothing else of the user's home, not even metadata, so ROMs fed to the build step are out of reach
+;; while the network is on.
+;;
+;; Parameters (canonical paths, symlinks resolved):
+;;   HOME           the user's home folder, denied as a whole
+;;   DEVELOPER_DIR  the active developer directory's root (Xcode.app, or the Command Line Tools)
+;;   TOOLCHAIN      Toolchain/<version>
+;;   RECIPE         the Recipe script
+;;   SRC            Builds/<port>/src
+;;   TMP            the step's private tmp folder
+
+(version 1)
+(deny default)
+(import "system.sb")
+
+(allow process-fork process-exec)
+(allow signal (target same-sandbox))
+(allow process-info* (target same-sandbox))
+(allow ipc-posix-sem ipc-posix-shm)
+(allow user-preference-read (preference-domain "com.apple.dt.Xcode"))
+
+;; Outbound IP connections, DNS and TLS trust evaluation, as the App Sandbox's network.client grants.
+;; The only Unix socket is mDNSResponder's, which name lookups go through.
+(allow network-outbound
+  (remote ip)
+  (literal "/private/var/run/mDNSResponder"))
+(system-network)
+
+;; Stat anywhere so tools can resolve paths, but nothing at all inside the home folder, nor where
+;; package managers install.
+(allow file-read-metadata)
+(deny file-read* file-test-existence
+  (subpath (param "HOME"))
+  (subpath "/usr/local")
+  (subpath "/opt")
+  (subpath "/Library/Frameworks"))
+
+;; The system and the developer tools.
+(allow file-read* file-test-existence
+  (subpath "/bin")
+  (subpath "/sbin")
+  (subpath "/usr/bin")
+  (subpath "/usr/sbin")
+  (subpath "/usr/libexec")
+  (subpath "/usr/include")
+  (subpath "/private/etc")
+  (subpath "/private/var/select")
+  (literal "/private/var/db/xcode_select_link")
+  (literal "/Library/Preferences/com.apple.dt.Xcode.plist")
+  (subpath "/Library/Developer/CommandLineTools")
+  (subpath (param "DEVELOPER_DIR")))
+(allow file-map-executable
+  (subpath "/Library/Developer/CommandLineTools")
+  (subpath (param "DEVELOPER_DIR")))
+
+;; The Toolchain and the Recipe, read-only.
+(allow file-read* file-test-existence file-map-executable (subpath (param "TOOLCHAIN")))
+(allow file-read* file-test-existence (literal (param "RECIPE")))
+
+;; The source tree and the tmp folder, read-write.
+(allow file-read* file-test-existence file-map-executable file-write*
+  (subpath (param "SRC"))
+  (subpath (param "TMP")))
+
+;; Path components leading to the allowed folders, which may lie inside the home folder.
+(allow file-read-metadata file-test-existence
+  (path-ancestors (param "TOOLCHAIN"))
+  (path-ancestors (param "RECIPE"))
+  (path-ancestors (param "SRC"))
+  (path-ancestors (param "TMP")))
+
+(allow file-write-data file-ioctl (literal "/dev/tty"))

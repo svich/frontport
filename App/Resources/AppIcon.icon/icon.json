@@ -1,0 +1,76 @@
+{
+  "fill": {
+    "solid": "srgb:0.05098,0.04314,0.16471,1.00000"
+  },
+  "groups": [
+    {
+      "name": "squid",
+      "layers": [
+        {
+          "name": "eyes",
+          "image-name": "eyes.svg",
+          "glass": false
+        },
+        {
+          "name": "head",
+          "image-name": "head.svg",
+          "glass": true
+        },
+        {
+          "name": "tentacles",
+          "image-name": "tentacles.svg",
+          "glass": true
+        }
+      ],
+      "lighting": "individual",
+      "specular": true,
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.2
+      }
+    },
+    {
+      "name": "sprite",
+      "layers": [
+        {
+          "name": "sprite",
+          "image-name": "sprite.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "none",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "stars",
+      "layers": [
+        {
+          "name": "stars",
+          "image-name": "stars.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "none",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}
