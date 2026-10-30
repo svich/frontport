@@ -15,6 +15,7 @@ profile="${FRONTPORT_NOTARY_PROFILE:-frontport}"
 key_account="${FRONTPORT_SPARKLE_ACCOUNT:-ed25519}"
 output="${FRONTPORT_RELEASE_DIR:-$repo/build/release}"
 download_prefix="${FRONTPORT_DOWNLOAD_URL_PREFIX:-}"
+steamgriddb_service="frontport-steamgriddb"
 
 usage() { sed -n '2,9p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
@@ -122,7 +123,7 @@ if ((dry_run)); then
         note "FRONTPORT_SIGNING_IDENTITY and FRONTPORT_TEAM_ID."
     fi
     note "Then: notarize with the notarytool profile “$profile”, and sign the appcast with the Sparkle key in the"
-    note "Keychain account “$key_account”. Neither was checked."
+    note "Keychain account “$key_account”. Neither was checked, nor the SteamGridDB key, which is optional."
     if ((${#problems[@]})); then
         note "A release would also stop at the Info.plist problems above, after these and before building."
         exit 1
@@ -156,12 +157,24 @@ keychain_key="$("$sparkle/generate_keys" --account "$key_account" -p 2> /dev/nul
     die "Info.plist’s SUPublicEDKey isn’t the public half of the Keychain’s Sparkle key ($keychain_key)."
 note "Info.plist’s SUPublicEDKey matches; the feed is $feed"
 
+step "Reading the SteamGridDB key"
+# Optional: a release without one asks each user for their own key. Ship one only with SteamGridDB's written permission.
+steamgriddb_key="${FRONTPORT_STEAMGRIDDB_KEY:-}"
+if [[ -z "$steamgriddb_key" ]]; then
+    steamgriddb_key="$(security find-generic-password -s "$steamgriddb_service" -w 2> /dev/null || true)"
+fi
+if [[ -n "$steamgriddb_key" ]]; then
+    note "Found; it goes into Info.plist as FrontportSteamGridDBKey"
+else
+    note "None in FRONTPORT_STEAMGRIDDB_KEY or the Keychain item “$steamgriddb_service”: users will need their own key"
+fi
+
 step "Archiving the Release build"
 archive="$output/Frontport.xcarchive"
 rm -rf "$archive" "$output/export"
 xcodebuild archive -project "$project" -scheme Frontport -configuration Release -destination 'generic/platform=macOS' \
     -derivedDataPath "$derived" -archivePath "$archive" ${overrides[@]+"${overrides[@]}"} OTHER_CODE_SIGN_FLAGS=--timestamp \
-    -quiet
+    FRONTPORT_STEAMGRIDDB_KEY="$steamgriddb_key" -quiet
 
 step "Exporting for Developer ID"
 # Export re-signs everything inside, Sparkle's helpers included, with the identity, the hardened runtime and a timestamp.
@@ -182,6 +195,8 @@ PLIST
 xcodebuild -exportArchive -archivePath "$archive" -exportPath "$output/export" -exportOptionsPlist "$options" -quiet
 app="$output/export/Frontport.app"
 [[ -d "$app" ]] || die "The export left no Frontport.app in $output/export."
+[[ "$(plutil -extract FrontportSteamGridDBKey raw -o - "$app/Contents/Info.plist" 2> /dev/null || true)" == "$steamgriddb_key" ]] ||
+    die "Frontport.app’s FrontportSteamGridDBKey isn’t the SteamGridDB key the script read."
 
 step "Verifying the signature"
 codesign --verify --strict --deep --verbose=2 "$app"

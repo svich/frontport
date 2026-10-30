@@ -16,14 +16,15 @@ struct SettingsView: View {
             Section {
                 LabeledContent("API Key") {
                     HStack(spacing: 8) {
-                        SecureField("API Key", text: $key, prompt: Text(model.hasSteamGridDBKey ? "Saved in your Keychain" : "Paste your key"))
+                        SecureField("API Key", text: $key, prompt: Text(model.steamGridDBKey == .user ? "Saved in your Keychain" : "Paste your key"))
                             .labelsHidden()
                             .onSubmit(save)
                         Button("Save", action: save)
                             .disabled(key.isEmpty || isSaving)
                     }
                 }
-                if model.hasSteamGridDBKey {
+                switch model.steamGridDBKey {
+                case .user:
                     LabeledContent("Status") {
                         HStack(spacing: 10) {
                             Label("Saved in your Keychain", systemImage: "checkmark.circle.fill")
@@ -33,6 +34,13 @@ struct SettingsView: View {
                             }
                         }
                     }
+                case .builtIn:
+                    LabeledContent("Status") {
+                        Label("Using Frontport’s key", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                case nil:
+                    EmptyView()
                 }
                 Link(destination: Self.apiKeyPage) {
                     Label("Get an API key on steamgriddb.com", systemImage: "arrow.up.forward.square")
@@ -41,7 +49,12 @@ struct SettingsView: View {
                 Text("Artwork")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Covers, heroes, logos and icons come from SteamGridDB. Frontport fetches artwork only for this Mac, with your own key, and never shares it. Without a key, Ports show a flat color with the Game’s name.")
+                    Text("Covers, heroes, logos and icons come from SteamGridDB. Frontport fetches artwork only for this Mac, and never shares your key.")
+                    if model.steamGridDBKey == .builtIn {
+                        Text("This copy of Frontport comes with a key of its own. Save yours to use it instead.")
+                    } else {
+                        Text("Without a key, Ports show a flat color with the Game’s name.")
+                    }
                     Text("SteamGridDB allows personal, non-commercial use only.")
                 }
                 .font(.callout)

@@ -98,7 +98,8 @@ final class AppModel {
     private(set) var snapshots: [PortID: [Snapshot]] = [:]
     /// Newest first; loaded by `loadHistory(for:)`.
     private(set) var runs: [PortID: [Run]] = [:]
-    private(set) var hasSteamGridDBKey = false
+    /// Whose SteamGridDB key artwork is fetched with; nil when there is none.
+    private(set) var steamGridDBKey: APIKeySource?
     /// The Catalogs the user added, for Settings and the store page.
     private(set) var addedCatalogs: [CatalogSummary] = []
     /// Bumped when artwork may have changed (a new SteamGridDB key), so artwork views look again.
@@ -245,7 +246,7 @@ final class AppModel {
         await survey.load()
         launched = await services.launcher.running()
         refreshOpened()
-        hasSteamGridDBKey = await services.artwork.hasAPIKey()
+        steamGridDBKey = await services.artwork.apiKeySource()
         addedCatalogs = await services.catalogs.added()
     }
 
@@ -578,7 +579,7 @@ final class AppModel {
         } catch {
             present(error)
         }
-        hasSteamGridDBKey = await services.artwork.hasAPIKey()
+        steamGridDBKey = await services.artwork.apiKeySource()
         artworkGeneration += 1
     }
 

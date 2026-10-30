@@ -11,8 +11,8 @@ scripts/release.sh
 
 In order, it:
 1. **Prepares:** checks the tools, generates `Frontport.xcodeproj`, resolves the Swift packages into `build/release/DerivedData`, finds Sparkle's `generate_appcast`, and reads the version from the Release build settings.
-2. **Checks every credential before building:** the Developer ID identity in the login keychain, the notarytool profile, the Sparkle key in the Keychain, and `SUPublicEDKey` (the key's public half) and `SUFeedURL` in `App/Resources/Info.plist`. Anything missing stops the script with what to do.
-3. **Builds:** archives the Release configuration and exports it for Developer ID, which re-signs everything inside, Sparkle's helpers included, with the hardened runtime and a secure timestamp.
+2. **Checks every credential before building:** the Developer ID identity in the login keychain, the notarytool profile, the Sparkle key in the Keychain, and `SUPublicEDKey` (the key's public half) and `SUFeedURL` in `App/Resources/Info.plist`. Anything missing stops the script with what to do. Then it reads the SteamGridDB key, if there is one.
+3. **Builds:** archives the Release configuration, with the SteamGridDB key in `Info.plist` as `FrontportSteamGridDBKey`, and exports it for Developer ID, which re-signs everything inside, Sparkle's helpers included, with the hardened runtime and a secure timestamp.
 4. **Verifies the signature:** `codesign --verify --strict --deep`, the Developer ID authority, the timestamp, no `get-task-allow`, and the hardened runtime on every executable, `frontport-primer` included.
 5. **Notarizes:** `xcrun notarytool submit --keychain-profile <profile> --wait`, then staples the ticket and checks that `spctl -a -vv` accepts the app as Notarized Developer ID. A rejection saves notarytool's log in `build/release/`.
 6. **Publishes to the appcast:** zips the stapled app into `build/release/updates/` and runs Sparkle's `generate_appcast`, which signs the entry with the EdDSA key from the Keychain.
@@ -26,6 +26,7 @@ In order, it:
 | `--output` | `FRONTPORT_RELEASE_DIR` | `build/release` | Where the archive, the export and `updates/` go |
 | `--download-url-prefix` | `FRONTPORT_DOWNLOAD_URL_PREFIX` | `SUFeedURL`'s folder | Where users download the zips from |
 | | `FRONTPORT_SIGNING_IDENTITY`, `FRONTPORT_TEAM_ID` | `App/Signing.local.xcconfig` | The identity and team, for one run |
+| | `FRONTPORT_STEAMGRIDDB_KEY` | the Keychain item `frontport-steamgriddb` | The SteamGridDB key the release ships with |
 
 ## One-time setup
 
@@ -64,6 +65,14 @@ In order, it:
    ```
 
    Sparkle starts only when `SUPublicEDKey` is present, so builds without it never check for updates.
+
+5. **SteamGridDB key (optional).** Only with SteamGridDB's written permission, since their terms allow personal use only. Keep the key in the login Keychain, never in the repository:
+
+   ```sh
+   security add-generic-password -s frontport-steamgriddb -a api-key -w
+   ```
+
+   Without it, a release fetches artwork only with each user's own key, entered in Settings. With it, a user's own key still comes first.
 
 ## Each release
 

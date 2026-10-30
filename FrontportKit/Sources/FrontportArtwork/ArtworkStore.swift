@@ -29,7 +29,8 @@ public struct ArtworkRecord: Codable, Hashable, Sendable {
     }
 }
 
-/// SteamGridDB artwork, fetched through the v2 API with the user's key and cached in `Artwork/`.
+/// SteamGridDB artwork, fetched through the v2 API and cached in `Artwork/`. The user's key comes first, then the
+/// key a release build ships with.
 ///
 /// SteamGridDB's terms allow personal use only, so artwork is fetched only for entries the app asks about,
 /// one Mac at a time, and never bundled. Without a key nothing is fetched: cached files are still returned.
@@ -45,20 +46,23 @@ public actor ArtworkStore: ArtworkProviding {
 
     private let paths: AppPaths
     private let keyStore: any APIKeyStoring
+    private let builtInKey: String?
     private let api: SteamGridDB
     private let maxAge: TimeInterval
     private let now: @Sendable () -> Date
-    /// nil until the key store has been read.
-    private var key: String??
+    /// The user's key; nil until the key store has been read.
+    private var userKey: String??
     private var inFlight: [CacheKey: Task<ArtworkRecord?, Never>] = [:]
 
+    /// - Parameter builtInKey: the key this build ships with, if any; empty counts as none.
     public init(
-        paths: AppPaths, keyStore: any APIKeyStoring = KeychainAPIKeyStore(), session: URLSession = .shared,
-        apiBase: URL = ArtworkStore.defaultAPIBase, maxAge: TimeInterval = ArtworkStore.defaultMaxAge,
-        now: @escaping @Sendable () -> Date = { Date() }
+        paths: AppPaths, keyStore: any APIKeyStoring = KeychainAPIKeyStore(), builtInKey: String? = nil,
+        session: URLSession = .shared, apiBase: URL = ArtworkStore.defaultAPIBase,
+        maxAge: TimeInterval = ArtworkStore.defaultMaxAge, now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.paths = paths
         self.keyStore = keyStore
+        self.builtInKey = Self.normalized(builtInKey)
         self.api = SteamGridDB(base: apiBase, session: session)
         self.maxAge = maxAge
         self.now = now
@@ -86,13 +90,15 @@ public actor ArtworkStore: ArtworkProviding {
         }
     }
 
-    public func hasAPIKey() async -> Bool { apiKey() != nil }
+    public func apiKeySource() async -> APIKeySource? {
+        if storedUserKey() != nil { return .user }
+        return builtInKey == nil ? nil : .builtIn
+    }
 
     public func setAPIKey(_ key: String?) async throws {
-        let trimmed = key?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let value = (trimmed?.isEmpty ?? true) ? nil : trimmed
+        let value = Self.normalized(key)
         try keyStore.write(value)
-        self.key = .some(value)
+        userKey = .some(value)
     }
 
     // MARK: Credits
@@ -128,11 +134,18 @@ public actor ArtworkStore: ArtworkProviding {
         return nil
     }
 
-    private func apiKey() -> String? {
-        if let key { return key }
+    private func apiKey() -> String? { storedUserKey() ?? builtInKey }
+
+    private func storedUserKey() -> String? {
+        if let userKey { return userKey }
         let stored = (try? keyStore.read()).flatMap(\.self)
-        key = .some(stored)
+        userKey = .some(stored)
         return stored
+    }
+
+    private static func normalized(_ key: String?) -> String? {
+        guard let trimmed = key?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else { return nil }
+        return trimmed
     }
 
     private func isStale(_ record: ArtworkRecord) -> Bool {

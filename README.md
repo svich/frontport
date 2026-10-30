@@ -29,8 +29,8 @@ source.
   Ports appear beside Frontport's. Frontport doesn't review them; their Ports
   run in the same sandbox.
 - **Run logs and artwork:** each launch keeps a log, and Ports show artwork
-  from [SteamGridDB](https://www.steamgriddb.com) when you add your own API
-  key in Settings.
+  from [SteamGridDB](https://www.steamgriddb.com), fetched with your own API
+  key from Settings, or with the key a release ships with.
 
 ## Ports in the Catalog
 

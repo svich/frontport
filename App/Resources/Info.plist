@@ -31,6 +31,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>FrontportSteamGridDBKey</key>
+	<string>$(FRONTPORT_STEAMGRIDDB_KEY)</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.games</string>
 	<key>LSMinimumSystemVersion</key>

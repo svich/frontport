@@ -203,10 +203,19 @@ public protocol ArtworkProviding: Sendable {
     /// Refetches cached artwork for these entries; run during update checks.
     func refresh(_ entries: [CatalogEntry]) async
 
-    func hasAPIKey() async -> Bool
+    /// Whose key artwork is fetched with; nil when there is none.
+    func apiKeySource() async -> APIKeySource?
 
-    /// Stores the SteamGridDB API key in the Keychain; nil removes it.
+    /// Stores the user's SteamGridDB API key in the Keychain; nil removes it.
     func setAPIKey(_ key: String?) async throws
+}
+
+/// Whose SteamGridDB API key Frontport fetches artwork with.
+public enum APIKeySource: Sendable {
+    /// The user's own, saved in Settings.
+    case user
+    /// The key a release build ships with, used while the user has none of their own.
+    case builtIn
 }
 
 /// Installations and everything that changes them (FrontportLibrary). Orchestrates the other services.

@@ -29,6 +29,9 @@ struct SteamGridDB: Sendable {
         case malformed
     }
 
+    /// Sent with every request, so SteamGridDB can tell Frontport's traffic apart.
+    static let userAgent = "Frontport"
+
     let base: URL
     let session: URLSession
 
@@ -40,6 +43,7 @@ struct SteamGridDB: Sendable {
         guard let url = components?.url else { throw Failure.malformed }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
         let (data, response) = try await session.data(for: request)
@@ -59,7 +63,9 @@ struct SteamGridDB: Sendable {
     /// Downloads an image without credentials; they're only for the API.
     func download(_ image: Image) async throws -> (data: Data, mime: String?) {
         guard image.url.scheme == "https" else { throw Failure.malformed }
-        let (data, response) = try await session.data(from: image.url)
+        var request = URLRequest(url: image.url)
+        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await session.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200, !data.isEmpty else { throw Failure.http(status) }
         return (data, response.mimeType)

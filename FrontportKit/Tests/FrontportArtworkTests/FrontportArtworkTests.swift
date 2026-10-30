@@ -28,13 +28,13 @@ struct ArtworkFixture {
     let clock = TestClock()
     let store: ArtworkStore
 
-    init(key: String? = "secret") throws {
+    init(key: String? = "secret", builtInKey: String? = nil) throws {
         directory = try TemporaryDirectory()
         paths = AppPaths(root: try directory.folder("Frontport"), containers: try directory.folder("Containers"))
         keys = MemoryKeyStore(key)
         let clock = clock
         store = ArtworkStore(
-            paths: paths, keyStore: keys, session: server.session, apiBase: server.url("api/v2/"),
+            paths: paths, keyStore: keys, builtInKey: builtInKey, session: server.session, apiBase: server.url("api/v2/"),
             now: { clock.now() })
     }
 
@@ -68,13 +68,36 @@ struct ArtworkFixture {
 }
 
 @Suite struct ArtworkStoreTests {
-    @Test func withoutAKeyNeverCallsTheAPI() async throws {
-        let fixture = try ArtworkFixture(key: nil)
+    @Test(arguments: [nil, "", " \n"])
+    func withoutAKeyNeverCallsTheAPI(builtInKey: String?) async throws {
+        // A build without a key of its own has an empty one in its Info.plist.
+        let fixture = try ArtworkFixture(key: nil, builtInKey: builtInKey)
         fixture.serve("grids", game: ArtworkFixture.portID, [(1, 920, 430)])
         #expect(await fixture.store.artwork(.grid, for: fixture.entry) == nil)
         await fixture.store.refresh([fixture.entry])
         #expect(fixture.server.requests.isEmpty)
-        #expect(await !fixture.store.hasAPIKey())
+        #expect(await fixture.store.apiKeySource() == nil)
+    }
+
+    @Test func usesTheBuiltInKeyUntilTheUserSavesOne() async throws {
+        let fixture = try ArtworkFixture(key: nil, builtInKey: " frontport\n")
+        fixture.serve("grids", game: ArtworkFixture.portID, [(1, 920, 430)])
+        fixture.serve("logos", game: ArtworkFixture.portID, [(2, 800, 300)])
+        fixture.serve("icons", game: ArtworkFixture.portID, [(3, 256, 256)])
+        #expect(await fixture.store.apiKeySource() == .builtIn)
+        _ = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
+        #expect(fixture.apiRequests().last?.value(forHTTPHeaderField: "Authorization") == "Bearer frontport")
+
+        try await fixture.store.setAPIKey("mine")
+        #expect(await fixture.store.apiKeySource() == .user)
+        _ = try #require(await fixture.store.artwork(.logo, for: fixture.entry))
+        #expect(fixture.apiRequests().last?.value(forHTTPHeaderField: "Authorization") == "Bearer mine")
+
+        // Removing the user's key goes back to the built-in one.
+        try await fixture.store.setAPIKey(nil)
+        #expect(await fixture.store.apiKeySource() == .builtIn)
+        _ = try #require(await fixture.store.artwork(.icon, for: fixture.entry))
+        #expect(fixture.apiRequests().last?.value(forHTTPHeaderField: "Authorization") == "Bearer frontport")
     }
 
     @Test func withoutAKeyStillReturnsCachedArtwork() async throws {
@@ -98,6 +121,7 @@ struct ArtworkFixture {
 
         let api = try #require(fixture.apiRequests().first)
         #expect(api.value(forHTTPHeaderField: "Authorization") == "Bearer secret")
+        #expect(api.value(forHTTPHeaderField: "User-Agent") == "Frontport")
         let apiURL = try #require(api.url)
         let query = try #require(URLComponents(url: apiURL, resolvingAgainstBaseURL: false)?.queryItems)
         #expect(query.contains(URLQueryItem(name: "dimensions", value: "920x430,460x215")))
@@ -106,6 +130,7 @@ struct ArtworkFixture {
         // The key goes only to the API, never to the image host.
         let download = try #require(fixture.server.requests(to: "file/11.png").first)
         #expect(download.value(forHTTPHeaderField: "Authorization") == nil)
+        #expect(download.value(forHTTPHeaderField: "User-Agent") == "Frontport")
 
         let record = try #require(await fixture.store.record(.grid, for: fixture.entry))
         #expect(record.assetID == 11)
@@ -202,10 +227,10 @@ struct ArtworkFixture {
         let fixture = try ArtworkFixture(key: nil)
         try await fixture.store.setAPIKey("  abc \n")
         #expect(try fixture.keys.read() == "abc")
-        #expect(await fixture.store.hasAPIKey())
+        #expect(await fixture.store.apiKeySource() == .user)
         try await fixture.store.setAPIKey("")
         #expect(try fixture.keys.read() == nil)
-        #expect(await !fixture.store.hasAPIKey())
+        #expect(await fixture.store.apiKeySource() == nil)
     }
 
     @Test func choosesFileExtensionsFromTheMimeType() {

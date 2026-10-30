@@ -27,7 +27,10 @@ extension AppServices {
             primer: primer)
         return AppServices(
             catalog: prepared(catalog), catalogs: catalog, releases: releases, roms: roms, library: library, launcher: launcher,
-            artwork: ArtworkStore(paths: paths, keyStore: KeychainAPIKeyStore()))
+            artwork: ArtworkStore(
+                paths: paths, keyStore: KeychainAPIKeyStore(),
+                // Set only by scripts/release.sh; empty in every other build.
+                builtInKey: bundle.object(forInfoDictionaryKey: "FrontportSteamGridDBKey") as? String))
     }
 
     /// Frontport's own Catalog, bundled and fetched from `catalog/` on `main`, and the ones the user added.

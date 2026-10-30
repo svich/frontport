@@ -217,7 +217,8 @@ Covers come from [SteamGridDB](https://www.steamgriddb.com):
 - **Lookup:** each Catalog entry pins a SteamGridDB game ID, so Frontport never guesses by name. It uses the Port's own entry when there is one (most Ports have one), and otherwise the Game's.
 - **Where each kind goes:** a landscape grid on Library tiles and Catalog cards, the hero and logo on the Port page header, and the icon in the sidebar. Game cards and the Game page show the Game's own grid, from its `steamgriddb` id, and Project tiles and update cards show the Games' icons.
 - **Caching:** Frontport caches artwork in `Artwork/` with the asset ID and author for the credit, and re-fetches artwork older than 7 days during update checks. An empty answer is cached too.
-- **API key:** the user's own SteamGridDB key, entered in Settings and kept in the Keychain. Without one Frontport never calls the API and shows only cached artwork or the fallback. While Frontport is signed ad-hoc, the Keychain item is tied to each build, so a rebuild asks for Keychain access again.
+- **API key:** the user's own SteamGridDB key, entered in Settings and kept in the Keychain, or else the key a release build ships with ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Without either, Frontport never calls the API and shows only cached artwork or the fallback. While Frontport is signed ad-hoc, the Keychain item is tied to each build, so a rebuild asks for Keychain access again.
+- **Requests:** each sends `User-Agent: Frontport`, so SteamGridDB can tell Frontport's traffic apart. Only API requests carry the key, never image downloads.
 - **Fallback:** without artwork, a flat color with the Game's name. The color comes from a hash of the Game ID, so it's stable.
 - **Terms:** SteamGridDB allows only personal, non-commercial use, and no automated use of the site. So each Mac fetches artwork for its own Library through the v2 API, Frontport never bundles or rehosts it, and the UI credits SteamGridDB.
 - **Naming:** call these artwork, never Assets, which are ROM-derived files.
@@ -483,6 +484,6 @@ Answered during the first implementation: the build profiles ([Build sandbox](#b
 
 1. Catalog curation: who reviews entries, how Permissions are tested, and the release signing key. The Catalog is served from `catalog/` on `main`.
 2. Whether Seeding or taking Snapshots from a Developer ID–signed Frontport triggers a privacy prompt.
-3. SteamGridDB API access: the user's own key (what v1 does), or a shared Frontport key with SteamGridDB's permission. Also whether entries pin specific artwork or take the top-rated.
+3. SteamGridDB API access: whether SteamGridDB permits a key in release builds ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Also whether entries pin specific artwork or take the top-rated.
 4. Permissions not yet modeled: `network.server` for hosting (sm64coopdx), and whether Recomp Ports need Files for their in-app pickers.
 5. Requirements that a single `oneOf` can't express: Starship's voice-pack extras and zelda3's language ROMs.
