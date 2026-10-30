@@ -23,6 +23,7 @@ Deferred:
 - a Library on external drives
 
 Not planned:
+- emulators and compatibility layers, such as DOSBox, RetroArch or Wine: a Port runs its Game as native Mac code, never the Game's original binaries
 - telemetry
 - distributing ROMs or Assets
 - Mac App Store distribution of Frontport

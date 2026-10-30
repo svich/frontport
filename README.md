@@ -5,6 +5,10 @@ Mac versions of Games made by decomp, recomp and sourceport Projects. Every
 Port runs inside the macOS App Sandbox, the same isolation App Store apps
 get.
 
+Frontport has no emulators: every Port runs its Game as native Mac code.
+Emulators, such as DOSBox or RetroArch, and compatibility layers, such as
+Wine or CrossOver, which run a Game's original binaries, aren't Ports.
+
 Frontport is in development and has no release yet. To try it, build it from
 source.
 

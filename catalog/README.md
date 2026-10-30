@@ -21,6 +21,7 @@ swift run frontport-catalog bundle ../catalog ../App/Resources/catalog
 ```
 
 - **Sign:** decodes the document, checks it for dangling references, unused ROMs, malformed ids, bundle IDs, hashes or paths, duplicate code-signing exceptions and Ports of one Project that disagree, and checks each Recipe's SHA-256. `--update-recipe-hashes` rewrites the `recipeSHA256` values in place instead of failing on a mismatch.
+- **No emulators:** a Port runs its Game as native Mac code, of one of the four Kinds. Emulators (DOSBox, RetroArch) and compatibility layers (Wine, CrossOver) that run the Game's original binaries don't go in the Catalog.
 - **Bump `issued`:** Frontport never replaces its cached Catalog with one whose `issued` is older.
 - **Ids:** lowercase letters, digits and hyphens, starting with a letter or digit, because an id names the Port's folders. Not starting with `unpack-`, which names the unpack Recipes' build folders.
 - **Keep `bundleId`:** always `dev.frontport.port.<id>`. It ties a Port to its Data, so it never changes.

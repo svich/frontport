@@ -7,7 +7,7 @@ Frontport installs native Mac versions of games, made from their original code, 
 ### Ports
 
 **Port**:
-A native Mac version of a Game, made by a Project, that Frontport installs.
+A native Mac version of a Game, made by a Project, that Frontport installs. An emulator or compatibility layer running the Game's original binaries, such as DOSBox or Wine, is never a Port.
 _Avoid_: app, game, title
 
 **Project**:
