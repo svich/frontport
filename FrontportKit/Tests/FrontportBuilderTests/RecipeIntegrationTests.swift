@@ -25,6 +25,7 @@ enum RecipeRun {
     static let defaultRefs = [
         "starship": "v2.0.0", "zelda3": "45a149d8b4bb8098f53d1009f76e76e7d8b79bbf", "opengoal": "v0.3.9",
         "dethrace": "v0.10.1", "fallout-ce": "0609bcfd0ec40ff0571d0f57fab2821eb461dc8b",
+        "smw": "eae20c65c58930c8b62c76188d259579ad4130f1",
     ]
 
     static var repository: URL {

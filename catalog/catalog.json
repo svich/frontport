@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T00:40:00Z",
+  "issued": "2026-10-31T02:22:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -20,6 +20,7 @@
     { "id": "super-mario-64", "name": "Super Mario 64", "platform": "n64", "genres": ["platformer"], "steamgriddb": 37177 },
     { "id": "banjo-kazooie", "name": "Banjo-Kazooie", "platform": "n64", "genres": ["platformer"], "steamgriddb": 35564 },
     { "id": "a-link-to-the-past", "name": "The Legend of Zelda: A Link to the Past", "shortName": "A Link to the Past", "platform": "snes", "genres": ["adventure"], "steamgriddb": 38124 },
+    { "id": "super-mario-world", "name": "Super Mario World", "platform": "snes", "genres": ["platformer"], "steamgriddb": 36886 },
     { "id": "jak-and-daxter", "name": "Jak and Daxter: The Precursor Legacy", "shortName": "Jak and Daxter", "platform": "ps2", "genres": ["platformer"], "steamgriddb": 37452 },
     { "id": "jak-ii", "name": "Jak II", "platform": "ps2", "genres": ["platformer"], "steamgriddb": 36801 },
     { "id": "jak-3", "name": "Jak 3", "platform": "ps2", "genres": ["platformer"], "steamgriddb": 35757 },
@@ -42,6 +43,7 @@
     { "sha1": "8a20a5c83d6ceb0f0506cfc9fa20d8f438cafe51", "game": "super-mario-64", "name": "NTSC (JP)", "format": "z64" },
     { "sha1": "1fe1632098865f639e22c11b9a81ee8f29c75d7a", "game": "banjo-kazooie", "name": "NTSC 1.0 (US)", "format": "z64" },
     { "sha1": "6d4f10a8b10e10dbe624cb23cf03b88bb8252973", "game": "a-link-to-the-past", "name": "NTSC (US)", "format": "sfc" },
+    { "sha1": "6b47bb75d16514b6a476aa0c73a683a2a4c18765", "game": "super-mario-world", "name": "NTSC (US)", "format": "sfc" },
     { "sha1": "0db5976cdf9ea188bd64d8efdb4de095c38ea65f", "game": "jak-and-daxter", "name": "NTSC (US), Black Label", "format": "iso" },
     { "sha1": "6fbe90e0b1317cdba8c19220939f9d4cc2328ea2", "game": "jak-ii", "name": "NTSC (US)", "format": "iso" },
     { "sha1": "f8b1ed096628be006db4d098e6fe02b463e54e4e", "game": "jak-3", "name": "PAL (Europe)", "format": "iso" },
@@ -435,6 +437,38 @@
       "screenshots": [],
       "tags": ["widescreen", "shaders", "msu-1", "bugfixes"],
       "firstRelease": "2023-08-17T01:18:40Z"
+    },
+    {
+      "id": "smw",
+      "name": "smw",
+      "kind": "decomp",
+      "game": "super-mario-world",
+      "developer": "snesrev",
+      "summary": "Super Mario World, reimplemented in C from its reverse-engineered code.",
+      "description": "smw is a reimplementation of Super Mario World in C, reverse-engineered from the original SNES code by the author of zelda3 and playable from start to finish. Frontport builds it from source and extracts its levels and graphics from your ROM during the build. It removes the sprite limit per line, saves and replays snapshots, and draws through OpenGL shaders if you ask it to in smw.ini.",
+      "source": "https://github.com/snesrev/smw",
+      "bundleId": "dev.frontport.port.smw",
+      "releases": {
+        "type": "git",
+        "repo": "snesrev/smw",
+        "refs": { "stable": "eae20c65c58930c8b62c76188d259579ad4130f1" },
+        "recipe": "recipes/smw.sh",
+        "recipeSHA256": "5a1157a1bb410e6015bc85ed742268f21923884701e5c5d3cdc60a2b98c89ed9"
+      },
+      "requirements": [
+        {
+          "label": "Super Mario World",
+          "stage": "build",
+          "oneOf": ["6b47bb75d16514b6a476aa0c73a683a2a4c18765"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 36886 },
+      "codeSigning": { "exceptions": [] },
+      "buildAssets": { "path": "Contents/Resources/smw_assets.dat", "format": "1" },
+      "screenshots": [],
+      "tags": ["shaders"],
+      "firstRelease": "2023-08-16T22:38:38Z"
     },
     {
       "id": "uzdoom-doom",
