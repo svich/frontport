@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T03:10:00Z",
+  "issued": "2026-10-31T03:50:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -32,7 +32,10 @@
     { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
     { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 },
-    { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 }
+    { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 },
+    { "id": "half-life", "name": "Half-Life", "platform": "windows", "genres": ["shooter"], "steamgriddb": 21207 },
+    { "id": "half-life-opposing-force", "name": "Half-Life: Opposing Force", "shortName": "Opposing Force", "platform": "windows", "genres": ["shooter"], "steamgriddb": 12929, "base": "half-life" },
+    { "id": "half-life-blue-shift", "name": "Half-Life: Blue Shift", "shortName": "Blue Shift", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1417, "base": "half-life" }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -93,7 +96,10 @@
         "recipeSHA256": "4cecde55ef55ff1ea0214a48fa98bb18408b1f0b4ffed615f62fd3ef4b7b61b6",
         "yields": ["b8ab7632030c62079ab22c1f7b4e69818d98db41"]
       }
-    }
+    },
+    { "sha1": "79d8b1955ea8016028b31356199e7351e589ebb4", "game": "half-life", "name": "Steam for macOS (build 15961492): the valve folder", "format": "folder" },
+    { "sha1": "91a92cc8d8a4aad08ac0638da609baa50ae263e9", "game": "half-life-opposing-force", "name": "Steam (build 5429885): the gearbox folder", "format": "folder" },
+    { "sha1": "524ce163fd943be87ecbfa876cce57c3810e99c5", "game": "half-life-blue-shift", "name": "Steam (build 5424832): the bshift folder", "format": "folder" }
   ],
   "ports": [
     {
@@ -732,6 +738,116 @@
       "screenshots": [],
       "tags": ["widescreen", "60fps"],
       "firstRelease": "2019-07-18T08:58:16Z"
+    },
+    {
+      "id": "xash3d-half-life",
+      "name": "Xash3D FWGS",
+      "kind": "recreation",
+      "game": "half-life",
+      "developer": "FWGS",
+      "summary": "Half-Life on Xash3D FWGS, a GoldSrc-compatible engine, native on Apple silicon.",
+      "description": "Xash3D FWGS is an engine compatible with GoldSrc, the engine of Half-Life, written without its code and carried on by the FWGS team; it plays the game with the game code Valve released in the Half-Life SDK, ported by FWGS to every platform the engine runs on. Frontport builds the engine and the game code from source, natively for Apple silicon.\n\nFrontport keeps a copy of each game folder in the Port’s Data, where the engine also writes your settings and saves. Add the folder itself from Steam’s Half-Life folder (in Steam, Manage › Browse local files): valve. Frontport accepts the folder Steam for macOS installs. A folder you have played from has your saves and settings in it and won’t match the one Steam installs; Frontport can still keep it as that folder, Unverified.",
+      "source": "https://github.com/FWGS/xash3d-fwgs",
+      "bundleId": "dev.frontport.port.xash3d-half-life",
+      "releases": {
+        "type": "git",
+        "repo": "FWGS/xash3d-fwgs",
+        "refs": { "stable": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc" },
+        "recipe": "recipes/xash3d.sh",
+        "recipeSHA256": "5cfd8935f4dfb4ad8a9bb930a04b4483eec7c1f0239bd14c50af8a0f77176f83"
+      },
+      "requirements": [
+        {
+          "label": "Half-Life",
+          "stage": "runtime",
+          "oneOf": ["79d8b1955ea8016028b31356199e7351e589ebb4"],
+          "seedPath": "Library/Application Support/Xash3D FWGS/valve"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 21207 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["mods", "widescreen"],
+      "firstRelease": "2019-12-03T01:26:55Z"
+    },
+    {
+      "id": "xash3d-opposing-force",
+      "name": "Xash3D FWGS",
+      "kind": "recreation",
+      "game": "half-life-opposing-force",
+      "developer": "FWGS",
+      "summary": "Opposing Force on Xash3D FWGS, a GoldSrc-compatible engine, native on Apple silicon.",
+      "description": "Xash3D FWGS is an engine compatible with GoldSrc, the engine of Half-Life, written without its code and carried on by the FWGS team; it plays the game with the game code Valve released in the Half-Life SDK, ported by FWGS to every platform the engine runs on. Frontport builds the engine and the game code from source, natively for Apple silicon. This Port builds the game code of Opposing Force, from FWGS’s port of it.\n\nFrontport keeps a copy of each game folder in the Port’s Data, where the engine also writes your settings and saves. Add the folder itself from Steam’s Half-Life folder (in Steam, Manage › Browse local files): gearbox, and valve, the Half-Life folder Opposing Force builds on. Frontport accepts the folders Steam installs. A folder you have played from has your saves and settings in it and won’t match the one Steam installs; Frontport can still keep it as that folder, Unverified.",
+      "source": "https://github.com/FWGS/xash3d-fwgs",
+      "bundleId": "dev.frontport.port.xash3d-opposing-force",
+      "releases": {
+        "type": "git",
+        "repo": "FWGS/xash3d-fwgs",
+        "refs": { "stable": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc" },
+        "recipe": "recipes/xash3d.sh",
+        "recipeSHA256": "5cfd8935f4dfb4ad8a9bb930a04b4483eec7c1f0239bd14c50af8a0f77176f83"
+      },
+      "requirements": [
+        {
+          "label": "Half-Life",
+          "stage": "runtime",
+          "oneOf": ["79d8b1955ea8016028b31356199e7351e589ebb4"],
+          "seedPath": "Library/Application Support/Xash3D FWGS/valve"
+        },
+        {
+          "label": "Opposing Force",
+          "stage": "runtime",
+          "oneOf": ["91a92cc8d8a4aad08ac0638da609baa50ae263e9"],
+          "seedPath": "Library/Application Support/Xash3D FWGS/gearbox"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 12929 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["-game", "gearbox"] },
+      "screenshots": [],
+      "tags": ["mods", "widescreen"],
+      "firstRelease": "2019-12-03T01:26:55Z"
+    },
+    {
+      "id": "xash3d-blue-shift",
+      "name": "Xash3D FWGS",
+      "kind": "recreation",
+      "game": "half-life-blue-shift",
+      "developer": "FWGS",
+      "summary": "Blue Shift on Xash3D FWGS, a GoldSrc-compatible engine, native on Apple silicon.",
+      "description": "Xash3D FWGS is an engine compatible with GoldSrc, the engine of Half-Life, written without its code and carried on by the FWGS team; it plays the game with the game code Valve released in the Half-Life SDK, ported by FWGS to every platform the engine runs on. Frontport builds the engine and the game code from source, natively for Apple silicon. This Port builds the game code of Blue Shift, from FWGS’s port of it.\n\nFrontport keeps a copy of each game folder in the Port’s Data, where the engine also writes your settings and saves. Add the folder itself from Steam’s Half-Life folder (in Steam, Manage › Browse local files): bshift, and valve, the Half-Life folder Blue Shift builds on. Frontport accepts the folders Steam installs. A folder you have played from has your saves and settings in it and won’t match the one Steam installs; Frontport can still keep it as that folder, Unverified.",
+      "source": "https://github.com/FWGS/xash3d-fwgs",
+      "bundleId": "dev.frontport.port.xash3d-blue-shift",
+      "releases": {
+        "type": "git",
+        "repo": "FWGS/xash3d-fwgs",
+        "refs": { "stable": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc" },
+        "recipe": "recipes/xash3d.sh",
+        "recipeSHA256": "5cfd8935f4dfb4ad8a9bb930a04b4483eec7c1f0239bd14c50af8a0f77176f83"
+      },
+      "requirements": [
+        {
+          "label": "Half-Life",
+          "stage": "runtime",
+          "oneOf": ["79d8b1955ea8016028b31356199e7351e589ebb4"],
+          "seedPath": "Library/Application Support/Xash3D FWGS/valve"
+        },
+        {
+          "label": "Blue Shift",
+          "stage": "runtime",
+          "oneOf": ["524ce163fd943be87ecbfa876cce57c3810e99c5"],
+          "seedPath": "Library/Application Support/Xash3D FWGS/bshift"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 1417 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["-game", "bshift"] },
+      "screenshots": [],
+      "tags": ["mods", "widescreen"],
+      "firstRelease": "2019-12-03T01:26:55Z"
     }
   ]
 }

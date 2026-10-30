@@ -41,6 +41,10 @@ _Avoid_: title, port
 The system a Game was originally released on, such as the Nintendo 64. Never the Mac a Port runs on, or the operating system a Release targets. Its Games come on cartridges, ISOs or files.
 _Avoid_: console, system, original platform
 
+**Base**:
+The Game an expansion plays on top of, such as Half-Life for Opposing Force. A Port of the expansion also takes the base Game's ROMs.
+_Avoid_: parent, original game
+
 **Genre**:
 A kind of Game, such as Platformer or Racing. A Game has one or more, main one first.
 _Avoid_: category, type, tag

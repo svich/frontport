@@ -130,6 +130,24 @@ import Testing
         #expect(throws: FrontportError.self) { try CatalogTool.sign(catalog: source.catalog, keyFile: source.keyFile) }
     }
 
+    @Test func anExpansionsPortTakesItsBaseGamesROMs() {
+        var document = CatalogFixture.document()
+        let sf64 = document.roms[0].sha1
+        document.games.append(Game(id: "lylat-wars", name: "Lylat Wars", platform: "n64"))
+        document.ports[1].game = "lylat-wars"
+        document.ports[1].requirements = [Requirement(label: "Star Fox 64", stage: .runtime, oneOf: [sf64], seedPath: "roms/")]
+        #expect(document.problems() == ["Port shipwright Requirement Star Fox 64 lists \(sf64), a ROM of star-fox-64."])
+
+        document.games[1].base = "star-fox-64"
+        #expect(document.problems() == [])
+
+        document.games[0].base = "lylat-wars"
+        #expect(document.problems() == [
+            "Game star-fox-64 must have as its base another Game, which has no base itself.",
+            "Game lylat-wars must have as its base another Game, which has no base itself.",
+        ])
+    }
+
     @Test func stripPathsStayInsideTheApp() {
         var document = CatalogFixture.document()
         document.ports[1].strip = ["Contents/MacOS/updater", "../escape", "/Applications/Port.app", "Info.plist"]
@@ -376,6 +394,7 @@ import Testing
             "opengoal-jak2", "opengoal-jak3", "banjorecomp", "sm64coopdx", "zelda3", "smw",
             "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen",
             "dethrace", "dethrace-splat-pack", "fallout-ce", "opengothic",
+            "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift",
         ])
         for entry in document.ports {
             #expect(entry.bundleId == entry.id.conventionalBundleID)

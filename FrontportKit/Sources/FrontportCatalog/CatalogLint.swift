@@ -29,6 +29,10 @@ extension CatalogDocument {
             for genre in game.genres where !genreIDs.contains(genre) {
                 problems.append("Game \(game.id) names unknown Genre \(genre).")
             }
+            // One step only: an expansion builds on a Game that builds on none.
+            if let base = game.base, base == game.id || self.game(base)?.base != nil || !gameIDs.contains(base) {
+                problems.append("Game \(game.id) must have as its base another Game, which has no base itself.")
+            }
         }
         let usedGenres = Set(games.flatMap(\.genres))
         for genre in genres where !usedGenres.contains(genre.id) {
@@ -127,8 +131,8 @@ extension CatalogDocument {
                         problems.append("\(label) lists \(sha1), which isn’t in roms.")
                         continue
                     }
-                    // A Port takes its own Game's ROMs, and its Game's Platform's own files.
-                    if let game = rom.game, game != port.game {
+                    // A Port takes its own Game's ROMs and its base Game's, and its Game's Platform's own files.
+                    if let game = rom.game, game != port.game, game != self.game(port.game)?.base {
                         problems.append("\(label) lists \(sha1), a ROM of \(game).")
                     }
                     if let platform = rom.platform, platform != self.game(port.game)?.platform {

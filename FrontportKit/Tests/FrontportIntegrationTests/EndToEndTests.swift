@@ -140,11 +140,12 @@ struct EndToEndTests {
 
 /// Installs a Port into the Frontport folder `FRONTPORT_APP_ROOT` names and leaves it there, so a Debug build of the
 /// app can be tried against it with `FRONTPORT_ROOT`. `FRONTPORT_APP_ROMS` adds files to its ROMs first, as the ROMs
-/// screen would, and `FRONTPORT_APP_LAUNCH` launches the Port for that many seconds, then stops it, with
-/// `FRONTPORT_APP_ENV` added to its environment:
+/// screen would, `FRONTPORT_APP_ASSIGN` keeps files Unverified as the ROMs it names, and `FRONTPORT_APP_LAUNCH`
+/// launches the Port for that many seconds, then stops it, with `FRONTPORT_APP_ENV` added to its environment:
 ///
 ///     FRONTPORT_NETWORK_TESTS=1 FRONTPORT_APP_ROOT=/tmp/fp [FRONTPORT_APP_PORT=zelda64recomp] \
-///     [FRONTPORT_APP_ROMS=/path/a.nsp,/path/prod.keys] [FRONTPORT_APP_LAUNCH=60] [FRONTPORT_APP_ENV=DM_AUDIO=0,…] \
+///     [FRONTPORT_APP_ROMS=/path/a.nsp,/path/prod.keys] [FRONTPORT_APP_ASSIGN=/path/folder=<sha1>,…] \
+///     [FRONTPORT_APP_LAUNCH=60] [FRONTPORT_APP_ENV=DM_AUDIO=0,…] \
 ///     swift test --filter installsForTheApp
 @Suite(.enabled(if: Integration.requested && Integration.environment["FRONTPORT_APP_ROOT"] != nil), .timeLimit(.minutes(600)))
 struct AppRootTests {
@@ -153,7 +154,12 @@ struct AppRootTests {
         let world = try await World(root: URL(filePath: root, directoryHint: .isDirectory))
         let entry = try #require(world.catalog.entry(PortID(Integration.environment["FRONTPORT_APP_PORT"] ?? "zelda64recomp")))
         let files = (Integration.environment["FRONTPORT_APP_ROMS"] ?? "").split(separator: ",").map { URL(filePath: String($0)) }
-        for intake in await world.roms.add(files, catalog: world.catalog) {
+        var intakes = await world.roms.add(files, catalog: world.catalog)
+        for pair in (Integration.environment["FRONTPORT_APP_ASSIGN"] ?? "").split(separator: ",") {
+            let parts = pair.split(separator: "=", maxSplits: 1).map(String.init)
+            if parts.count == 2 { intakes += await world.roms.assign(URL(filePath: parts[0]), as: parts[1], catalog: world.catalog) }
+        }
+        for intake in intakes {
             switch intake {
             case .added(let record), .duplicate(let record): print("[roms] \(record.originalFilename): \(record.sha1) \(record.name)")
             case .rejected(let file, let sha1, let reason): Issue.record("\(file.lastPathComponent) (\(sha1 ?? "-")): \(reason)")

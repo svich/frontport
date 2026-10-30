@@ -52,10 +52,13 @@ public struct Game: Codable, Hashable, Sendable, Identifiable {
     public var genres: [GenreID]
     /// SteamGridDB game id of the Game itself.
     public var steamgriddb: Int?
+    /// The Game this one expands and plays on top of, such as Half-Life for Opposing Force. Its Ports take the base
+    /// Game's ROMs too.
+    public var base: GameID?
 
     public init(
         id: GameID, name: String, shortName: String? = nil, platform: PlatformID, genres: [GenreID] = [],
-        steamgriddb: Int? = nil
+        steamgriddb: Int? = nil, base: GameID? = nil
     ) {
         self.id = id
         self.name = name
@@ -63,9 +66,10 @@ public struct Game: Codable, Hashable, Sendable, Identifiable {
         self.platform = platform
         self.genres = genres
         self.steamgriddb = steamgriddb
+        self.base = base
     }
 
-    enum CodingKeys: String, CodingKey { case id, name, shortName, platform, genres, steamgriddb }
+    enum CodingKeys: String, CodingKey { case id, name, shortName, platform, genres, steamgriddb, base }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -75,6 +79,7 @@ public struct Game: Codable, Hashable, Sendable, Identifiable {
         platform = try c.decode(PlatformID.self, forKey: .platform)
         genres = try c.decodeIfPresent([GenreID].self, forKey: .genres) ?? []
         steamgriddb = try c.decodeIfPresent(Int.self, forKey: .steamgriddb)
+        base = try c.decodeIfPresent(GameID.self, forKey: .base)
     }
 
     public var displayName: String { shortName ?? name }
