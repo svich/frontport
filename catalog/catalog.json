@@ -1,11 +1,12 @@
 {
   "version": 4,
-  "issued": "2026-10-31T02:22:00Z",
+  "issued": "2026-10-31T03:10:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
     { "id": "ps2", "name": "PlayStation 2", "shortName": "PS2", "medium": "iso" },
-    { "id": "dos", "name": "MS-DOS", "shortName": "DOS", "medium": "file" }
+    { "id": "dos", "name": "MS-DOS", "shortName": "DOS", "medium": "file" },
+    { "id": "windows", "name": "Windows", "shortName": "PC", "medium": "file" }
   ],
   "genres": [
     { "id": "platformer", "name": "Platformer" },
@@ -30,7 +31,8 @@
     { "id": "hexen", "name": "Hexen: Beyond Heretic", "shortName": "Hexen", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2642 },
     { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
-    { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 }
+    { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 },
+    { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -83,6 +85,7 @@
       }
     },
     { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
+    { "sha1": "fe0b065b3a0076f9e0f8eb74d3081e1549e12a81", "game": "gothic-2", "name": "Gold Classic (Steam)", "format": "folder" },
     {
       "sha1": "a55070f0c75bf620062384445e05c4f482945ec4", "game": "fallout", "name": "Russian CD image (1C, 2008)", "format": "iso",
       "unpack": {
@@ -697,6 +700,38 @@
       "screenshots": [],
       "tags": ["bugfixes"],
       "firstRelease": "2023-02-09T19:54:12Z"
+    },
+    {
+      "id": "opengothic",
+      "name": "OpenGothic",
+      "kind": "recreation",
+      "game": "gothic-2",
+      "developer": "Try",
+      "summary": "Gothic II and Night of the Raven on a new engine, with modern graphics, widescreen and high frame rates.",
+      "description": "OpenGothic is a new engine for Gothic II and its add-on Night of the Raven, written from scratch and playing the original game’s data and scripts, with Metal graphics, widescreen resolutions and high frame rates. It plays with mouse and keyboard. Frontport builds it from source and wraps it in an app, because upstream’s Mac Release is a bare executable.\n\nThe game comes as the folder of an installed copy. Frontport keeps a copy of it in the Port’s Data, where OpenGothic also writes Gothic.ini, its saves and its log. So far it accepts Steam’s Gothic II: Gold Classic: add its folder, which Steam keeps in ~/Library/Application Support/Steam/steamapps/common/Gothic II once you install the game there, before it has been played.",
+      "source": "https://github.com/Try/OpenGothic",
+      "bundleId": "dev.frontport.port.opengothic",
+      "releases": {
+        "type": "git",
+        "repo": "Try/OpenGothic",
+        "refs": { "stable": "v0.92" },
+        "recipe": "recipes/opengothic.sh",
+        "recipeSHA256": "035d15a998fabcf695a370e4d1be90ca7e3aeb57cf2335c0e5424fc5aeef407d"
+      },
+      "requirements": [
+        {
+          "label": "Gothic II",
+          "stage": "runtime",
+          "oneOf": ["fe0b065b3a0076f9e0f8eb74d3081e1549e12a81"],
+          "seedPath": "Library/Application Support/OpenGothic"
+        }
+      ],
+      "permissions": { "network": false, "controllers": false, "files": false },
+      "artwork": { "fallback": 8792 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["widescreen", "60fps"],
+      "firstRelease": "2019-07-18T08:58:16Z"
     }
   ]
 }

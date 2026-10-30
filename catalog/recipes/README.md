@@ -139,5 +139,6 @@ An unpack Recipe turns an installer the Catalog lists into the ROMs it holds ([A
 | `opengoal.sh` | [open-goal/jak-project](https://github.com/open-goal/jak-project) (its macOS Release is bare tools), for `opengoal-jak1`, `opengoal-jak2` and `opengoal-jak3` | `v0.3.9` | `Contents/Resources/data/out/<game>` (a folder) |
 | `dethrace.sh` | [dethrace-labs/dethrace](https://github.com/dethrace-labs/dethrace) (its macOS app ships without SDL), for `dethrace` and `dethrace-splat-pack` | `v0.10.1` | none: the game's folder is a Runtime ROM |
 | `fallout-ce.sh` | [alexbatalov/fallout1-ce](https://github.com/alexbatalov/fallout1-ce) (its macOS app plays from the folder it sits in) | `0609bcfd0ec40ff0571d0f57fab2821eb461dc8b` | none: the game's folder is a Runtime ROM |
+| `opengothic.sh` | [Try/OpenGothic](https://github.com/Try/OpenGothic) (its macOS Release is a bare executable), with glslang 16.6.0 | `v0.92` | none: the game's folder is a Runtime ROM |
 | `innoextract.sh` | [dscharrer/innoextract](https://github.com/dscharrer/innoextract), an unpack Recipe for Inno Setup installers such as GOG's | `6e9e34ed` (with Boost 1.88 and xz 5.8.4) | none: it unpacks, and GOG's `supportData` copies run after |
 | `iso.sh` | none: the bsdtar macOS ships, an unpack Recipe for a PC Game's CD image (ISO 9660) | none to pin | none: it unpacks the disc's files into one folder |

@@ -375,7 +375,7 @@ import Testing
             "2ship", "starship", "zelda64recomp", "ghostship", "opengoal-jak1",
             "opengoal-jak2", "opengoal-jak3", "banjorecomp", "sm64coopdx", "zelda3", "smw",
             "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen",
-            "dethrace", "dethrace-splat-pack", "fallout-ce",
+            "dethrace", "dethrace-splat-pack", "fallout-ce", "opengothic",
         ])
         for entry in document.ports {
             #expect(entry.bundleId == entry.id.conventionalBundleID)
