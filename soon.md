@@ -1,6 +1,6 @@
 # Soon
 
-Mature Projects for classic DOS and Windows Games, with Mac builds, that could become Ports. No emulators.
+Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
 Already in Frontport: UZDoom, dethrace, fallout-ce, OpenGothic, Xash3D.
 
@@ -77,6 +77,14 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 | One Must Fall 2097 | OpenOMF | freeware |
 | Abuse | abuse | freeware |
 | Supaplex | OpenSupaplex | freeware |
+
+## PlayStation
+
+| Game | Project | Files |
+|---|---|---|
+| Wipeout | wipeout-rewrite | not sold (PS1 NTSC disc, plus menu models from the PC version) |
+| The Legend of Dragoon | Severed Chains | not sold (PS1 discs) |
+| Tomb Raider | OpenLara (reads PC, PS1 and Saturn data) | Steam |
 
 ## Adventure
 
