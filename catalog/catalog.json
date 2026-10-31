@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T18:20:00Z",
+  "issued": "2026-10-31T18:30:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -421,6 +421,38 @@
       "screenshots": [],
       "tags": ["multiplayer", "online", "mods", "lua"],
       "firstRelease": "2024-07-02T00:02:31Z"
+    },
+    {
+      "id": "render96ex",
+      "name": "Render96ex",
+      "kind": "decomp",
+      "game": "super-mario-64",
+      "developer": "Render96",
+      "summary": "Super Mario 64 with remade HD models and textures, built from its decompilation.",
+      "description": "Render96ex is the Super Mario 64 PC port with Render96’s remastered look: new high-polygon models for Mario and 100-odd characters and objects, an HD texture pack, and remixed music. Luigi and Wario are playable too, each with his own moves and voice. Frontport builds it from source with both packs and extracts the game’s original textures and sound from your ROM during the build. It runs at 60 FPS in any window shape and loads more model packs through DynOS.",
+      "source": "https://github.com/Render96/Render96ex",
+      "bundleId": "dev.frontport.port.render96ex",
+      "releases": {
+        "type": "git",
+        "repo": "Render96/Render96ex",
+        "refs": { "stable": "f6e9e1b54f43b2caeffcf71644c6165f2652948c" },
+        "recipe": "recipes/render96ex.sh",
+        "recipeSHA256": "0728947d209d3767ea2c332cf5a797b98cbbefcd5e97ac206db65eb9ff2d3d1c"
+      },
+      "requirements": [
+        {
+          "label": "Super Mario 64",
+          "stage": "build",
+          "oneOf": ["9bef1128717f958171a4afac3ed78ee2bb4e86ce"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 37177 },
+      "codeSigning": { "exceptions": [] },
+      "buildAssets": { "path": "Contents/Resources/res/base.zip", "format": "1" },
+      "screenshots": [],
+      "tags": ["60fps", "widescreen", "mods"],
+      "firstRelease": "2020-08-06T03:59:25Z"
     },
     {
       "id": "zelda3",
