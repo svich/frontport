@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T22:00:00Z",
+  "issued": "2026-10-31T23:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -35,6 +35,7 @@
     { "id": "hexen", "name": "Hexen: Beyond Heretic", "shortName": "Hexen", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2642 },
     { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
+    { "id": "arcanum", "name": "Arcanum: Of Steamworks and Magick Obscura", "shortName": "Arcanum", "platform": "windows", "genres": ["rpg"], "steamgriddb": 12965 },
     { "id": "doom-3", "name": "Doom 3", "platform": "windows", "genres": ["shooter"], "steamgriddb": 30014 },
     { "id": "doom-3-resurrection-of-evil", "name": "Doom 3: Resurrection of Evil", "shortName": "Resurrection of Evil", "platform": "windows", "genres": ["shooter"], "steamgriddb": 30105, "base": "doom-3" },
     { "id": "doom-3-bfg-edition", "name": "Doom 3: BFG Edition", "shortName": "Doom 3 BFG", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1933 },
@@ -99,6 +100,8 @@
         "yields": ["bb1197cb7342a1f2026cc8b5d03e81e9ad17be4a", "fbad1d1108ce23a0d7fc6adbe06814da121efc37"]
       }
     },
+    { "sha1": "65700f680beabe52ed6b94d9d68bb10dce3db1c5", "game": "arcanum", "name": "Steam (build 1301960): the Arcanum folder", "format": "folder",
+      "configs": ["arcanum.cfg"], "steam": { "app": 500810, "folder": "Arcanum" } },
     { "sha1": "9e1f340f8989c48dd22ae6eb5fb1f16131db18b4", "game": "doom-3", "name": "Steam (build 251953): the base folder", "format": "folder",
       "steam": { "app": 9050, "folder": "base" } },
     { "sha1": "4f1e4e44d96caea127165e6e03febefebf22481d", "game": "doom-3-resurrection-of-evil", "name": "Steam (build 380): the d3xp folder", "format": "folder",
@@ -795,6 +798,37 @@
       "screenshots": [],
       "tags": ["bugfixes"],
       "firstRelease": "2022-09-21T04:13:32Z"
+    },
+    {
+      "id": "arcanum-ce",
+      "name": "Arcanum Community Edition",
+      "kind": "decomp",
+      "game": "arcanum",
+      "developer": "alexbatalov",
+      "summary": "Arcanum’s engine, re-implemented from its reverse-engineered code, for modern systems.",
+      "description": "Arcanum Community Edition re-implements the engine of Arcanum from its reverse-engineered code, by the author of Fallout Community Edition, with the original gameplay. Upstream calls it a beta: the game is complete, but not everything has been tested. Frontport builds it from source with SDL inside the app, and makes it play from the Port’s Data instead of the folder the app sits in.\n\nThe game comes as Steam’s Arcanum, which Frontport finds in your Steam library once Steam has installed it. Frontport keeps a copy of the game’s files in the Port’s Data, where Arcanum also writes arcanum.cfg, its saves and the movies it unpacks.",
+      "source": "https://github.com/alexbatalov/arcanum-ce",
+      "bundleId": "dev.frontport.port.arcanum-ce",
+      "releases": {
+        "type": "git",
+        "repo": "alexbatalov/arcanum-ce",
+        "refs": { "stable": "a7ff41b300ef712f0e7d088183a3d08957110cdd" },
+        "recipe": "recipes/arcanum-ce.sh",
+        "recipeSHA256": "99b6ef11dbd68a77097953c3b3a674cac5a06ea936fa8641cdea1d2c3def855b"
+      },
+      "requirements": [
+        {
+          "label": "Arcanum",
+          "stage": "runtime",
+          "oneOf": ["65700f680beabe52ed6b94d9d68bb10dce3db1c5"],
+          "seedPath": "Library/Application Support/Arcanum"
+        }
+      ],
+      "permissions": { "network": false, "controllers": false, "files": false },
+      "artwork": { "fallback": 12965 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": []
     },
     {
       "id": "dhewm3-doom-3",
