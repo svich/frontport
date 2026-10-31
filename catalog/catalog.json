@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T19:10:00Z",
+  "issued": "2026-10-31T19:20:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -96,6 +96,8 @@
       }
     },
     { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
+    { "sha1": "9e5c554b962e30eaf2a71792c7ad36594a747fc3", "game": "fallout", "name": "Steam (build 300289): the game’s folder", "format": "folder",
+      "configs": ["fallout.cfg"], "steam": { "app": 38400 } },
     { "sha1": "fe0b065b3a0076f9e0f8eb74d3081e1549e12a81", "game": "gothic-2", "name": "Gold Classic (Steam)", "format": "folder", "steam": { "app": 39510 } },
     {
       "sha1": "a55070f0c75bf620062384445e05c4f482945ec4", "game": "fallout", "name": "Russian CD image (1C, 2008)", "format": "iso",
@@ -789,7 +791,7 @@
       "game": "fallout",
       "developer": "alexbatalov",
       "summary": "Fallout’s engine, re-implemented from its reverse-engineered code, with bug fixes and higher resolutions.",
-      "description": "Fallout Community Edition re-implements the engine of Fallout from its reverse-engineered code, with the original gameplay, fixes for the engine’s bugs and some quality-of-life improvements. Frontport builds it from source with SDL inside the app, and makes it play from the Port’s Data instead of the folder the app sits in.\n\nThe game comes as the folder of its CD, or the CD’s image (.iso), which Frontport unpacks. Frontport keeps a copy of the disc’s files in the Port’s Data, where Fallout also writes fallout.cfg and its saves, and the window’s size and full screen are set in f1_res.ini beside them. So far it accepts the Russian CD published by 1C in 2008.",
+      "description": "Fallout Community Edition re-implements the engine of Fallout from its reverse-engineered code, with the original gameplay, fixes for the engine’s bugs and some quality-of-life improvements. Frontport builds it from source with SDL inside the app, and makes it play from the Port’s Data instead of the folder the app sits in.\n\nThe game comes as the folder of an installed copy or of its CD, or the CD’s image (.iso), which Frontport unpacks. Frontport keeps a copy of the game’s files in the Port’s Data, where Fallout also writes fallout.cfg and its saves, and the window’s size and full screen are set in f1_res.ini beside them. So far it accepts Steam’s Fallout, which Frontport finds in your Steam library once Steam has installed it, and the Russian CD published by 1C in 2008.",
       "source": "https://github.com/alexbatalov/fallout1-ce",
       "bundleId": "dev.frontport.port.fallout-ce",
       "releases": {
@@ -803,7 +805,7 @@
         {
           "label": "Fallout",
           "stage": "runtime",
-          "oneOf": ["b8ab7632030c62079ab22c1f7b4e69818d98db41"],
+          "oneOf": ["9e5c554b962e30eaf2a71792c7ad36594a747fc3", "b8ab7632030c62079ab22c1f7b4e69818d98db41"],
           "seedPath": "Library/Application Support/Fallout"
         }
       ],
