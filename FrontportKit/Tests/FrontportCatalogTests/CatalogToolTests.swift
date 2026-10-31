@@ -392,7 +392,7 @@ import Testing
         #expect(Set(document.ports.map(\.id)) == [
             "2ship", "starship", "zelda64recomp", "ghostship", "opengoal-jak1",
             "opengoal-jak2", "opengoal-jak3", "banjorecomp", "perfect-dark", "sm64coopdx", "render96ex", "zelda3", "smw", "sm",
-            "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen",
+            "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen", "raze-duke3d",
             "arcanum-ce", "dethrace", "dethrace-splat-pack", "dhewm3-doom-3", "dhewm3-resurrection-of-evil", "fallout-ce", "fallout2-ce", "opengothic", "rbdoom3bfg",
             "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift", "opensupaplex", "cannonball",
         ])

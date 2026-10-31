@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-01T00:00:00Z",
+  "issued": "2026-11-01T12:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -33,6 +33,7 @@
     { "id": "doom-ii", "name": "Doom II: Hell on Earth", "shortName": "Doom II", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2492 },
     { "id": "heretic", "name": "Heretic", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2711 },
     { "id": "hexen", "name": "Hexen: Beyond Heretic", "shortName": "Hexen", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2642 },
+    { "id": "duke-nukem-3d", "name": "Duke Nukem 3D", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2391 },
     { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
     { "id": "arcanum", "name": "Arcanum: Of Steamworks and Magick Obscura", "shortName": "Arcanum", "platform": "windows", "genres": ["rpg"], "steamgriddb": 12965 },
@@ -89,6 +90,7 @@
     { "sha1": "4b53832f0733c1e29e5f1de2428e5475e891af29", "game": "hexen", "name": "1.1", "format": "wad" },
     { "sha1": "ac129c4331bf26f0f080c4a56aaa40d64969c98a", "game": "hexen", "name": "1.0", "format": "wad" },
     { "sha1": "fa89a2475855e43c7f7e3198d6e4c4bee23bfab9", "game": "hexen", "name": "Demo", "format": "wad" },
+    { "sha1": "a58bdbfaf28416528a0d9a4452f896f46774a806", "game": "duke-nukem-3d", "name": "Shareware 1.3D", "format": "grp" },
     { "sha1": "bb1197cb7342a1f2026cc8b5d03e81e9ad17be4a", "game": "carmageddon", "name": "Max Pack (GOG)", "format": "folder" },
     { "sha1": "05f131a70794e2a210b00587d4a918c0907712b9", "game": "carmageddon", "name": "Demo (April 1997)", "format": "folder" },
     { "sha1": "fbad1d1108ce23a0d7fc6adbe06814da121efc37", "game": "carmageddon-splat-pack", "name": "Max Pack (GOG)", "format": "folder" },
@@ -734,6 +736,39 @@
       "screenshots": [],
       "tags": ["mods", "60fps", "widescreen"],
       "firstRelease": "2025-11-28T23:53:01Z"
+    },
+    {
+      "id": "raze-duke3d",
+      "name": "Raze",
+      "kind": "sourceport",
+      "game": "duke-nukem-3d",
+      "developer": "ZDoom",
+      "summary": "Duke Nukem 3D on the GZDoom engine’s renderer, in widescreen at any frame rate.",
+      "description": "Raze brings the Build engine games, Duke Nukem 3D among them, to the GZDoom engine, from the source code 3D Realms released in 2003. It plays Duke with an OpenGL or Vulkan renderer at any frame rate, in widescreen and with mouselook, and keeps the original’s look with its palette emulation. Frontport builds it from source, and Seeds your GRP where Raze looks for games.\n\nIt takes the free shareware episode, version 1.3D: DUKE3D.GRP from 3dduke13.zip, which 3D Realms let anyone share.",
+      "website": "https://zdoom.org/",
+      "source": "https://github.com/ZDoom/Raze",
+      "bundleId": "dev.frontport.port.raze-duke3d",
+      "releases": {
+        "type": "git",
+        "repo": "ZDoom/Raze",
+        "refs": { "stable": "1.11.0" },
+        "recipe": "recipes/raze.sh",
+        "recipeSHA256": "5ee532629122e91e4318352eeaa0c5fdb9cfdcb9300383cc0b0229cd432645a9"
+      },
+      "requirements": [
+        {
+          "label": "Duke Nukem 3D",
+          "stage": "runtime",
+          "oneOf": ["a58bdbfaf28416528a0d9a4452f896f46774a806"],
+          "seedPath": "Library/Application Support/Raze/Duke Nukem 3D/"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2391 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["60fps", "widescreen"],
+      "firstRelease": "2020-02-04T20:13:41Z"
     },
     {
       "id": "dethrace",

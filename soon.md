@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, OpenGothic, Xash3D.
+Already in Frontport: UZDoom, dethrace, fallout-ce, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
