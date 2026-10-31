@@ -28,6 +28,7 @@ enum RecipeRun {
         "smw": "eae20c65c58930c8b62c76188d259579ad4130f1", "opengothic": "v0.92",
         "xash3d": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc", "opensupaplex": "v7.2.2",
         "sm": "578f90b3cc49557bb70060ad033bb90b8cf8ac50", "render96ex": "f6e9e1b54f43b2caeffcf71644c6165f2652948c",
+        "cannonball": "27493ebf62be3498dff93ed6a45e8e2db819bae1",
     ]
 
     static var repository: URL {

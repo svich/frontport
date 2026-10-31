@@ -1,12 +1,13 @@
 {
   "version": 4,
-  "issued": "2026-10-31T18:30:00Z",
+  "issued": "2026-10-31T19:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
     { "id": "ps2", "name": "PlayStation 2", "shortName": "PS2", "medium": "iso" },
     { "id": "dos", "name": "MS-DOS", "shortName": "DOS", "medium": "file" },
-    { "id": "windows", "name": "Windows", "shortName": "PC", "medium": "file" }
+    { "id": "windows", "name": "Windows", "shortName": "PC", "medium": "file" },
+    { "id": "arcade", "name": "Arcade", "shortName": "Arcade", "medium": "cartridge" }
   ],
   "genres": [
     { "id": "platformer", "name": "Platformer" },
@@ -38,7 +39,8 @@
     { "id": "half-life", "name": "Half-Life", "platform": "windows", "genres": ["shooter"], "steamgriddb": 21207 },
     { "id": "half-life-opposing-force", "name": "Half-Life: Opposing Force", "shortName": "Opposing Force", "platform": "windows", "genres": ["shooter"], "steamgriddb": 12929, "base": "half-life" },
     { "id": "half-life-blue-shift", "name": "Half-Life: Blue Shift", "shortName": "Blue Shift", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1417, "base": "half-life" },
-    { "id": "supaplex", "name": "Supaplex", "platform": "dos", "genres": ["puzzle"], "steamgriddb": 26988 }
+    { "id": "supaplex", "name": "Supaplex", "platform": "dos", "genres": ["puzzle"], "steamgriddb": 26988 },
+    { "id": "outrun", "name": "OutRun", "platform": "arcade", "genres": ["racing"], "steamgriddb": 35252 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -106,7 +108,8 @@
     { "sha1": "d850d45d459bb4f69482c652e8f1956702ffce77", "game": "half-life-opposing-force", "name": "Steam (build 5429885): the gearbox folder", "format": "folder",
       "configs": ["config.cfg", "mapcycle.txt", "motd.txt", "server.cfg", "user.scr"], "steam": { "app": 50, "folder": "gearbox" } },
     { "sha1": "5e8ed11383fb58342ee21e7e8228a75e5266d99b", "game": "half-life-blue-shift", "name": "Steam (build 5424832): the bshift folder", "format": "folder",
-      "configs": ["config.cfg", "server.cfg", "user.scr"], "steam": { "app": 130, "folder": "bshift" } }
+      "configs": ["config.cfg", "server.cfg", "user.scr"], "steam": { "app": 130, "folder": "bshift" } },
+    { "sha1": "6ecb1589c502c6a4ba6b40a057aac3079e41d10a", "game": "outrun", "name": "Revision B (MAME’s outrun set)", "format": "folder" }
   ],
   "ports": [
     {
@@ -943,6 +946,38 @@
       "screenshots": [],
       "tags": [],
       "firstRelease": "2020-04-19T23:35:02Z"
+    },
+    {
+      "id": "cannonball",
+      "name": "Cannonball",
+      "kind": "decomp",
+      "game": "outrun",
+      "developer": "djyt",
+      "summary": "OutRun’s arcade code, ported to C++, with widescreen, 60 fps and time trials.",
+      "description": "Cannonball is an enhanced OutRun engine: the arcade game’s 68000 code, ported routine by routine to C++ and running natively. It adds widescreen, 60 fps, a high-resolution mode, time trials, continuous mode and game controller support, and keeps the original’s music, attract mode and high score tables. Frontport builds it from source with SDL inside the app, because upstream publishes Windows builds only.\n\nIt plays from the arcade’s ROMs: revision B, MAME’s outrun set, as its folder or zip. Frontport keeps a copy in the Port’s Data, where Cannonball also keeps its high scores and config.xml, whose settings its menu changes.",
+      "source": "https://github.com/djyt/cannonball",
+      "bundleId": "dev.frontport.port.cannonball",
+      "releases": {
+        "type": "git",
+        "repo": "djyt/cannonball",
+        "refs": { "stable": "27493ebf62be3498dff93ed6a45e8e2db819bae1" },
+        "recipe": "recipes/cannonball.sh",
+        "recipeSHA256": "8137b4133f88f3ba2885558c4b10cf22d3b81e030098f0e1ce6d115e1d55ee74"
+      },
+      "requirements": [
+        {
+          "label": "OutRun",
+          "stage": "runtime",
+          "oneOf": ["6ecb1589c502c6a4ba6b40a057aac3079e41d10a"],
+          "seedPath": "Library/Application Support/Cannonball/roms"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 35252 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["widescreen", "60fps"],
+      "firstRelease": "2021-03-15T19:58:04Z"
     }
   ]
 }
