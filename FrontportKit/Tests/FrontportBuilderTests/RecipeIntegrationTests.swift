@@ -27,6 +27,7 @@ enum RecipeRun {
         "dethrace": "v0.10.1", "fallout-ce": "0609bcfd0ec40ff0571d0f57fab2821eb461dc8b",
         "smw": "eae20c65c58930c8b62c76188d259579ad4130f1", "opengothic": "v0.92",
         "xash3d": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc", "opensupaplex": "v7.2.2",
+        "sm": "578f90b3cc49557bb70060ad033bb90b8cf8ac50",
     ]
 
     static var repository: URL {

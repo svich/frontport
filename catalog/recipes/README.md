@@ -136,6 +136,7 @@ An unpack Recipe turns an installer the Catalog lists into the ROMs it holds ([A
 | `starship.sh` | [HarbourMasters/Starship](https://github.com/HarbourMasters/Starship) | `v2.0.0` | `Contents/Resources/sf64.o2r` |
 | `zelda3.sh` | [snesrev/zelda3](https://github.com/snesrev/zelda3) (no macOS Release) | `45a149d8b4bb8098f53d1009f76e76e7d8b79bbf` | `Contents/Resources/zelda3_assets.dat` |
 | `smw.sh` | [snesrev/smw](https://github.com/snesrev/smw) (no macOS Release) | `eae20c65c58930c8b62c76188d259579ad4130f1` | `Contents/Resources/smw_assets.dat` |
+| `sm.sh` | [snesrev/sm](https://github.com/snesrev/sm) (no Releases), run as its own code only | `578f90b3cc49557bb70060ad033bb90b8cf8ac50` | `Contents/Resources/sm.smc` (the ROM itself) |
 | `opengoal.sh` | [open-goal/jak-project](https://github.com/open-goal/jak-project) (its macOS Release is bare tools), for `opengoal-jak1`, `opengoal-jak2` and `opengoal-jak3` | `v0.3.9` | `Contents/Resources/data/out/<game>` (a folder) |
 | `dethrace.sh` | [dethrace-labs/dethrace](https://github.com/dethrace-labs/dethrace) (its macOS app ships without SDL), for `dethrace` and `dethrace-splat-pack` | `v0.10.1` | none: the game's folder is a Runtime ROM |
 | `fallout-ce.sh` | [alexbatalov/fallout1-ce](https://github.com/alexbatalov/fallout1-ce) (its macOS app plays from the folder it sits in) | `0609bcfd0ec40ff0571d0f57fab2821eb461dc8b` | none: the game's folder is a Runtime ROM |

@@ -391,7 +391,7 @@ import Testing
         #expect(document.problems() == [])
         #expect(Set(document.ports.map(\.id)) == [
             "2ship", "starship", "zelda64recomp", "ghostship", "opengoal-jak1",
-            "opengoal-jak2", "opengoal-jak3", "banjorecomp", "sm64coopdx", "zelda3", "smw",
+            "opengoal-jak2", "opengoal-jak3", "banjorecomp", "sm64coopdx", "zelda3", "smw", "sm",
             "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen",
             "dethrace", "dethrace-splat-pack", "fallout-ce", "opengothic",
             "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift", "opensupaplex",
