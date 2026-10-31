@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T21:00:00Z",
+  "issued": "2026-10-31T22:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -37,6 +37,7 @@
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
     { "id": "doom-3", "name": "Doom 3", "platform": "windows", "genres": ["shooter"], "steamgriddb": 30014 },
     { "id": "doom-3-resurrection-of-evil", "name": "Doom 3: Resurrection of Evil", "shortName": "Resurrection of Evil", "platform": "windows", "genres": ["shooter"], "steamgriddb": 30105, "base": "doom-3" },
+    { "id": "doom-3-bfg-edition", "name": "Doom 3: BFG Edition", "shortName": "Doom 3 BFG", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1933 },
     { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 },
     { "id": "fallout-2", "name": "Fallout 2: A Post Nuclear Role Playing Game", "shortName": "Fallout 2", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8287 },
     { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 },
@@ -102,6 +103,8 @@
       "steam": { "app": 9050, "folder": "base" } },
     { "sha1": "4f1e4e44d96caea127165e6e03febefebf22481d", "game": "doom-3-resurrection-of-evil", "name": "Steam (build 380): the d3xp folder", "format": "folder",
       "steam": { "app": 9070, "folder": "d3xp", "alongside": [9050] } },
+    { "sha1": "26d6ca39c614ba622ca519de4d0be3366458dedb", "game": "doom-3-bfg-edition", "name": "Steam (build 10301625): the base folder", "format": "folder",
+      "steam": { "app": 208200, "folder": "base" } },
     { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
     { "sha1": "9e5c554b962e30eaf2a71792c7ad36594a747fc3", "game": "fallout", "name": "Steam (build 300289): the game’s folder", "format": "folder",
       "configs": ["fallout.cfg"], "steam": { "app": 38400 } },
@@ -865,6 +868,38 @@
       "screenshots": [],
       "tags": ["mods", "widescreen"],
       "firstRelease": "2015-10-03T18:57:02Z"
+    },
+    {
+      "id": "rbdoom3bfg",
+      "name": "RBDOOM-3-BFG",
+      "kind": "sourceport",
+      "game": "doom-3-bfg-edition",
+      "developer": "Robert Beckebans",
+      "summary": "Doom 3: BFG Edition on its own source code, with a modern Vulkan renderer, native on Apple silicon.",
+      "description": "RBDOOM-3-BFG carries on the source code of Doom 3: BFG Edition that id Software released in 2012, with a modern renderer: physically based lighting, HDR, shadow mapping, ambient occlusion and anti-aliasing, drawn with Vulkan, which MoltenVK turns into Metal. Frontport builds it from source, natively for Apple silicon, with MoltenVK and its shaders inside the app. It plays Doom 3, Resurrection of Evil and The Lost Mission, and the classic Doom and Doom II that come with the BFG Edition.\n\nThe game comes as Steam’s Doom 3: BFG Edition, which Frontport finds in your Steam library once Steam has installed it. Frontport keeps a copy of its base folder in the Port’s Data, where RBDOOM-3-BFG also writes D3BFGConfig.cfg and its saves. The baked lighting upstream ships separately isn’t included, so maps use the engine’s fallback lighting.",
+      "source": "https://github.com/RobertBeckebans/RBDOOM-3-BFG",
+      "bundleId": "dev.frontport.port.rbdoom3bfg",
+      "releases": {
+        "type": "git",
+        "repo": "RobertBeckebans/RBDOOM-3-BFG",
+        "refs": { "stable": "ea29c006e84fedcc0e7c173c383a087ce0a8c0d5" },
+        "recipe": "recipes/rbdoom3bfg.sh",
+        "recipeSHA256": "b9c06e4c62977446e2e54447a1bd1065a1fe0d628adcaf52e493ceff723d25f0"
+      },
+      "requirements": [
+        {
+          "label": "Doom 3: BFG Edition",
+          "stage": "runtime",
+          "oneOf": ["26d6ca39c614ba622ca519de4d0be3366458dedb"],
+          "seedPath": "Library/Application Support/RBDOOM-3-BFG/base"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 1933 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["mods", "widescreen", "60fps"],
+      "firstRelease": "2014-05-10T16:33:07Z"
     },
     {
       "id": "fallout-ce",
