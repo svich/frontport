@@ -12,6 +12,8 @@ struct PortOverview: View {
             ActionRow(entry: entry)
             if let activity = model.activities[entry.id] {
                 ActivityCard(entry: entry, activity: activity)
+            } else if model.isDownloadingFromSteam(for: entry.id), let download = model.steamDownload {
+                SteamDownloadCard(download: download)
             } else if let snapshot = model.switchSnapshots[entry.id] {
                 SwitchCallout(entry: entry, snapshot: snapshot)
             } else if let update = model.survey.updates[entry.id] {
@@ -143,6 +145,41 @@ private struct ActivityCard: View {
         case .applyROMs: return "sdcard"
         case .uninstall, .deleteData, .removeBuildFolder: return "trash"
         }
+    }
+}
+
+/// Steam downloading the ROM the Port needs, with the user's sign-in.
+private struct SteamDownloadCard: View {
+    @Environment(AppModel.self) private var model
+    let download: AppModel.SteamDownload
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "arrow.down.circle")
+                .font(.title)
+                .foregroundStyle(.tint)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(model.steamDownloadText(download))
+                        .font(.headline)
+                    Spacer()
+                    if let percent = model.steamDownloadPercent(download) {
+                        Text(percent)
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                ProgressView(value: download.fraction)
+                    .progressViewStyle(.linear)
+                Text(download.fraction == nil
+                    ? "Steam starts the download once it’s open and signed in."
+                    : "Frontport checks what Steam downloads, then adds it to ROMs.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .calloutBackground(.accentColor)
     }
 }
 

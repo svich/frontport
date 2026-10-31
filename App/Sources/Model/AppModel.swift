@@ -84,8 +84,17 @@ final class AppModel {
     private(set) var steamOffers: [SteamOffer] = []
     /// ROMs a Requirement accepts that Steam can download at the build the Catalog pins, read with `steamOffers`.
     private(set) var steamDownloads: [String] = []
-    /// The ROM Steam is downloading for Frontport, and the fraction done.
-    private(set) var steamDownload: (sha1: String, fraction: Double)?
+    /// The ROM Steam is downloading for Frontport.
+    private(set) var steamDownload: SteamDownload?
+
+    /// A ROM Steam is downloading for Frontport.
+    struct SteamDownload: Equatable {
+        var sha1: String
+        /// The Game's name, as the Catalog lists it.
+        var name: String
+        /// 0...1, or nil until Steam says how much it downloads.
+        var fraction: Double?
+    }
 
     /// What Frontport last found in the Catalog, the Library, ROMs and Releases.
     let survey: Survey
@@ -571,6 +580,20 @@ final class AppModel {
         return entry.requirements.flatMap(\.oneOf).first { steamDownloads.contains($0) }
     }
 
+    #if DEBUG
+    /// Shows Steam downloading `download`, or nothing, for the snapshot driver.
+    func previewSteamDownload(_ download: SteamDownload?) {
+        steamDownloads = download.map { [$0.sha1] } ?? []
+        steamDownload = download
+    }
+    #endif
+
+    /// Whether Steam is downloading the ROM the Port would download.
+    func isDownloadingFromSteam(for port: PortID) -> Bool {
+        guard let steamDownload else { return false }
+        return steamDownload.sha1 == self.steamDownload(for: port)
+    }
+
     /// Whether Steam could download a ROM the Port accepts once it's installed: the Catalog pins a ROM's depots, but
     /// Steam can't download it now.
     func needsSteamToDownload(for port: PortID) -> Bool {
@@ -584,11 +607,13 @@ final class AppModel {
     /// Has Steam download the ROM, adds it as Steam installed it, and applies it as `addROMs` does.
     func downloadFromSteam(_ sha1: String) async -> [ROMIntake] {
         guard let services, let catalog = survey.catalog, steamDownload == nil else { return [] }
-        steamDownload = (sha1, 0)
+        let known = catalog.roms.first { $0.sha1 == sha1 }
+        let name = known?.game.flatMap { catalog.game($0)?.name } ?? known?.name ?? "the ROM"
+        steamDownload = SteamDownload(sha1: sha1, name: name)
         defer { steamDownload = nil }
         let results = await services.roms.downloadFromSteam(sha1, catalog: catalog) { fraction in
             Task { @MainActor [weak self] in
-                if self?.steamDownload?.sha1 == sha1 { self?.steamDownload = (sha1, fraction) }
+                if self?.steamDownload?.sha1 == sha1 { self?.steamDownload?.fraction = fraction }
             }
         }
         return await applied(results)

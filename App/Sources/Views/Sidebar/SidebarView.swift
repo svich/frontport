@@ -79,7 +79,7 @@ private struct PortRow: View {
     }
 }
 
-/// Builds and installs in progress, pinned under the sidebar.
+/// Builds, installs and Steam's download in progress, pinned under the sidebar.
 private struct ActivityFooter: View {
     @Environment(AppModel.self) private var model
 
@@ -87,14 +87,51 @@ private struct ActivityFooter: View {
         let working = model.activities.underWay
             .compactMap { port, activity in model.survey.entry(port).map { ($0, activity) } }
             .sorted { $0.0.name < $1.0.name }
-        if !working.isEmpty {
+        if !working.isEmpty || model.steamDownload != nil {
             VStack(spacing: 8) {
                 ForEach(working, id: \.0.id) { entry, activity in
                     ActivityCard(entry: entry, activity: activity)
                 }
+                if let download = model.steamDownload {
+                    SteamDownloadCard(download: download)
+                }
             }
             .padding(10)
         }
+    }
+}
+
+/// Steam downloading a ROM for Frontport, which opens ROMs.
+private struct SteamDownloadCard: View {
+    @Environment(AppModel.self) private var model
+    let download: AppModel.SteamDownload
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack {
+                Text(download.name)
+                    .font(.callout.weight(.semibold))
+                    .lineLimit(1)
+                Spacer()
+                if let percent = model.steamDownloadPercent(download) {
+                    Text(percent)
+                        .font(.callout.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+            }
+            ProgressView(value: download.fraction)
+                .progressViewStyle(.linear)
+                .controlSize(.small)
+            Text(download.fraction == nil ? "Waiting for Steam…" : "Downloading from Steam…")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+        .padding(12)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .contentShape(Rectangle())
+        .onTapGesture { model.open(.roms) }
+        .accessibilityIdentifier("sidebar.steamDownload")
     }
 }
 

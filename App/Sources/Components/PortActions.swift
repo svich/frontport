@@ -20,10 +20,15 @@ struct PortActionButton: View {
                 button(.install, status, "install")
                     .buttonStyle(.glass)
                     .tint(.accentColor)
+            case .addROM? where model.isDownloadingFromSteam(for: port):
+                SteamDownloadIndicator()
+                    .accessibilityIdentifier(identifier("steamDownload"))
             case .addROM(let stage)?:
                 // A Build ROM is built into the Port, so there's no installing without it.
                 button(.addROM(stage), status, "addROM", help: stage == .build ? "Frontport needs the ROM to build this Port" : nil)
                     .buttonStyle(.addROM)
+                    // Steam downloads one ROM for Frontport at a time.
+                    .disabled(model.steamDownload != nil && model.steamDownload(for: port) != nil)
             case .cancel?:
                 Button {
                     viewState.run(.cancel, for: port, in: model)
@@ -114,6 +119,26 @@ struct AddROMButtonStyle: ButtonStyle {
         case .mini, .small: 20
         case .large, .extraLarge: 36
         default: 28
+        }
+    }
+}
+
+/// Steam's download of a ROM in place of the button that started it: a ring and the percent, or a spinner while
+/// Steam starts.
+struct SteamDownloadIndicator: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if let download = model.steamDownload {
+            HStack(spacing: 6) {
+                ProgressView(value: download.fraction)
+                    .progressViewStyle(.circular)
+                    .controlSize(.small)
+                Text(model.steamDownloadPercent(download) ?? "Waiting for Steam…")
+                    .font(.callout.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .help(model.steamDownloadText(download))
         }
     }
 }

@@ -177,6 +177,16 @@ extension AppModel {
         return "\(gameName(for: entry)) · \(entry.kind.name) · by \(entry.developer)"
     }
 
+    /// What Steam's download is doing: waiting for Steam to start it, which may mean signing in, then downloading.
+    func steamDownloadText(_ download: SteamDownload) -> String {
+        download.fraction == nil ? "Waiting for Steam to download \(download.name)…" : "Downloading \(download.name) from Steam…"
+    }
+
+    /// The download's fraction as "42%", or nil until Steam says how much it downloads.
+    func steamDownloadPercent(_ download: SteamDownload) -> String? {
+        download.fraction?.formatted(.percent.precision(.fractionLength(0)))
+    }
+
     /// What an activity is doing, by kind, naming the Project with its version: "Installing Ship of Harkinian 9.3.1…",
     /// "Updating to Ship of Harkinian 9.3.1…", "Building Starship 2.0.0 from source…".
     func activityText(_ activity: Activity, for port: PortID) -> String {

@@ -102,11 +102,24 @@ enum SnapshotDriver {
             model.selection = .port("zelda64recomp")
             state.portTab = .overview
         },
+        Shot(name: "port-steam-download", previewOnly: true) { model, state in
+            model.previewSteamDownload(steamDownload)
+            model.selection = .port("spaghettikart")
+            state.portTab = .overview
+        },
+        Shot(name: "roms-steam-download", previewOnly: true) { model, _ in
+            model.previewSteamDownload(steamDownload)
+            model.selection = .roms
+        },
         Shot(name: "search") { model, _ in
             model.selection = .library
             model.searchText = "mario"
         },
     ]
+
+    /// Mario Kart 64, which SpaghettiKart still needs, part downloaded.
+    private static let steamDownload = AppModel.SteamDownload(
+        sha1: "579c48e211ae952530ffc8738709f078d5dd215e", name: "Mario Kart 64", fraction: 0.42)
 
     static func run(model: AppModel, viewState: ViewState, openSettings: OpenSettingsAction) async {
         guard let directory else { return }
@@ -129,6 +142,7 @@ enum SnapshotDriver {
             NSApp.appearance = NSAppearance(named: appearance)
             for shot in shots where !(isLive && shot.previewOnly) {
                 model.searchText = ""
+                if !isLive { model.previewSteamDownload(nil) }
                 shot.apply(model, viewState)
                 resize(window, height: size.height)
                 await settle()

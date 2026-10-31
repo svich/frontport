@@ -122,9 +122,14 @@ private struct NeededCard: View {
                 Button("Add from Steam") { Task { await viewState.addFromSteam(steamOffers, to: model) } }
                     .buttonStyle(.addROM)
                     .disabled(viewState.isAddingROMs)
-            } else if !needed.isUnseeded, let download = steamDownload, model.steamDownload?.sha1 == download {
-                ProgressView(value: model.steamDownload?.fraction ?? 0) { Text("Downloading from Steam…").font(.callout) }
-                    .frame(width: 180)
+            } else if !needed.isUnseeded, let download = model.steamDownload, download.sha1 == steamDownload {
+                ProgressView(value: download.fraction) {
+                    Text(download.fraction == nil ? "Waiting for Steam…" : "Downloading from Steam…").font(.callout)
+                } currentValueLabel: {
+                    if let percent = model.steamDownloadPercent(download) { Text(percent).monospacedDigit() }
+                }
+                .frame(width: 180)
+                .help(model.steamDownloadText(download))
             } else if !needed.isUnseeded, let download = steamDownload {
                 Button("Download from Steam") { Task { await viewState.downloadFromSteam(download, to: model) } }
                     .buttonStyle(.addROM)
