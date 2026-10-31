@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T19:00:00Z",
+  "issued": "2026-10-31T19:10:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -22,6 +22,7 @@
     { "id": "star-fox-64", "name": "Star Fox 64", "platform": "n64", "genres": ["shooter"], "steamgriddb": 36615 },
     { "id": "super-mario-64", "name": "Super Mario 64", "platform": "n64", "genres": ["platformer"], "steamgriddb": 37177 },
     { "id": "banjo-kazooie", "name": "Banjo-Kazooie", "platform": "n64", "genres": ["platformer"], "steamgriddb": 35564 },
+    { "id": "perfect-dark", "name": "Perfect Dark", "platform": "n64", "genres": ["shooter"], "steamgriddb": 37787 },
     { "id": "a-link-to-the-past", "name": "The Legend of Zelda: A Link to the Past", "shortName": "A Link to the Past", "platform": "snes", "genres": ["adventure"], "steamgriddb": 38124 },
     { "id": "super-mario-world", "name": "Super Mario World", "platform": "snes", "genres": ["platformer"], "steamgriddb": 36886 },
     { "id": "super-metroid", "name": "Super Metroid", "platform": "snes", "genres": ["adventure", "platformer"], "steamgriddb": 38157 },
@@ -52,6 +53,7 @@
     { "sha1": "9bef1128717f958171a4afac3ed78ee2bb4e86ce", "game": "super-mario-64", "name": "NTSC (US)", "format": "z64" },
     { "sha1": "8a20a5c83d6ceb0f0506cfc9fa20d8f438cafe51", "game": "super-mario-64", "name": "NTSC (JP)", "format": "z64" },
     { "sha1": "1fe1632098865f639e22c11b9a81ee8f29c75d7a", "game": "banjo-kazooie", "name": "NTSC 1.0 (US)", "format": "z64" },
+    { "sha1": "af8788ac4d1a57260eae9c53ffe851fcf2a3319b", "game": "perfect-dark", "name": "NTSC 1.1 (US)", "format": "z64" },
     { "sha1": "6d4f10a8b10e10dbe624cb23cf03b88bb8252973", "game": "a-link-to-the-past", "name": "NTSC (US)", "format": "sfc" },
     { "sha1": "6b47bb75d16514b6a476aa0c73a683a2a4c18765", "game": "super-mario-world", "name": "NTSC (US)", "format": "sfc" },
     { "sha1": "da957f0d63d14cb441d215462904c4fa8519c613", "game": "super-metroid", "name": "NTSC (US, JP)", "format": "sfc" },
@@ -456,6 +458,38 @@
       "screenshots": [],
       "tags": ["60fps", "widescreen", "mods"],
       "firstRelease": "2020-08-06T03:59:25Z"
+    },
+    {
+      "id": "perfect-dark",
+      "name": "perfect_dark",
+      "kind": "decomp",
+      "game": "perfect-dark",
+      "developer": "fgsfdsfgs",
+      "summary": "Perfect Dark, built from its decompilation, with mouselook, widescreen and high frame rates.",
+      "description": "perfect_dark is the PC port of the Perfect Dark decompilation, with the single-player campaign, co-op and split-screen multiplayer working, though upstream still calls it a work in progress with minor graphics glitches. Frontport builds it from source and it reads levels, models and sound from your ROM. It adds mouselook and dual-analog controls, widescreen and a field-of-view setting, 60 FPS with fixes for frame-rate bugs, an experimental uncapped tick rate, custom levels as mods, and unlocks the Transfer Pak cheats without a Game Boy.",
+      "source": "https://github.com/fgsfdsfgs/perfect_dark",
+      "bundleId": "dev.frontport.port.perfect-dark",
+      "releases": {
+        "type": "git",
+        "repo": "fgsfdsfgs/perfect_dark",
+        "refs": { "stable": "a4b58e6dd14d5842d588e9841efa8bceb8b86fc3" },
+        "recipe": "recipes/perfect-dark.sh",
+        "recipeSHA256": "500405b5f6be7865765bc9fd605fce8e6b1d3299d63b9e14a925813816c965a4"
+      },
+      "requirements": [
+        {
+          "label": "Perfect Dark",
+          "stage": "build",
+          "oneOf": ["af8788ac4d1a57260eae9c53ffe851fcf2a3319b"]
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 37787 },
+      "codeSigning": { "exceptions": [] },
+      "buildAssets": { "path": "Contents/Resources/data/pd.ntsc-final.z64", "format": "1" },
+      "screenshots": [],
+      "tags": ["60fps", "widescreen", "mods"],
+      "firstRelease": "2024-05-14T09:41:23Z"
     },
     {
       "id": "zelda3",
