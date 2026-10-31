@@ -52,6 +52,7 @@ source.
 | UZDoom | Doom, Doom II, Heretic, Hexen |
 | Dethrace | Carmageddon, Carmageddon Splat Pack |
 | Fallout Community Edition | Fallout |
+| Fallout 2 Community Edition | Fallout 2 |
 
 [catalog/README.md](catalog/README.md) lists every Port's details and where
 each fact comes from, and how to publish a Catalog of your own.

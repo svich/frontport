@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T19:20:00Z",
+  "issued": "2026-10-31T20:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -36,6 +36,7 @@
     { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
     { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 },
+    { "id": "fallout-2", "name": "Fallout 2: A Post Nuclear Role Playing Game", "shortName": "Fallout 2", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8287 },
     { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 },
     { "id": "half-life", "name": "Half-Life", "platform": "windows", "genres": ["shooter"], "steamgriddb": 21207 },
     { "id": "half-life-opposing-force", "name": "Half-Life: Opposing Force", "shortName": "Opposing Force", "platform": "windows", "genres": ["shooter"], "steamgriddb": 12929, "base": "half-life" },
@@ -98,6 +99,8 @@
     { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
     { "sha1": "9e5c554b962e30eaf2a71792c7ad36594a747fc3", "game": "fallout", "name": "Steam (build 300289): the game’s folder", "format": "folder",
       "configs": ["fallout.cfg"], "steam": { "app": 38400 } },
+    { "sha1": "252161d31bc5d7cecb6e5a83d0de0e4bd04f8c18", "game": "fallout-2", "name": "Steam (build 303136): the game’s folder", "format": "folder",
+      "configs": ["fallout2.cfg"], "steam": { "app": 38410 } },
     { "sha1": "fe0b065b3a0076f9e0f8eb74d3081e1549e12a81", "game": "gothic-2", "name": "Gold Classic (Steam)", "format": "folder", "steam": { "app": 39510 } },
     {
       "sha1": "a55070f0c75bf620062384445e05c4f482945ec4", "game": "fallout", "name": "Russian CD image (1C, 2008)", "format": "iso",
@@ -815,6 +818,38 @@
       "screenshots": [],
       "tags": ["bugfixes"],
       "firstRelease": "2023-02-09T19:54:12Z"
+    },
+    {
+      "id": "fallout2-ce",
+      "name": "Fallout 2 Community Edition",
+      "kind": "decomp",
+      "game": "fallout-2",
+      "developer": "alexbatalov",
+      "summary": "Fallout 2’s engine, re-implemented from its reverse-engineered code, with bug fixes, higher resolutions and sfall’s improvements.",
+      "description": "Fallout 2 Community Edition re-implements the engine of Fallout 2 from its reverse-engineered code, with the original gameplay, fixes for the engine’s bugs, quality-of-life improvements and many of sfall’s features. Frontport builds it from source with SDL inside the app, and makes it play from the Port’s Data instead of the folder the app sits in.\n\nThe game comes as the folder of an installed copy. Frontport keeps a copy of the game’s files in the Port’s Data, where Fallout 2 also writes fallout2.cfg and its saves, and the window’s size and full screen are set in f2_res.ini beside them. So far it accepts Steam’s Fallout 2, which Frontport finds in your Steam library once Steam has installed it.",
+      "source": "https://github.com/alexbatalov/fallout2-ce",
+      "bundleId": "dev.frontport.port.fallout2-ce",
+      "releases": {
+        "type": "git",
+        "repo": "alexbatalov/fallout2-ce",
+        "refs": { "stable": "e97087b9582f37075db347a89898887320753f8b" },
+        "recipe": "recipes/fallout2-ce.sh",
+        "recipeSHA256": "bbc13cf6a2b874a9a20a6d89ce80a697b7e91fc482956567b71e5abda8ee2fba"
+      },
+      "requirements": [
+        {
+          "label": "Fallout 2",
+          "stage": "runtime",
+          "oneOf": ["252161d31bc5d7cecb6e5a83d0de0e4bd04f8c18"],
+          "seedPath": "Library/Application Support/Fallout 2"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 8287 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["bugfixes", "widescreen"],
+      "firstRelease": "2022-07-12T18:58:32Z"
     },
     {
       "id": "opengothic",
