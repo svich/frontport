@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T20:30:00Z",
+  "issued": "2026-10-31T21:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -35,6 +35,8 @@
     { "id": "hexen", "name": "Hexen: Beyond Heretic", "shortName": "Hexen", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2642 },
     { "id": "carmageddon", "name": "Carmageddon", "platform": "dos", "genres": ["racing"], "steamgriddb": 36973 },
     { "id": "carmageddon-splat-pack", "name": "Carmageddon Splat Pack", "shortName": "Splat Pack", "platform": "dos", "genres": ["racing"], "steamgriddb": 5412716 },
+    { "id": "doom-3", "name": "Doom 3", "platform": "windows", "genres": ["shooter"], "steamgriddb": 30014 },
+    { "id": "doom-3-resurrection-of-evil", "name": "Doom 3: Resurrection of Evil", "shortName": "Resurrection of Evil", "platform": "windows", "genres": ["shooter"], "steamgriddb": 30105, "base": "doom-3" },
     { "id": "fallout", "name": "Fallout: A Post Nuclear Role Playing Game", "shortName": "Fallout", "platform": "dos", "genres": ["rpg"], "steamgriddb": 8280 },
     { "id": "fallout-2", "name": "Fallout 2: A Post Nuclear Role Playing Game", "shortName": "Fallout 2", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8287 },
     { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 },
@@ -96,6 +98,10 @@
         "yields": ["bb1197cb7342a1f2026cc8b5d03e81e9ad17be4a", "fbad1d1108ce23a0d7fc6adbe06814da121efc37"]
       }
     },
+    { "sha1": "9e1f340f8989c48dd22ae6eb5fb1f16131db18b4", "game": "doom-3", "name": "Steam (build 251953): the base folder", "format": "folder",
+      "steam": { "app": 9050, "folder": "base" } },
+    { "sha1": "4f1e4e44d96caea127165e6e03febefebf22481d", "game": "doom-3-resurrection-of-evil", "name": "Steam (build 380): the d3xp folder", "format": "folder",
+      "steam": { "app": 9070, "folder": "d3xp", "alongside": [9050] } },
     { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
     { "sha1": "9e5c554b962e30eaf2a71792c7ad36594a747fc3", "game": "fallout", "name": "Steam (build 300289): the game’s folder", "format": "folder",
       "configs": ["fallout.cfg"], "steam": { "app": 38400 } },
@@ -786,6 +792,79 @@
       "screenshots": [],
       "tags": ["bugfixes"],
       "firstRelease": "2022-09-21T04:13:32Z"
+    },
+    {
+      "id": "dhewm3-doom-3",
+      "name": "dhewm3",
+      "kind": "sourceport",
+      "game": "doom-3",
+      "developer": "dhewm",
+      "summary": "Doom 3 on its own source code, carried on for current systems, native on Apple silicon.",
+      "description": "dhewm3 carries on the source code of Doom 3 that id Software released in 2011, with SDL and OpenAL in place of its Windows-only parts, widescreen, fixes for 64-bit systems and the original renderer and gameplay. Frontport builds it from source, natively for Apple silicon, with the game code of Doom 3 and Resurrection of Evil inside the app.\n\nThe game comes as Steam’s Doom 3, which Frontport finds in your Steam library once Steam has installed it. Frontport keeps a copy of its base folder in the Port’s Data, where dhewm3 also writes dhewm.cfg, its saves and its log.",
+      "website": "https://dhewm3.org/",
+      "source": "https://github.com/dhewm/dhewm3",
+      "bundleId": "dev.frontport.port.dhewm3-doom-3",
+      "releases": {
+        "type": "git",
+        "repo": "dhewm/dhewm3",
+        "refs": { "stable": "1.5.5" },
+        "recipe": "recipes/dhewm3.sh",
+        "recipeSHA256": "adbcea8f5d47f7833d3614048d444b7b8cf8aeb9dd29b5ce8f696871e6f93b3a"
+      },
+      "requirements": [
+        {
+          "label": "Doom 3",
+          "stage": "runtime",
+          "oneOf": ["9e1f340f8989c48dd22ae6eb5fb1f16131db18b4"],
+          "seedPath": "Library/Application Support/dhewm3/base"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 30014 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["mods", "widescreen"],
+      "firstRelease": "2015-10-03T18:57:02Z"
+    },
+    {
+      "id": "dhewm3-resurrection-of-evil",
+      "name": "dhewm3",
+      "kind": "sourceport",
+      "game": "doom-3-resurrection-of-evil",
+      "developer": "dhewm",
+      "summary": "Resurrection of Evil on Doom 3’s own source code, carried on for current systems, native on Apple silicon.",
+      "description": "dhewm3 carries on the source code of Doom 3 that id Software released in 2011, with SDL and OpenAL in place of its Windows-only parts, widescreen, fixes for 64-bit systems and the original renderer and gameplay. Frontport builds it from source, natively for Apple silicon, with the game code of Doom 3 and Resurrection of Evil inside the app.\n\nThe game comes as Steam’s Doom 3 and Resurrection of Evil, which Frontport finds in your Steam library once Steam has installed them. Frontport keeps a copy of their base and d3xp folders in the Port’s Data, where dhewm3 also writes dhewm.cfg, its saves and its log.",
+      "website": "https://dhewm3.org/",
+      "source": "https://github.com/dhewm/dhewm3",
+      "bundleId": "dev.frontport.port.dhewm3-resurrection-of-evil",
+      "releases": {
+        "type": "git",
+        "repo": "dhewm/dhewm3",
+        "refs": { "stable": "1.5.5" },
+        "recipe": "recipes/dhewm3.sh",
+        "recipeSHA256": "adbcea8f5d47f7833d3614048d444b7b8cf8aeb9dd29b5ce8f696871e6f93b3a"
+      },
+      "requirements": [
+        {
+          "label": "Doom 3",
+          "stage": "runtime",
+          "oneOf": ["9e1f340f8989c48dd22ae6eb5fb1f16131db18b4"],
+          "seedPath": "Library/Application Support/dhewm3/base"
+        },
+        {
+          "label": "Resurrection of Evil",
+          "stage": "runtime",
+          "oneOf": ["4f1e4e44d96caea127165e6e03febefebf22481d"],
+          "seedPath": "Library/Application Support/dhewm3/d3xp"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 30105 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["+set", "fs_game", "d3xp"] },
+      "screenshots": [],
+      "tags": ["mods", "widescreen"],
+      "firstRelease": "2015-10-03T18:57:02Z"
     },
     {
       "id": "fallout-ce",

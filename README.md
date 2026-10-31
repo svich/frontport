@@ -51,6 +51,7 @@ source.
 | OpenGOAL | Jak and Daxter, Jak II, Jak 3 |
 | UZDoom | Doom, Doom II, Heretic, Hexen |
 | Dethrace | Carmageddon, Carmageddon Splat Pack |
+| dhewm3 | Doom 3, Resurrection of Evil |
 | Fallout Community Edition | Fallout |
 | Fallout 2 Community Edition | Fallout 2 |
 
