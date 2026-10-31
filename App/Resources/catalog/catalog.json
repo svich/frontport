@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T03:50:00Z",
+  "issued": "2026-10-31T05:30:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -13,7 +13,8 @@
     { "id": "adventure", "name": "Adventure" },
     { "id": "racing", "name": "Racing" },
     { "id": "shooter", "name": "Shooter" },
-    { "id": "rpg", "name": "Role-playing" }
+    { "id": "rpg", "name": "Role-playing" },
+    { "id": "puzzle", "name": "Puzzle" }
   ],
   "games": [
     { "id": "majoras-mask", "name": "The Legend of Zelda: Majora’s Mask", "shortName": "Majora’s Mask", "platform": "n64", "genres": ["adventure"], "steamgriddb": 34302 },
@@ -35,7 +36,8 @@
     { "id": "gothic-2", "name": "Gothic II: Night of the Raven", "shortName": "Gothic II", "platform": "windows", "genres": ["rpg"], "steamgriddb": 8792 },
     { "id": "half-life", "name": "Half-Life", "platform": "windows", "genres": ["shooter"], "steamgriddb": 21207 },
     { "id": "half-life-opposing-force", "name": "Half-Life: Opposing Force", "shortName": "Opposing Force", "platform": "windows", "genres": ["shooter"], "steamgriddb": 12929, "base": "half-life" },
-    { "id": "half-life-blue-shift", "name": "Half-Life: Blue Shift", "shortName": "Blue Shift", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1417, "base": "half-life" }
+    { "id": "half-life-blue-shift", "name": "Half-Life: Blue Shift", "shortName": "Blue Shift", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1417, "base": "half-life" },
+    { "id": "supaplex", "name": "Supaplex", "platform": "dos", "genres": ["puzzle"], "steamgriddb": 26988 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -848,6 +850,31 @@
       "screenshots": [],
       "tags": ["mods", "widescreen"],
       "firstRelease": "2019-12-03T01:26:55Z"
+    },
+    {
+      "id": "opensupaplex",
+      "name": "OpenSupaplex",
+      "kind": "decomp",
+      "game": "supaplex",
+      "developer": "sergiou87",
+      "summary": "Supaplex, reimplemented in C from its disassembled code, with the original levels included.",
+      "description": "OpenSupaplex is a one-to-one reimplementation of Supaplex in C, written from the disassembled code of the DOS game with its speed fix and checked against thousands of recorded demos, so it plays exactly as the original. It adds music and sound effects, save states, scaling modes and game controller support. Frontport builds it from source, with SDL inside the app. The original game is freeware and its files come with the app, the 111 levels and the extra level sets included, so it needs no ROM.\n\nOpenSupaplex keeps its settings, players, Hall of Fame and saved games in the Port’s Data.",
+      "source": "https://github.com/sergiou87/open-supaplex",
+      "bundleId": "dev.frontport.port.opensupaplex",
+      "releases": {
+        "type": "git",
+        "repo": "sergiou87/open-supaplex",
+        "refs": { "stable": "v7.2.2" },
+        "recipe": "recipes/opensupaplex.sh",
+        "recipeSHA256": "cc3240307e2c2974fc143c5cebfaf811cbeaade209c06e9c32997e445211d0ed"
+      },
+      "requirements": [],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 26988 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": [],
+      "firstRelease": "2020-04-19T23:35:02Z"
     }
   ]
 }

@@ -50,6 +50,7 @@ struct GenreBadge: View {
         case "adventure": "map.fill"
         case "racing": "flag.checkered"
         case "shooter": "scope"
+        case "puzzle": "puzzlepiece.fill"
         default: "gamecontroller.fill"
         }
     }
@@ -60,6 +61,7 @@ struct GenreBadge: View {
         case "adventure": .green
         case "racing": .red
         case "shooter": .indigo
+        case "puzzle": .teal
         default: .gray
         }
     }

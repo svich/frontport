@@ -394,7 +394,7 @@ import Testing
             "opengoal-jak2", "opengoal-jak3", "banjorecomp", "sm64coopdx", "zelda3", "smw",
             "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen",
             "dethrace", "dethrace-splat-pack", "fallout-ce", "opengothic",
-            "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift",
+            "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift", "opensupaplex",
         ])
         for entry in document.ports {
             #expect(entry.bundleId == entry.id.conventionalBundleID)
