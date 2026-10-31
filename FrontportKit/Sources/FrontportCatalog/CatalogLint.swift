@@ -65,10 +65,19 @@ extension CatalogDocument {
                 }
             }
             if let steam = rom.steam {
-                if !rom.isFolder { problems.append("ROM \(rom.sha1) is from Steam but isn’t a folder ROM.") }
                 if steam.app <= 0 { problems.append("ROM \(rom.sha1) has a malformed Steam app id.") }
-                if let folder = steam.folder, (try? CatalogStore.checkedRelativePath(folder)) == nil {
-                    problems.append("ROM \(rom.sha1) has a Steam folder outside the install folder: \(folder).")
+                if rom.isFolder, steam.file != nil { problems.append("ROM \(rom.sha1) is a folder ROM but names a Steam file.") }
+                if let alongside = steam.alongside {
+                    if !rom.isFolder { problems.append("ROM \(rom.sha1) isn’t a folder ROM but has Steam apps alongside.") }
+                    if alongside.isEmpty || alongside.contains(where: { $0 <= 0 || $0 == steam.app }) || Set(alongside).count != alongside.count {
+                        problems.append("ROM \(rom.sha1) has malformed Steam apps alongside.")
+                    }
+                }
+                if !rom.isFolder, steam.file == nil || steam.folder != nil {
+                    problems.append("ROM \(rom.sha1) is from Steam but names no Steam file, which a ROM other than a folder needs.")
+                }
+                if let path = steam.path, (try? CatalogStore.checkedRelativePath(path)) == nil {
+                    problems.append("ROM \(rom.sha1) has a Steam path outside the install folder: \(path).")
                 }
             }
             guard let unpack = rom.unpack else {

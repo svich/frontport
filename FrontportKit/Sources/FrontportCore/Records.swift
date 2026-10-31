@@ -192,19 +192,19 @@ public struct SteamOffer: Hashable, Sendable, Identifiable {
     /// The Steam app that installed it, and its name in Steam.
     public var app: Int
     public var appName: String
-    /// Where its files are.
-    public var folder: URL
+    /// Where it is: its folder, or a file ROM's file.
+    public var location: URL
     /// True when Steam's manifests say its files make that ROM. False when Steam installed another build, which
     /// adding would refuse.
     public var matches: Bool
 
     public var id: String { sha1 }
 
-    public init(sha1: String, app: Int, appName: String, folder: URL, matches: Bool) {
+    public init(sha1: String, app: Int, appName: String, location: URL, matches: Bool) {
         self.sha1 = sha1
         self.app = app
         self.appName = appName
-        self.folder = folder
+        self.location = location
         self.matches = matches
     }
 }

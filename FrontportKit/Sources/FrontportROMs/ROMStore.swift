@@ -164,10 +164,14 @@ public actor ROMStore: ROMStoring {
         let installed = await Self.steamROMs(in: steam, catalog: catalog)
         return installed.compactMap { known, app in
             if let existing = presentRecord(known.sha1), !Self.givesWay(existing, to: nil) { return nil }
+            if let path = known.steam?.file {
+                guard let file = try? steam.file(of: app, path: path) else { return nil }
+                return SteamOffer(sha1: known.sha1, app: app.id, appName: app.name, location: file.url, matches: file.sha1 == known.sha1)
+            }
             let contents = try? steam.contents(of: app, folder: known.steam?.folder, leaving: Set(known.configs ?? []))
             guard let contents else { return nil }
             return SteamOffer(
-                sha1: known.sha1, app: app.id, appName: app.name, folder: contents.folder, matches: contents.sha1 == known.sha1)
+                sha1: known.sha1, app: app.id, appName: app.name, location: contents.folder, matches: contents.sha1 == known.sha1)
         }
     }
 
@@ -177,7 +181,15 @@ public actor ROMStore: ROMStoring {
             let file = steam.root
             return [.rejected(file: file, sha1: sha1, reason: "Steam doesn’t have this game installed.")]
         }
-        return [await addFromSteam(known, app)]
+        guard let path = known.steam?.file else { return [await addFromSteam(known, app)] }
+        // A file is added as any other: its hash is the ROM's, whether or not Steam installed it.
+        do {
+            return await add(try steam.file(of: app, path: path).url, catalog: catalog)
+        } catch FrontportError.romRejected(_, let reason) {
+            return [.rejected(file: app.folder.appending(path: path), sha1: sha1, reason: reason)]
+        } catch {
+            return [.rejected(file: app.folder.appending(path: path), sha1: sha1, reason: Self.describe(error))]
+        }
     }
 
     /// The ROMs at `file` in Steam's libraries: the ROM whose folder it is, or every ROM in the install folder it is.
@@ -190,7 +202,7 @@ public actor ROMStore: ROMStoring {
         }
         let installed = await Self.steamROMs(in: steam, catalog: catalog)
         let atFile = installed.filter { known, app in
-            same(app.folder) || same(known.steam?.folder.map { app.folder.appending(path: $0) } ?? app.folder)
+            known.isFolder && (same(app.folder) || same(known.steam?.folder.map { app.folder.appending(path: $0) } ?? app.folder))
         }
         var results: [ROMIntake] = []
         for (known, app) in atFile { results.append(await addFromSteam(known, app)) }
@@ -216,13 +228,21 @@ public actor ROMStore: ROMStoring {
         }
     }
 
-    /// Each ROM a Requirement accepts whose Steam app is installed, with that app, read off the actor.
+    /// Each ROM a Requirement accepts whose Steam app is installed, with that app, read off the actor. A folder ROM's app
+    /// has the depots of the apps alongside it too, and isn't installed until they all are.
     @concurrent
     private static func steamROMs(in steam: SteamLibrary, catalog: CatalogDocument) async -> [(KnownROM, SteamLibrary.App)] {
-        let wanted = catalog.roms.filter { $0.isFolder && $0.steam != nil && catalog.listing($0.sha1).rom != nil }
+        let wanted = catalog.roms.filter { $0.steam != nil && catalog.listing($0.sha1).rom != nil }
         guard !wanted.isEmpty else { return [] }
         let apps = Dictionary(steam.apps().map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        return wanted.compactMap { known in known.steam.flatMap { apps[$0.app] }.map { (known, $0) } }
+        return wanted.compactMap { known in
+            guard let steam = known.steam, var app = apps[steam.app] else { return nil }
+            for id in steam.alongside ?? [] {
+                guard let other = apps[id], other.folder.standardizedFileURL == app.folder.standardizedFileURL else { return nil }
+                app.depots += other.depots.filter { !app.depots.contains($0) }
+            }
+            return (known, app)
+        }
     }
 
     static let unlisted = "No ROM in the Catalog has this hash."

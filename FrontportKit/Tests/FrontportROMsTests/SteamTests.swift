@@ -14,6 +14,8 @@ import Testing
     ]
     /// Beside it in the same install folder, and in the same depot: another app's.
     static let gearbox: [String: Data] = ["gearbox/liblist.gam": Data("game \"Opposing Force\"\n".utf8)]
+    /// And a file ROM: an IWAD, named in Windows' case.
+    static let iwad: [String: Data] = ["base/DOOM.WAD": Data("IWAD".utf8) + Synthetic.noise(4 << 10, seed: 4)]
 
     /// A Steam folder holding Half-Life, app 70, as depot 1, with its app manifest and depot manifest.
     func steam(in tmp: TemporaryDirectory, state: String = "4") throws -> SteamLibrary {
@@ -45,7 +47,7 @@ import Testing
             \t}
             }
             """.utf8))
-        let files = Self.valve.merging(Self.gearbox) { $1 }
+        let files = Self.valve.merging(Self.gearbox) { $1 }.merging(Self.iwad) { $1 }
         for (path, data) in files { try tmp.file("Steam/steamapps/common/Half-Life/\(path)", data) }
         try tmp.file("Steam/depotcache/1_2667117727132184734.manifest", Self.manifest(files, configs: ["valve/config.cfg"]))
         return SteamLibrary(root: root)
@@ -129,6 +131,76 @@ import Testing
     @Test func anAppStillUpdatingIsNotInstalled() throws {
         let tmp = try TemporaryDirectory()
         #expect(try steam(in: tmp, state: "6").apps().isEmpty)
+    }
+
+    @Test func anAppSteamStillThinksRunningIsInstalled() throws {
+        let tmp = try TemporaryDirectory()
+        #expect(try steam(in: tmp, state: "68").apps().map(\.id) == [70])
+    }
+
+    /// The Catalog with the IWAD as a file ROM Steam installs, named in another case than Steam's.
+    func iwadCatalog(_ sha1: String = Hashing.sha1(iwad["base/DOOM.WAD"]!)) -> CatalogDocument {
+        CatalogDocument(
+            issued: Date(timeIntervalSince1970: 0),
+            platforms: [Platform(id: "dos", name: "DOS", shortName: "DOS", medium: .file)],
+            games: [Game(id: "doom", name: "Doom", platform: "dos")],
+            roms: [KnownROM(sha1: sha1, game: "doom", name: "Steam", format: "wad", steam: KnownROM.Steam(app: 70, file: "base/doom.wad"))],
+            ports: [Catalogs.entry("uzdoom-doom", game: "doom", requirements: [
+                Requirement(label: "Doom", stage: .runtime, oneOf: [sha1], seedPath: "Library/Application Support/UZDoom/doom.wad"),
+            ])])
+    }
+
+    @Test func anInstalledFileROMIsOfferedAndAddedAsAnyFile() async throws {
+        let tmp = try TemporaryDirectory()
+        let store = ROMStore(paths: tmp.paths, steam: try steam(in: tmp))
+        let sha1 = Hashing.sha1(Self.iwad["base/DOOM.WAD"]!)
+
+        let offers = await store.steamOffers(catalog: iwadCatalog())
+        #expect(offers.map(\.sha1) == [sha1])
+        #expect(offers.first?.matches == true)
+        #expect(offers.first?.location.lastPathComponent == "DOOM.WAD")
+        #expect(await store.steamOffers(catalog: iwadCatalog(String(repeating: "b", count: 40))).map(\.matches) == [false])
+
+        let intakes = await store.addFromSteam(sha1, catalog: iwadCatalog())
+        guard case .added(let record) = intakes.first else { Issue.record("\(intakes)"); return }
+        #expect(record.sha1 == sha1)
+        #expect(await store.steamOffers(catalog: iwadCatalog()).isEmpty)
+    }
+
+    @Test func aFolderTakesTheFilesOfAppsAlongside() async throws {
+        let tmp = try TemporaryDirectory()
+        let steam = try steam(in: tmp)
+        // Opposing Force, app 50, installed in the same folder, puts one more file in gearbox/ than Half-Life's depot does.
+        let extra = Data("opfor\n".utf8)
+        try tmp.file("Steam/steamapps/common/Half-Life/gearbox/opfor.txt", extra)
+        try tmp.file("Steam/depotcache/2_1.manifest", Self.manifest(["gearbox/opfor.txt": extra]))
+        try tmp.file("Steam/steamapps/appmanifest_50.acf", Data("""
+            "AppState" { "appid" "50" "name" "Opposing Force" "StateFlags" "4" "installdir" "Half-Life"
+            "InstalledDepots" { "2" { "manifest" "1" } } }
+            """.utf8))
+        let both = FolderContents.identity(of: [
+            (path: "liblist.gam", sha1: Hashing.sha1(Self.gearbox["gearbox/liblist.gam"]!)), (path: "opfor.txt", sha1: Hashing.sha1(extra)),
+        ])
+        func catalog(alongside: [Int]?) -> CatalogDocument {
+            CatalogDocument(
+                issued: Date(timeIntervalSince1970: 0),
+                platforms: [Platform(id: "windows", name: "Windows", shortName: "Windows", medium: .file)],
+                games: [Game(id: "opfor", name: "Opposing Force", platform: "windows")],
+                roms: [KnownROM(sha1: both, game: "opfor", name: "Steam", format: ROMRecord.folderFormat,
+                    steam: KnownROM.Steam(app: 50, folder: "gearbox", alongside: alongside))],
+                ports: [Catalogs.entry("xash3d-opposing-force", game: "opfor", requirements: [
+                    Requirement(label: "Opposing Force", stage: .runtime, oneOf: [both], seedPath: "Library/Application Support/Xash3D FWGS/gearbox"),
+                ])])
+        }
+        let store = ROMStore(paths: tmp.paths, steam: steam)
+        #expect(await store.steamOffers(catalog: catalog(alongside: nil)).map(\.matches) == [false])
+        #expect(await store.steamOffers(catalog: catalog(alongside: [70])).map(\.matches) == [true])
+        // Not installed until every app alongside is.
+        #expect(await store.steamOffers(catalog: catalog(alongside: [70, 130])).isEmpty)
+        guard case .added(let record) = await store.addFromSteam(both, catalog: catalog(alongside: [70])).first else {
+            Issue.record("not added"); return
+        }
+        #expect(record.sha1 == both)
     }
 
     @Test func anInstalledROMIsOfferedUntilItIsAdded() async throws {

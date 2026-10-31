@@ -228,23 +228,35 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
     /// For a folder ROM: the files the Game rewrites as it plays, such as Half-Life's `config.cfg`, relative to the
     /// folder. Its identity and ROMs leave them out, so a played folder still matches, and the Port writes its own.
     public var configs: [String]?
-    /// For a folder ROM Steam installs: where, so Frontport can find it in the user's Steam library.
+    /// For a ROM Steam installs: where, so Frontport can find it in the user's Steam library.
     public var steam: Steam?
     /// The added Catalog that lists it, nil for Frontport's own. Set when Frontport reads the Catalogs as one, never
     /// taken from a document.
     public var catalog: URL?
 
-    /// Where Steam installs a folder ROM: its app's install folder, or a folder inside it.
+    /// Where Steam installs a ROM: a folder ROM is its app's install folder or a folder inside it, any other ROM a
+    /// file inside it.
     public struct Steam: Codable, Hashable, Sendable {
         /// The Steam app id, such as 70 for Half-Life.
         public var app: Int
-        /// The folder inside the app's install folder, such as `valve`; nil for the install folder itself.
+        /// For a folder ROM: the folder inside the app's install folder, such as `valve`; nil for the install folder
+        /// itself.
         public var folder: String?
+        /// For any other ROM: the file inside the app's install folder, such as `base/DOOM.WAD`.
+        public var file: String?
+        /// For a folder ROM: other apps installed in the same install folder whose files are in it too, such as Doom 3's
+        /// in Resurrection of Evil's `d3xp`. The ROM is installed only once they all are.
+        public var alongside: [Int]?
 
-        public init(app: Int, folder: String? = nil) {
+        public init(app: Int, folder: String? = nil, file: String? = nil, alongside: [Int]? = nil) {
             self.app = app
             self.folder = folder
+            self.file = file
+            self.alongside = alongside
         }
+
+        /// Relative to the app's install folder: the ROM's file or folder, nil for the install folder itself.
+        public var path: String? { file ?? folder }
     }
 
     public var id: String { sha1 }

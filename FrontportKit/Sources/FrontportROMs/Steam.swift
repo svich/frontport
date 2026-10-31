@@ -59,8 +59,9 @@ public struct SteamLibrary: Sendable {
                     let id = state["appid"]?.string.flatMap({ Int($0) }),
                     let installdir = state["installdir"]?.string, !installdir.isEmpty, !installdir.contains("/"),
                     installdir != ".", installdir != "..",
-                    // StateFlags 4 is fully installed; any other flag is an update, a download or a validation underway.
-                    state["StateFlags"]?.string == "4"
+                    // StateFlags 4 is fully installed, and 64 that the app is running, which Steam can leave set; any
+                    // other flag is an update, a download or a validation underway.
+                    let flags = state["StateFlags"]?.string.flatMap({ Int($0) }), flags & 4 != 0, flags & ~(4 | 64) == 0
                 else { continue }
                 let depots = (state["InstalledDepots"]?.children ?? []).compactMap { key, depot -> Depot? in
                     guard let id = Int(key), let manifest = depot["manifest"]?.string, UInt64(manifest) != nil else { return nil }
@@ -110,6 +111,26 @@ public struct SteamLibrary: Sendable {
         }
         let location = folder.map { app.folder.appending(path: $0, directoryHint: .isDirectory) } ?? app.folder
         return SteamContents(folder: location, files: files)
+    }
+
+    /// A file ROM in the app as Steam's manifests list it: where it is, and the SHA-1 it should have.
+    func file(of app: App, path: String) throws -> (url: URL, sha1: String) {
+        // An added Catalog isn't linted, so its file mustn't lead out of the install folder.
+        guard !path.hasPrefix("/"),
+            !path.split(separator: "/", omittingEmptySubsequences: false).contains(where: { $0.isEmpty || $0 == "." || $0 == ".." })
+        else { throw rejected("The Catalog names a Steam file outside \(app.name)’s install folder.") }
+        for depot in app.depots {
+            guard let url = manifest(of: depot, in: app) else {
+                throw rejected("Steam’s list of the files of \(app.name) is missing. Verify its files in Steam, then try again.")
+            }
+            // Steam's names keep the case of the files on Windows, where it doesn't matter, so neither does it here.
+            if let entry = try DepotManifest.entries(of: url).first(where: {
+                !$0.isDirectory && !$0.isLink && $0.path.caseInsensitiveCompare(path) == .orderedSame
+            }) {
+                return (app.folder.appending(path: entry.path, directoryHint: .notDirectory), entry.sha1)
+            }
+        }
+        throw rejected("Steam lists no \(path) in \(app.name).")
     }
 
     private func rejected(_ reason: String) -> FrontportError {

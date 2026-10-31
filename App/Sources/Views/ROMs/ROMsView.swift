@@ -194,7 +194,7 @@ private struct SteamCard: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .calloutBackground(.secondary, cornerRadius: 12)
-        .help(offer.folder.path(percentEncoded: false))
+        .help(offer.location.path(percentEncoded: false))
         .testContainer("roms.steam.\(offer.sha1)")
     }
 
