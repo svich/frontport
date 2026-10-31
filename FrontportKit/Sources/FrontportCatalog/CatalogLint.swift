@@ -67,6 +67,14 @@ extension CatalogDocument {
             if let steam = rom.steam {
                 if steam.app <= 0 { problems.append("ROM \(rom.sha1) has a malformed Steam app id.") }
                 if rom.isFolder, steam.file != nil { problems.append("ROM \(rom.sha1) is a folder ROM but names a Steam file.") }
+                if let depots = steam.depots {
+                    let apps = Set([steam.app] + (steam.alongside ?? []))
+                    if depots.isEmpty || Set(depots.map(\.depot)).count != depots.count
+                        || depots.contains(where: { $0.depot <= 0 || UInt64($0.manifest) == nil || !apps.contains($0.app ?? steam.app) })
+                    {
+                        problems.append("ROM \(rom.sha1) has malformed Steam depots.")
+                    }
+                }
                 if let alongside = steam.alongside {
                     if !rom.isFolder { problems.append("ROM \(rom.sha1) isn’t a folder ROM but has Steam apps alongside.") }
                     if alongside.isEmpty || alongside.contains(where: { $0 <= 0 || $0 == steam.app }) || Set(alongside).count != alongside.count {

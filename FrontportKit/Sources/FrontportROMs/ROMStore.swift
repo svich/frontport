@@ -192,6 +192,70 @@ public actor ROMStore: ROMStoring {
         }
     }
 
+    public func steamDownloads(catalog: CatalogDocument) async -> [String] {
+        guard steam.client() != nil else { return [] }
+        return catalog.roms.filter { known in
+            known.steam?.depots != nil && catalog.listing(known.sha1).rom != nil
+                && presentRecord(known.sha1).map { Self.givesWay($0, to: nil) } ?? true
+        }.map(\.sha1)
+    }
+
+    public func downloadFromSteam(
+        _ sha1: String, catalog: CatalogDocument, progress: @escaping @Sendable (Double) -> Void
+    ) async -> [ROMIntake] {
+        guard let known = catalog.roms.first(where: { $0.sha1 == sha1 }), let steam = known.steam, let depots = steam.depots,
+            catalog.listing(sha1).rom != nil
+        else { return [.rejected(file: self.steam.root, sha1: sha1, reason: "The Catalog doesn’t say how Steam downloads this ROM.")] }
+        if let existing = presentRecord(sha1), !Self.givesWay(existing, to: nil) { return [.duplicate(existing)] }
+        let library = self.steam
+        let name = known.game.flatMap { catalog.game($0)?.name } ?? known.name
+        var folders: [URL] = []
+        // What Steam downloaded is Frontport's to remove, whatever happens: each depot's folder and the state Steam
+        // keeps beside it, `state_<app>_<depot>.patch`, then the app's folder once it's empty.
+        defer {
+            for folder in folders {
+                let app = folder.deletingLastPathComponent()
+                let state = "state_\(app.lastPathComponent.dropFirst("app_".count))_\(folder.lastPathComponent.dropFirst("depot_".count)).patch"
+                try? FileOperations.removeUntrusted(folder)
+                unlink(app.appending(path: state).path(percentEncoded: false))
+                rmdir(app.path(percentEncoded: false))
+            }
+        }
+        do {
+            for (index, depot) in depots.enumerated() {
+                let share = 1 / Double(depots.count)
+                let folder = try await library.download(depot, of: depot.app ?? steam.app, name: name) { fraction in
+                    progress((Double(index) + fraction) * share * 0.9)
+                }
+                folders.append(folder)
+            }
+            let work = try workFolder()
+            defer { try? FileOperations.removeUntrusted(work) }
+            // Named as the Game, as an install folder is, since a ROM that's the whole folder keeps its name.
+            let installed = work.appending(path: name.replacingOccurrences(of: "/", with: " "), directoryHint: .isDirectory)
+            try SteamLibrary.merge(folders, into: installed)
+            let app = SteamLibrary.App(
+                id: steam.app, name: name, buildID: nil, folder: installed, library: library.root,
+                depots: depots.map { SteamLibrary.Depot(id: $0.depot, manifest: $0.manifest) })
+            if let path = steam.file {
+                let results = await add(try library.file(of: app, path: path).url, catalog: catalog)
+                progress(1)
+                return results
+            }
+            let contents = try library.contents(of: app, folder: steam.folder, leaving: Set(known.configs ?? []))
+            let candidate = try await Intake.steamFolder(contents, as: sha1, appName: name)
+            let result = try commit(try await Intake.stage(candidate, in: work), candidate, known)
+            progress(1)
+            return [result]
+        } catch is CancellationError {
+            return [.rejected(file: library.root, sha1: sha1, reason: "Downloading was cancelled.")]
+        } catch FrontportError.romRejected(let hash, let reason) {
+            return [.rejected(file: library.root, sha1: hash ?? sha1, reason: reason)]
+        } catch {
+            return [.rejected(file: library.root, sha1: sha1, reason: Self.describe(error))]
+        }
+    }
+
     /// The ROMs at `file` in Steam's libraries: the ROM whose folder it is, or every ROM in the install folder it is.
     /// None when it isn't in one.
     private func addFromSteam(at file: URL, catalog: CatalogDocument) async -> [ROMIntake] {

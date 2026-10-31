@@ -82,6 +82,10 @@ final class AppModel {
     /// ROMs a Requirement accepts that Steam has installed and ROMs doesn't hold yet, read when Frontport loads, comes
     /// to the front or its ROMs change.
     private(set) var steamOffers: [SteamOffer] = []
+    /// ROMs a Requirement accepts that Steam can download at the build the Catalog pins, read with `steamOffers`.
+    private(set) var steamDownloads: [String] = []
+    /// The ROM Steam is downloading for Frontport, and the fraction done.
+    private(set) var steamDownload: (sha1: String, fraction: Double)?
 
     /// What Frontport last found in the Catalog, the Library, ROMs and Releases.
     let survey: Survey
@@ -556,6 +560,38 @@ final class AppModel {
         guard let services, let catalog = survey.catalog else { return }
         let offers = await services.roms.steamOffers(catalog: catalog)
         if offers != steamOffers { steamOffers = offers }
+        let downloads = await services.roms.steamDownloads(catalog: catalog)
+        if downloads != steamDownloads { steamDownloads = downloads }
+    }
+
+    /// The ROM Steam can download for the Port when it hasn't installed one the Port accepts: the first its
+    /// Requirements list.
+    func steamDownload(for port: PortID) -> String? {
+        guard steamOffers(for: port).isEmpty, let entry = survey.entry(port) else { return nil }
+        return entry.requirements.flatMap(\.oneOf).first { steamDownloads.contains($0) }
+    }
+
+    /// Whether Steam could download a ROM the Port accepts once it's installed: the Catalog pins a ROM's depots, but
+    /// Steam can't download it now.
+    func needsSteamToDownload(for port: PortID) -> Bool {
+        guard steamOffers(for: port).isEmpty, steamDownload(for: port) == nil, let entry = survey.entry(port),
+            let catalog = survey.catalog
+        else { return false }
+        let pinned = Set(catalog.roms.filter { $0.steam?.depots != nil }.map(\.sha1))
+        return !entry.acceptedROMs.isDisjoint(with: pinned)
+    }
+
+    /// Has Steam download the ROM, adds it as Steam installed it, and applies it as `addROMs` does.
+    func downloadFromSteam(_ sha1: String) async -> [ROMIntake] {
+        guard let services, let catalog = survey.catalog, steamDownload == nil else { return [] }
+        steamDownload = (sha1, 0)
+        defer { steamDownload = nil }
+        let results = await services.roms.downloadFromSteam(sha1, catalog: catalog) { fraction in
+            Task { @MainActor [weak self] in
+                if self?.steamDownload?.sha1 == sha1 { self?.steamDownload = (sha1, fraction) }
+            }
+        }
+        return await applied(results)
     }
 
     /// The ROMs Steam installed, as the Catalog lists them, that the Port accepts.

@@ -111,12 +111,26 @@ private struct NeededCard: View {
                 Text(reason)
                     .font(.callout)
                     .foregroundStyle(.secondary)
+                if !needed.isUnseeded, needsSteam {
+                    Link("Install Steam to download it from your Steam library", destination: Self.steam)
+                        .font(.callout)
+                        .help("Steam downloads the build Frontport accepts, with your sign-in, once it’s installed.")
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if !needed.isUnseeded, !steamOffers.isEmpty {
                 Button("Add from Steam") { Task { await viewState.addFromSteam(steamOffers, to: model) } }
                     .buttonStyle(.addROM)
                     .disabled(viewState.isAddingROMs)
+            } else if !needed.isUnseeded, let download = steamDownload, model.steamDownload?.sha1 == download {
+                ProgressView(value: model.steamDownload?.fraction ?? 0) { Text("Downloading from Steam…").font(.callout) }
+                    .frame(width: 180)
+            } else if !needed.isUnseeded, let download = steamDownload {
+                Button("Download from Steam") { Task { await viewState.downloadFromSteam(download, to: model) } }
+                    .buttonStyle(.addROM)
+                    .disabled(viewState.isAddingROMs)
+                    .help("Steam downloads the build Frontport accepts, with your sign-in; the Game must be in your Steam library.")
+                    .accessibilityIdentifier("roms.steam.download.\(download)")
             } else if !needed.isUnseeded {
                 Button("Add ROM…") { viewState.isImportingROMs = true }
                     .buttonStyle(.addROM)
@@ -138,6 +152,18 @@ private struct NeededCard: View {
     private var steamOffers: [SteamOffer] {
         let ids = Set(needed.ports.flatMap { model.steamOffers(for: $0.id) }.map(\.sha1))
         return model.steamOffers.filter { ids.contains($0.sha1) }
+    }
+
+    static let steam = URL(string: "https://store.steampowered.com/about/")!
+
+    /// Whether Steam could download what these Ports accept once it's installed.
+    private var needsSteam: Bool {
+        steamDownload == nil && needed.ports.contains { model.needsSteamToDownload(for: $0.id) }
+    }
+
+    /// What Steam can download that these Ports accept, when it hasn't installed one.
+    private var steamDownload: String? {
+        needed.ports.lazy.compactMap { model.steamDownload(for: $0.id) }.first
     }
 
     /// Every Port waits for itself to quit before Seeding.

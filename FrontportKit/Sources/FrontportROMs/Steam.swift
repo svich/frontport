@@ -8,13 +8,39 @@ import FrontportCore
 public struct SteamLibrary: Sendable {
     /// Steam's own folder, which holds `depotcache` and the first library.
     public var root: URL
+    /// Steam's client as it is now: what starts it with console commands on its command line, which a running Steam
+    /// takes from it, or nil while Steam isn't installed. Looked up each time, so Steam installed while Frontport is
+    /// open counts without relaunching it.
+    public var client: @Sendable () -> (@Sendable (_ arguments: [String]) throws -> Void)?
 
-    public init(root: URL) {
+    public init(root: URL, client: @escaping @Sendable () -> (@Sendable (_ arguments: [String]) throws -> Void)? = { nil }) {
         self.root = root
+        self.client = client
     }
 
     public static let `default` = SteamLibrary(
-        root: FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Application Support/Steam", directoryHint: .isDirectory))
+        root: FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Application Support/Steam", directoryHint: .isDirectory),
+        client: { executable.map(run) })
+
+    /// Runs Steam's executable with `arguments`, without waiting: it hands them to a running Steam and quits, or is
+    /// Steam.
+    private static func run(_ client: URL) -> @Sendable ([String]) throws -> Void {
+        { arguments in
+            let process = Process()
+            process.executableURL = client
+            process.arguments = arguments
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            try process.run()
+        }
+    }
+
+    /// Steam's executable, in Steam.app in either Applications folder.
+    static var executable: URL? {
+        [URL(filePath: "/Applications"), FileManager.default.homeDirectoryForCurrentUser.appending(path: "Applications")]
+            .map { $0.appending(path: "Steam.app/Contents/MacOS/steam_osx") }
+            .first { FileManager.default.isExecutableFile(atPath: $0.path(percentEncoded: false)) }
+    }
 
     /// An app Steam has installed.
     struct App: Hashable, Sendable {
@@ -133,7 +159,7 @@ public struct SteamLibrary: Sendable {
         throw rejected("Steam lists no \(path) in \(app.name).")
     }
 
-    private func rejected(_ reason: String) -> FrontportError {
+    func rejected(_ reason: String) -> FrontportError {
         .romRejected(sha1: nil, reason: reason)
     }
 }

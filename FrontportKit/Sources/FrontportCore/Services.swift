@@ -131,6 +131,14 @@ public protocol ROMStoring: Sendable {
     /// its Game rewrites, so saves and settings written beside them don't stop it matching.
     func addFromSteam(_ sha1: String, catalog: CatalogDocument) async -> [ROMIntake]
 
+    /// The ROMs a Requirement accepts that ROMs doesn't hold and Steam can download, at the build the Catalog pins:
+    /// those whose depots it lists, when Steam is installed. Whether the user owns the Game, only Steam knows.
+    func steamDownloads(catalog: CatalogDocument) async -> [String]
+
+    /// Has Steam download the ROM `sha1` names, depot by depot, then adds it as Steam installed it and removes what
+    /// Steam downloaded. `progress` gets the fraction done.
+    func downloadFromSteam(_ sha1: String, catalog: CatalogDocument, progress: @escaping @Sendable (Double) -> Void) async -> [ROMIntake]
+
     /// Reads ROMs, and the Data of each entry with an Installation in `installations`, into where each entry's
     /// Requirements stand. A reading is as of now: adding or removing a ROM, a change of Release and anything a Port
     /// does to its Data can make it out of date. It never fails: a Data folder it can't read holds nothing Seeded. Its

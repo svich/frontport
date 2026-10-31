@@ -247,12 +247,33 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
         /// For a folder ROM: other apps installed in the same install folder whose files are in it too, such as Doom 3's
         /// in Resurrection of Evil's `d3xp`. The ROM is installed only once they all are.
         public var alongside: [Int]?
+        /// The depots, at the manifests, that hold the ROM's files, in the order Steam installs them, so a file two
+        /// list is the later one's. Frontport has Steam download them when the app isn't installed, or is installed
+        /// at another build.
+        public var depots: [Depot]?
 
-        public init(app: Int, folder: String? = nil, file: String? = nil, alongside: [Int]? = nil) {
+        public init(app: Int, folder: String? = nil, file: String? = nil, alongside: [Int]? = nil, depots: [Depot]? = nil) {
             self.app = app
             self.folder = folder
             self.file = file
             self.alongside = alongside
+            self.depots = depots
+        }
+
+        /// A depot at one manifest: one build of its files.
+        public struct Depot: Codable, Hashable, Sendable {
+            /// The depot id, such as 38405.
+            public var depot: Int
+            /// The manifest id, decimal, as Steam writes it.
+            public var manifest: String
+            /// The app whose depot it is, when it's an app alongside rather than the ROM's own.
+            public var app: Int?
+
+            public init(depot: Int, manifest: String, app: Int? = nil) {
+                self.depot = depot
+                self.manifest = manifest
+                self.app = app
+            }
         }
 
         /// Relative to the app's install folder: the ROM's file or folder, nil for the install folder itself.
