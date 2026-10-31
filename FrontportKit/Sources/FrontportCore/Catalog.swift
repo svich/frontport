@@ -225,9 +225,27 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
     /// `update` or `dlc`, for a Game's update or DLC, which nothing else tells from the Game itself. Every other
     /// ROM's Type is told from its format and its Game's Platform.
     public var type: ROMType?
+    /// For a folder ROM: the files the Game rewrites as it plays, such as Half-Life's `config.cfg`, relative to the
+    /// folder. Its identity and ROMs leave them out, so a played folder still matches, and the Port writes its own.
+    public var configs: [String]?
+    /// For a folder ROM Steam installs: where, so Frontport can find it in the user's Steam library.
+    public var steam: Steam?
     /// The added Catalog that lists it, nil for Frontport's own. Set when Frontport reads the Catalogs as one, never
     /// taken from a document.
     public var catalog: URL?
+
+    /// Where Steam installs a folder ROM: its app's install folder, or a folder inside it.
+    public struct Steam: Codable, Hashable, Sendable {
+        /// The Steam app id, such as 70 for Half-Life.
+        public var app: Int
+        /// The folder inside the app's install folder, such as `valve`; nil for the install folder itself.
+        public var folder: String?
+
+        public init(app: Int, folder: String? = nil) {
+            self.app = app
+            self.folder = folder
+        }
+    }
 
     public var id: String { sha1 }
 
@@ -235,7 +253,7 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
 
     public init(
         sha1: String, game: GameID?, platform: PlatformID? = nil, name: String, format: String, unpack: Unpack? = nil,
-        type: ROMType? = nil, catalog: URL? = nil
+        type: ROMType? = nil, configs: [String]? = nil, steam: Steam? = nil, catalog: URL? = nil
     ) {
         self.sha1 = sha1
         self.game = game
@@ -244,6 +262,8 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
         self.format = format
         self.unpack = unpack
         self.type = type
+        self.configs = configs
+        self.steam = steam
         self.catalog = catalog
     }
 }
@@ -764,6 +784,17 @@ public struct CatalogDocument: Codable, Hashable, Sendable {
     }
 
     // MARK: ROMs
+
+    /// The files each folder ROM that has them leaves out as ones its Game rewrites, one set per such ROM, for intake to
+    /// try a folder without.
+    public var configs: [Set<String>] {
+        var sets: [Set<String>] = []
+        for rom in roms where rom.isFolder {
+            guard let configs = rom.configs, !configs.isEmpty, !sets.contains(Set(configs)) else { continue }
+            sets.append(Set(configs))
+        }
+        return sets
+    }
 
     /// What the Catalog makes of a file with this hash. Intake, the ROMs screen and the store page all read it here.
     public enum Listing: Hashable, Sendable {

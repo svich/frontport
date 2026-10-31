@@ -57,6 +57,10 @@ _Avoid_: dump, image, game file
 What a ROM is: Cartridge, ISO, Folder, File, Key, Firmware, Update or DLC. The Catalog marks a Game's updates and DLC, which nothing else tells from the Game itself. Otherwise a Game's folder is a Folder, its `.iso` an ISO, and any other ROM of it is what its Platform's Games come on, so a Switch game is a Cartridge as an NSP too. A Platform's console keys are a Key, and its other own files, such as a Switch firmware, are Firmware.
 _Avoid_: kind, format, media
 
+**Config**:
+A file a PC Game rewrites as it plays, such as Half-Life's `config.cfg`. The Catalog lists a folder ROM's Configs, and its identity and ROMs leave them out, so a played copy still matches; the Port writes its own.
+_Avoid_: settings, user file
+
 **Installer**:
 A file the Catalog knows that holds ROMs rather than being one, such as a Game's GOG setup program or a PC Game's CD image. Frontport unpacks it in the build sandbox and keeps only the ROMs it holds.
 _Avoid_: setup, package, archive

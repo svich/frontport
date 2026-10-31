@@ -185,6 +185,30 @@ public struct ROMFile: Hashable, Sendable {
 }
 
 /// The outcome of adding one file to ROMs.
+/// A ROM the Catalog accepts that Steam has installed, ready to add without finding its folder.
+public struct SteamOffer: Hashable, Sendable, Identifiable {
+    /// The ROM the Catalog lists.
+    public var sha1: String
+    /// The Steam app that installed it, and its name in Steam.
+    public var app: Int
+    public var appName: String
+    /// Where its files are.
+    public var folder: URL
+    /// True when Steam's manifests say its files make that ROM. False when Steam installed another build, which
+    /// adding would refuse.
+    public var matches: Bool
+
+    public var id: String { sha1 }
+
+    public init(sha1: String, app: Int, appName: String, folder: URL, matches: Bool) {
+        self.sha1 = sha1
+        self.app = app
+        self.appName = appName
+        self.folder = folder
+        self.matches = matches
+    }
+}
+
 public enum ROMIntake: Hashable, Sendable {
     case added(ROMRecord)
     /// Already in ROMs; nothing changed.

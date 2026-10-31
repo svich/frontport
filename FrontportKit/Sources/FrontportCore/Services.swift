@@ -123,6 +123,14 @@ public protocol ROMStoring: Sendable {
     /// Removes a ROM from ROMs. Installed Ports keep working.
     func remove(_ sha1: String) async throws
 
+    /// The ROMs a Requirement accepts that Steam has installed and ROMs doesn't hold yet, read from Steam's own files
+    /// without hashing any of the Game's.
+    func steamOffers(catalog: CatalogDocument) async -> [SteamOffer]
+
+    /// Adds the ROM `sha1` names from where Steam installed it: just the files Steam's manifests list, less the ones
+    /// its Game rewrites, so saves and settings written beside them don't stop it matching.
+    func addFromSteam(_ sha1: String, catalog: CatalogDocument) async -> [ROMIntake]
+
     /// Reads ROMs, and the Data of each entry with an Installation in `installations`, into where each entry's
     /// Requirements stand. A reading is as of now: adding or removing a ROM, a change of Release and anything a Port
     /// does to its Data can make it out of date. It never fails: a Data folder it can't read holds nothing Seeded. Its

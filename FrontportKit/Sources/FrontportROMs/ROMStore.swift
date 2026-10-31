@@ -10,12 +10,15 @@ public actor ROMStore: ROMStoring {
     public nonisolated let paths: AppPaths
     /// Unpacks installers the Catalog lists; without one, they're refused.
     private let unpacker: (any ROMUnpacking)?
+    /// Where Steam keeps its libraries, for the ROMs Steam installs.
+    private nonisolated let steam: SteamLibrary
     /// Oldest first. Nil until first read from disk.
     private var index: [ROMRecord]?
 
-    public init(paths: AppPaths = .default, unpacker: (any ROMUnpacking)? = nil) {
+    public init(paths: AppPaths = .default, unpacker: (any ROMUnpacking)? = nil, steam: SteamLibrary = .default) {
         self.paths = paths
         self.unpacker = unpacker
+        self.steam = steam
     }
 
     // MARK: Lookup
@@ -60,6 +63,12 @@ public actor ROMStore: ROMStoring {
     /// One result, or for an installer one per ROM it holds. With `target`, a file the Catalog doesn't list is kept
     /// Unverified as the ROM it names.
     private func add(_ file: URL, catalog: CatalogDocument, as target: String? = nil) async -> [ROMIntake] {
+        // A Steam install folder, or a ROM's folder in one, is added as Steam installed it, leaving out what the Game
+        // wrote there. Only if that fails is it taken as any folder, which the user may then keep Unverified.
+        if target == nil {
+            let fromSteam = await addFromSteam(at: file, catalog: catalog)
+            if fromSteam.contains(where: { if case .rejected = $0 { false } else { true } }) { return fromSteam }
+        }
         var sha1: String?
         do {
             try Task.checkCancellation()
@@ -67,7 +76,8 @@ public actor ROMStore: ROMStoring {
             // A folder ROM's staged copy is read-only until it's in ROMs.
             defer { try? FileOperations.removeUntrusted(work) }
 
-            let candidate = try await Intake.prepare(file, in: work, accepts: { catalog.listing($0).rom != nil })
+            let candidate = try await Intake.prepare(
+                file, in: work, accepts: { catalog.listing($0).rom != nil }, configs: catalog.configs)
             sha1 = candidate.sha1
             let known: KnownROM
             var ownSHA1: String?
@@ -129,7 +139,8 @@ public actor ROMStore: ROMStoring {
         for folder in folders {
             try Task.checkCancellation()
             // What else the installer holds, such as an emulator, may well not be a folder ROM at all.
-            guard let yielded = try? await Intake.prepareFolder(folder), yields.contains(yielded.sha1),
+            guard let yielded = try? await Intake.prepareFolder(folder, accepts: { yields.contains($0) }, configs: catalog.configs),
+                yields.contains(yielded.sha1),
                 let known = catalog.listing(yielded.sha1).rom
             else { continue }
             if let existing = presentRecord(yielded.sha1), !Self.givesWay(existing, to: nil) {
@@ -145,6 +156,73 @@ public actor ROMStore: ROMStoring {
                 sha1: candidate.sha1, reason: "\(installer.name) held none of the ROMs the Catalog expects from it.")
         }
         return results
+    }
+
+    // MARK: Steam
+
+    public func steamOffers(catalog: CatalogDocument) async -> [SteamOffer] {
+        let installed = await Self.steamROMs(in: steam, catalog: catalog)
+        return installed.compactMap { known, app in
+            if let existing = presentRecord(known.sha1), !Self.givesWay(existing, to: nil) { return nil }
+            let contents = try? steam.contents(of: app, folder: known.steam?.folder, leaving: Set(known.configs ?? []))
+            guard let contents else { return nil }
+            return SteamOffer(
+                sha1: known.sha1, app: app.id, appName: app.name, folder: contents.folder, matches: contents.sha1 == known.sha1)
+        }
+    }
+
+    public func addFromSteam(_ sha1: String, catalog: CatalogDocument) async -> [ROMIntake] {
+        let installed = await Self.steamROMs(in: steam, catalog: catalog)
+        guard let (known, app) = installed.first(where: { $0.0.sha1 == sha1 }) else {
+            let file = steam.root
+            return [.rejected(file: file, sha1: sha1, reason: "Steam doesn’t have this game installed.")]
+        }
+        return [await addFromSteam(known, app)]
+    }
+
+    /// The ROMs at `file` in Steam's libraries: the ROM whose folder it is, or every ROM in the install folder it is.
+    /// None when it isn't in one.
+    private func addFromSteam(at file: URL, catalog: CatalogDocument) async -> [ROMIntake] {
+        let path = file.resolvingSymlinksInPath().standardizedFileURL.path(percentEncoded: false)
+        func same(_ url: URL) -> Bool {
+            url.resolvingSymlinksInPath().standardizedFileURL.path(percentEncoded: false).trimmingCharacters(in: ["/"])
+                == path.trimmingCharacters(in: ["/"])
+        }
+        let installed = await Self.steamROMs(in: steam, catalog: catalog)
+        let atFile = installed.filter { known, app in
+            same(app.folder) || same(known.steam?.folder.map { app.folder.appending(path: $0) } ?? app.folder)
+        }
+        var results: [ROMIntake] = []
+        for (known, app) in atFile { results.append(await addFromSteam(known, app)) }
+        return results
+    }
+
+    private func addFromSteam(_ known: KnownROM, _ app: SteamLibrary.App) async -> ROMIntake {
+        let folder = known.steam?.folder.map { app.folder.appending(path: $0) } ?? app.folder
+        do {
+            try Task.checkCancellation()
+            if let existing = presentRecord(known.sha1), !Self.givesWay(existing, to: nil) { return .duplicate(existing) }
+            let contents = try steam.contents(of: app, folder: known.steam?.folder, leaving: Set(known.configs ?? []))
+            let work = try workFolder()
+            defer { try? FileOperations.removeUntrusted(work) }
+            let candidate = try await Intake.steamFolder(contents, as: known.sha1, appName: app.name)
+            return try commit(try await Intake.stage(candidate, in: work), candidate, known)
+        } catch is CancellationError {
+            return .rejected(file: folder, sha1: nil, reason: "Adding was cancelled.")
+        } catch FrontportError.romRejected(let hash, let reason) {
+            return .rejected(file: folder, sha1: hash, reason: reason)
+        } catch {
+            return .rejected(file: folder, sha1: nil, reason: Self.describe(error))
+        }
+    }
+
+    /// Each ROM a Requirement accepts whose Steam app is installed, with that app, read off the actor.
+    @concurrent
+    private static func steamROMs(in steam: SteamLibrary, catalog: CatalogDocument) async -> [(KnownROM, SteamLibrary.App)] {
+        let wanted = catalog.roms.filter { $0.isFolder && $0.steam != nil && catalog.listing($0.sha1).rom != nil }
+        guard !wanted.isEmpty else { return [] }
+        let apps = Dictionary(steam.apps().map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return wanted.compactMap { known in known.steam.flatMap { apps[$0.app] }.map { (known, $0) } }
     }
 
     static let unlisted = "No ROM in the Catalog has this hash."

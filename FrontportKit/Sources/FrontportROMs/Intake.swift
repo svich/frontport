@@ -25,16 +25,17 @@ enum Intake {
     /// decides between the standard forms console keys can take.
     @concurrent
     static func prepare(
-        _ file: URL, in work: URL, accepts: @Sendable (String) -> Bool = { _ in false }
+        _ file: URL, in work: URL, accepts: @Sendable (String) -> Bool = { _ in false }, configs: [Set<String>] = []
     ) async throws -> Candidate {
         let resolved = file.resolvingSymlinksInPath()
-        if FileOperations.isDirectory(resolved) { return try folder(resolved, owned: false) }
+        if FileOperations.isDirectory(resolved) { return try folder(resolved, owned: false, accepts: accepts, configs: configs) }
         var rom = try regularFile(file)
         var owned = false
         if rom.pathExtension.lowercased() == "zip" {
             switch try await unzip(rom, into: work) {
             case .file(let unzipped): rom = unzipped
-            case .folder(let unzipped): return try folder(unzipped, owned: true, named: rom.lastPathComponent)
+            case .folder(let unzipped):
+                return try folder(unzipped, owned: true, named: rom.lastPathComponent, accepts: accepts, configs: configs)
             }
             owned = true
         }
@@ -69,18 +70,70 @@ enum Intake {
 
     /// A folder an installer held, as a folder ROM, hashed off the caller's actor.
     @concurrent
-    static func prepareFolder(_ folder: URL) async throws -> Candidate {
-        try Intake.folder(folder, owned: false)
+    static func prepareFolder(
+        _ folder: URL, accepts: @Sendable (String) -> Bool = { _ in false }, configs: [Set<String>] = []
+    ) async throws -> Candidate {
+        try Intake.folder(folder, owned: false, accepts: accepts, configs: configs)
     }
 
     /// A folder ROM: the game's files under `folder`, without the folders wrapping them. `name` is the zip's it came in.
-    static func folder(_ folder: URL, owned: Bool, named name: String? = nil) throws -> Candidate {
+    /// When the Catalog doesn't accept all of them, it may accept them without the files a Game rewrites (`configs`,
+    /// one set per folder ROM that has them), which ROMs then leaves out.
+    static func folder(
+        _ folder: URL, owned: Bool, named name: String? = nil, accepts: (String) -> Bool = { _ in false },
+        configs: [Set<String>] = []
+    ) throws -> Candidate {
         let root = try FolderContents.root(of: folder)
-        let files = try FolderContents.files(in: root)
+        var files = try FolderContents.files(in: root)
+        let hashes = try FolderContents.hashes(of: root, files: files)
+        var sha1 = FolderContents.identity(of: Array(zip(files.map(\.path), hashes)))
+        if !accepts(sha1) {
+            for left in configs {
+                let kept = zip(files, hashes).filter { !left.contains($0.0.path) }
+                guard kept.count < files.count, !kept.isEmpty else { continue }
+                let identity = FolderContents.identity(of: kept.map { ($0.0.path, $0.1) })
+                guard accepts(identity) else { continue }
+                files = kept.map(\.0)
+                sha1 = identity
+                break
+            }
+        }
         return Candidate(
-            file: root, owned: owned, sha1: try FolderContents.identity(of: root, files: files),
-            format: ROMRecord.folderFormat, size: files.reduce(0) { $0 + $1.size }, originalFilename: name ?? root.lastPathComponent,
-            files: files)
+            file: root, owned: owned, sha1: sha1, format: ROMRecord.folderFormat, size: files.reduce(0) { $0 + $1.size },
+            originalFilename: name ?? root.lastPathComponent, files: files)
+    }
+
+    /// A folder ROM Steam installed: just the files its manifests list, whatever else the Game has written beside them,
+    /// hashed. When they don't make the ROM `sha1` names, says which files differ from what Steam installed, or that
+    /// Steam installed another build.
+    @concurrent
+    static func steamFolder(_ contents: SteamContents, as sha1: String, appName: String) async throws -> Candidate {
+        let folder = contents.folder
+        for entry in contents.files {
+            var info = stat()
+            let path = folder.appending(path: entry.file.path).path(percentEncoded: false)
+            guard lstat(path, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else {
+                throw FrontportError.romRejected(
+                    sha1: nil, reason: "\(entry.file.path) is missing from \(appName). Verify its files in Steam, then add it again.")
+            }
+        }
+        let files = contents.files.map(\.file)
+        let hashes = try FolderContents.hashes(of: folder, files: files)
+        let identity = FolderContents.identity(of: Array(zip(files.map(\.path), hashes)))
+        guard identity == sha1 else {
+            let changed = zip(contents.files, hashes).filter { $0.0.sha1 != $0.1 }.map(\.0.file.path)
+            guard let first = changed.first else {
+                throw FrontportError.romRejected(
+                    sha1: identity, reason: "Steam installed another build of \(appName) than the one the Catalog lists.")
+            }
+            let which = changed.count == 1 ? first : "\(changed.count) files, such as \(first),"
+            throw FrontportError.romRejected(
+                sha1: identity,
+                reason: "\(which) in \(appName) changed since Steam installed it. Verify its files in Steam, then add it again.")
+        }
+        return Candidate(
+            file: folder, owned: false, sha1: identity, format: ROMRecord.folderFormat, size: files.reduce(0) { $0 + $1.size },
+            originalFilename: folder.lastPathComponent, files: files)
     }
 
     /// A file in the work folder holding the candidate, ready to be renamed into ROMs. Clones the user's

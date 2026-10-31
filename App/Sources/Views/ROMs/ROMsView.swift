@@ -1,7 +1,7 @@
 import FrontportCore
 import SwiftUI
 
-/// What Library Ports still need, what's been added, and Add ROMs….
+/// What Library Ports still need, what Steam has installed, what's been added, and Add ROMs….
 struct ROMsView: View {
     @Environment(AppModel.self) private var model
     @Environment(ViewState.self) private var viewState
@@ -14,6 +14,12 @@ struct ROMsView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Needed").font(.title3.bold())
                     ForEach(needed) { NeededCard(needed: $0) }
+                }
+            }
+            if !model.steamOffers.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("In Steam").font(.title3.bold())
+                    ForEach(model.steamOffers) { SteamCard(offer: $0) }
                 }
             }
             VStack(alignment: .leading, spacing: 10) {
@@ -107,7 +113,11 @@ private struct NeededCard: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            if !needed.isUnseeded {
+            if !needed.isUnseeded, !steamOffers.isEmpty {
+                Button("Add from Steam") { Task { await viewState.addFromSteam(steamOffers, to: model) } }
+                    .buttonStyle(.addROM)
+                    .disabled(viewState.isAddingROMs)
+            } else if !needed.isUnseeded {
                 Button("Add ROM…") { viewState.isImportingROMs = true }
                     .buttonStyle(.addROM)
             } else if !isWaiting {
@@ -122,6 +132,12 @@ private struct NeededCard: View {
         .padding(.vertical, 12)
         .calloutBackground(.orange, cornerRadius: 12)
         .testContainer("roms.needed.\(needed.id)")
+    }
+
+    /// What Steam installed that these Ports accept.
+    private var steamOffers: [SteamOffer] {
+        let ids = Set(needed.ports.flatMap { model.steamOffers(for: $0.id) }.map(\.sha1))
+        return model.steamOffers.filter { ids.contains($0.sha1) }
     }
 
     /// Every Port waits for itself to quit before Seeding.
@@ -141,6 +157,54 @@ private struct NeededCard: View {
             return failed ? "Seeding it into \(data) failed." : "In your ROMs, but not Seeded into \(data) yet."
         }
         return "\(names) \(single ? "needs" : "need") it to \(needed.stages.contains(.runtime) ? "start" : "build")."
+    }
+}
+
+/// A ROM Steam installed that a Port in the Catalog accepts, ready to add as Steam installed it.
+private struct SteamCard: View {
+    @Environment(AppModel.self) private var model
+    @Environment(ViewState.self) private var viewState
+    let offer: SteamOffer
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Group {
+                if let game = known?.game {
+                    ArtworkImage(.icon, game: game)
+                } else {
+                    Image(systemName: "folder").font(.title2)
+                }
+            }
+            .frame(width: 36, height: 36)
+            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(known.map { model.owner(of: $0) } ?? offer.appName).fontWeight(.semibold)
+                Text(detail)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if offer.matches {
+                Button("Add") { Task { await viewState.addFromSteam([offer], to: model) } }
+                    .buttonStyle(.glass)
+                    .disabled(viewState.isAddingROMs)
+                    .accessibilityIdentifier("roms.steam.add.\(offer.sha1)")
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .calloutBackground(.secondary, cornerRadius: 12)
+        .help(offer.folder.path(percentEncoded: false))
+        .testContainer("roms.steam.\(offer.sha1)")
+    }
+
+    private var known: KnownROM? { model.survey.catalog?.knownROM(offer.sha1) }
+
+    private var detail: String {
+        guard offer.matches else {
+            return "Steam installed another build of \(offer.appName) than \(known?.name ?? "the one the Catalog lists")."
+        }
+        return [known?.name, "Adds Steam’s files, not your saves or settings."].compactMap(\.self).joined(separator: ". ")
     }
 }
 

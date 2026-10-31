@@ -79,6 +79,10 @@ final class AppModel {
 
     // MARK: State
 
+    /// ROMs a Requirement accepts that Steam has installed and ROMs doesn't hold yet, read when Frontport loads, comes
+    /// to the front or its ROMs change.
+    private(set) var steamOffers: [SteamOffer] = []
+
     /// What Frontport last found in the Catalog, the Library, ROMs and Releases.
     let survey: Survey
     /// Ports running from a launch through Frontport.
@@ -248,6 +252,7 @@ final class AppModel {
         refreshOpened()
         steamGridDBKey = await services.artwork.apiKeySource()
         addedCatalogs = await services.catalogs.added()
+        await refreshSteamOffers()
     }
 
     /// Refreshes the Survey (the Catalog and its Blocks, the Library, and every entry's newest Release) and cached
@@ -258,6 +263,7 @@ final class AppModel {
         defer { isRefreshing = false }
         guard await survey.refresh(), let services else { return }
         addedCatalogs = await services.catalogs.added()
+        await refreshSteamOffers()
         guard let catalog = survey.catalog else { return }
         await services.artwork.refresh(catalog.ports)
     }
@@ -462,6 +468,16 @@ final class AppModel {
                 }
             }
         }
+        // Steam may have installed a game while Frontport was in the background.
+        let activation = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let model = self else { return }
+                Task { await model.refreshSteamOffers() }
+            }
+        }
+        workspaceObservers.append(activation)
     }
 
     private nonisolated static let portBundlePrefix = "dev.frontport.port."
@@ -522,7 +538,30 @@ final class AppModel {
             applyROMs(entry.id)
         }
         await survey.romsChanged()
+        await refreshSteamOffers()
         return results
+    }
+
+    /// Adds the ROMs Steam installed, as Steam installed them, and applies them as `addROMs` does.
+    func addFromSteam(_ offers: [SteamOffer]) async -> [ROMIntake] {
+        guard let services, let catalog = survey.catalog else { return [] }
+        var results: [ROMIntake] = []
+        for offer in offers { results += await services.roms.addFromSteam(offer.sha1, catalog: catalog) }
+        return await applied(results)
+    }
+
+    /// Reads which ROMs Steam has installed that ROMs doesn't hold yet. Cheap: it reads Steam's own lists, not the
+    /// Game's files.
+    func refreshSteamOffers() async {
+        guard let services, let catalog = survey.catalog else { return }
+        let offers = await services.roms.steamOffers(catalog: catalog)
+        if offers != steamOffers { steamOffers = offers }
+    }
+
+    /// The ROMs Steam installed, as the Catalog lists them, that the Port accepts.
+    func steamOffers(for port: PortID) -> [SteamOffer] {
+        guard let entry = survey.entry(port) else { return [] }
+        return steamOffers.filter { $0.matches && entry.acceptedROMs.contains($0.sha1) }
     }
 
     /// Seeds the Port's Runtime ROMs that aren't in its Data and regenerates Build Assets for a new Build-Stage ROM.
@@ -560,6 +599,7 @@ final class AppModel {
                 present(error)
             }
             await survey.romsChanged()
+            await refreshSteamOffers()
         }
     }
 

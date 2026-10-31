@@ -357,6 +357,8 @@ actor FakeROMs: ROMStoring {
     func add(_ files: [URL], catalog: CatalogDocument) -> [ROMIntake] { [] }
     func assign(_ file: URL, as sha1: String, catalog: CatalogDocument) -> [ROMIntake] { [] }
     func remove(_ sha1: String) throws { throw Unused() }
+    func steamOffers(catalog: CatalogDocument) -> [SteamOffer] { [] }
+    func addFromSteam(_ sha1: String, catalog: CatalogDocument) -> [ROMIntake] { [] }
     func seed(_ entry: CatalogEntry) throws { throw Unused() }
 }
 

@@ -24,7 +24,8 @@ source.
 - **ROMs:** you add your own game files once. Frontport identifies each ROM
   by its hash and Seeds it into the Data of every Port that needs it. A file
   whose hash the Catalog doesn't list, such as an NSZ, can be kept Unverified
-  as the ROM you choose.
+  as the ROM you choose. Games you own on Steam are found in your Steam
+  library and added with one click, without your saves or settings.
 - **Updates and Rollback:** while it's open, Frontport checks for new
   Releases. It takes a Snapshot of a Port's Data before every update, and a
   Rollback brings back the previous Release with the Data it had then.

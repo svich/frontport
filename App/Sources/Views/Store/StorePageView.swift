@@ -368,7 +368,7 @@ private struct ActionBar: View {
     }
 
     private func button(_ action: Status.Action, _ status: Status, _ identifier: String) -> some View {
-        Button(status.title(action)) { viewState.run(action, for: entry.id, in: model) }
+        Button(model.title(action, for: entry.id)) { viewState.run(action, for: entry.id, in: model) }
             .disabled(!status.allows(action))
             .help(model.help(action, for: entry.id) ?? "")
             .accessibilityIdentifier(identifier)

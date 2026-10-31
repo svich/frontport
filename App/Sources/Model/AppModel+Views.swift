@@ -204,6 +204,12 @@ extension AppModel {
     }
 
     /// Why `action` is disabled for the Port, as help: "Quit Ship of Harkinian to update it". Nil when it isn't.
+    /// An action's title for the Port: Add from Steam for Add ROM… when Steam installed a ROM it accepts.
+    func title(_ action: Status.Action, for port: PortID) -> String {
+        if case .addROM = action, !steamOffers(for: port).isEmpty { return "Add from Steam" }
+        return status(of: port).title(action)
+    }
+
     func help(_ action: Status.Action, for port: PortID) -> String? {
         let status = status(of: port)
         guard case .disabled(let reason) = status.check(action) else { return nil }

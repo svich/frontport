@@ -80,7 +80,7 @@ private struct PortOfTheDay: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 let status = model.status(of: entry.id)
                 if case .addROM(let stage)? = status.main {
-                    Button(status.title(.addROM(stage))) { viewState.run(.addROM(stage), for: entry.id, in: model) }
+                    Button(model.title(.addROM(stage), for: entry.id)) { viewState.run(.addROM(stage), for: entry.id, in: model) }
                         .buttonStyle(.addROM)
                         .controlSize(.large)
                         .help("Frontport needs the ROM to build this Port")

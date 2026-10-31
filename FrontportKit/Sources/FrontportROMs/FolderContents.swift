@@ -55,12 +55,20 @@ enum FolderContents {
 
     /// SHA-1 of `shasum`'s lines for the files, in order.
     static func identity(of folder: URL, files: [File]) throws -> String {
-        var lines = ""
-        for file in files {
+        identity(of: Array(zip(files.map(\.path), try hashes(of: folder, files: files))))
+    }
+
+    /// Each file's SHA-1, in order.
+    static func hashes(of folder: URL, files: [File]) throws -> [String] {
+        try files.map { file in
             try Task.checkCancellation()
-            lines += "\(try Hashing.sha1(file: folder.appending(path: file.path)))  \(file.path)\n"
+            return try Hashing.sha1(file: folder.appending(path: file.path))
         }
-        return Hashing.sha1(Data(lines.utf8))
+    }
+
+    /// SHA-1 of `shasum`'s lines for files whose SHA-1s are known, in order.
+    static func identity(of files: [(path: String, sha1: String)]) -> String {
+        Hashing.sha1(Data(files.map { "\($0.sha1)  \($0.path)\n" }.joined().utf8))
     }
 
     /// Clones `files` from `folder` into a new folder at `destination`, then refuses the copy unless it holds exactly

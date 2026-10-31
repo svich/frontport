@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-10-31T05:30:00Z",
+  "issued": "2026-10-31T18:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -90,7 +90,7 @@
       }
     },
     { "sha1": "b8ab7632030c62079ab22c1f7b4e69818d98db41", "game": "fallout", "name": "Russian CD (1C, 2008)", "format": "folder" },
-    { "sha1": "fe0b065b3a0076f9e0f8eb74d3081e1549e12a81", "game": "gothic-2", "name": "Gold Classic (Steam)", "format": "folder" },
+    { "sha1": "fe0b065b3a0076f9e0f8eb74d3081e1549e12a81", "game": "gothic-2", "name": "Gold Classic (Steam)", "format": "folder", "steam": { "app": 39510 } },
     {
       "sha1": "a55070f0c75bf620062384445e05c4f482945ec4", "game": "fallout", "name": "Russian CD image (1C, 2008)", "format": "iso",
       "unpack": {
@@ -99,9 +99,12 @@
         "yields": ["b8ab7632030c62079ab22c1f7b4e69818d98db41"]
       }
     },
-    { "sha1": "79d8b1955ea8016028b31356199e7351e589ebb4", "game": "half-life", "name": "Steam for macOS (build 15961492): the valve folder", "format": "folder" },
-    { "sha1": "91a92cc8d8a4aad08ac0638da609baa50ae263e9", "game": "half-life-opposing-force", "name": "Steam (build 5429885): the gearbox folder", "format": "folder" },
-    { "sha1": "524ce163fd943be87ecbfa876cce57c3810e99c5", "game": "half-life-blue-shift", "name": "Steam (build 5424832): the bshift folder", "format": "folder" }
+    { "sha1": "4339e1c86cad579a04a4713c1e52995c50b95385", "game": "half-life", "name": "Steam for macOS (build 15961492): the valve folder", "format": "folder",
+      "configs": ["config.cfg", "mapcycle.txt", "server.cfg", "user.scr"], "steam": { "app": 70, "folder": "valve" } },
+    { "sha1": "d850d45d459bb4f69482c652e8f1956702ffce77", "game": "half-life-opposing-force", "name": "Steam (build 5429885): the gearbox folder", "format": "folder",
+      "configs": ["config.cfg", "mapcycle.txt", "motd.txt", "server.cfg", "user.scr"], "steam": { "app": 50, "folder": "gearbox" } },
+    { "sha1": "5e8ed11383fb58342ee21e7e8228a75e5266d99b", "game": "half-life-blue-shift", "name": "Steam (build 5424832): the bshift folder", "format": "folder",
+      "configs": ["config.cfg", "server.cfg", "user.scr"], "steam": { "app": 130, "folder": "bshift" } }
   ],
   "ports": [
     {
@@ -762,7 +765,7 @@
         {
           "label": "Half-Life",
           "stage": "runtime",
-          "oneOf": ["79d8b1955ea8016028b31356199e7351e589ebb4"],
+          "oneOf": ["4339e1c86cad579a04a4713c1e52995c50b95385"],
           "seedPath": "Library/Application Support/Xash3D FWGS/valve"
         }
       ],
@@ -794,13 +797,13 @@
         {
           "label": "Half-Life",
           "stage": "runtime",
-          "oneOf": ["79d8b1955ea8016028b31356199e7351e589ebb4"],
+          "oneOf": ["4339e1c86cad579a04a4713c1e52995c50b95385"],
           "seedPath": "Library/Application Support/Xash3D FWGS/valve"
         },
         {
           "label": "Opposing Force",
           "stage": "runtime",
-          "oneOf": ["91a92cc8d8a4aad08ac0638da609baa50ae263e9"],
+          "oneOf": ["d850d45d459bb4f69482c652e8f1956702ffce77"],
           "seedPath": "Library/Application Support/Xash3D FWGS/gearbox"
         }
       ],
@@ -833,13 +836,13 @@
         {
           "label": "Half-Life",
           "stage": "runtime",
-          "oneOf": ["79d8b1955ea8016028b31356199e7351e589ebb4"],
+          "oneOf": ["4339e1c86cad579a04a4713c1e52995c50b95385"],
           "seedPath": "Library/Application Support/Xash3D FWGS/valve"
         },
         {
           "label": "Blue Shift",
           "stage": "runtime",
-          "oneOf": ["524ce163fd943be87ecbfa876cce57c3810e99c5"],
+          "oneOf": ["5e8ed11383fb58342ee21e7e8228a75e5266d99b"],
           "seedPath": "Library/Application Support/Xash3D FWGS/bshift"
         }
       ],

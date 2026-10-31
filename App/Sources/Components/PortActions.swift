@@ -77,7 +77,7 @@ struct PortActionButton: View {
 
     /// Titled, disabled with why, and run as Status says.
     private func button(_ action: Status.Action, _ status: Status, _ name: String, help: String? = nil) -> some View {
-        Button(status.title(action)) { viewState.run(action, for: port, in: model) }
+        Button(model.title(action, for: port)) { viewState.run(action, for: port, in: model) }
             .disabled(!status.allows(action))
             .help(model.help(action, for: port) ?? help ?? "")
             .accessibilityIdentifier(identifier(name))

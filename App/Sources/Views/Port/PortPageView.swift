@@ -94,7 +94,7 @@ private struct PortMenu: View {
     }
 
     private func item(_ action: Status.Action, _ status: Status) -> some View {
-        Button(status.title(action)) { viewState.run(action, for: port, in: model) }
+        Button(model.title(action, for: port)) { viewState.run(action, for: port, in: model) }
             .disabled(!status.allows(action))
     }
 }
@@ -136,7 +136,7 @@ private struct BlockedBanner: View {
     }
 
     private func button(_ action: Status.Action, _ status: Status) -> some View {
-        Button(status.title(action)) { viewState.run(action, for: entry.id, in: model) }
+        Button(model.title(action, for: entry.id)) { viewState.run(action, for: entry.id, in: model) }
             .disabled(!status.allows(action))
             .help(model.help(action, for: entry.id) ?? "")
     }

@@ -54,6 +54,23 @@ extension CatalogDocument {
             if let type = rom.type, ![.update, .dlc].contains(type) || rom.game == nil {
                 problems.append("ROM \(rom.sha1) may have a type only as a Game’s update or dlc.")
             }
+            // Both name paths inside the folder, which intake reads and Steam's install folder holds.
+            if let configs = rom.configs {
+                if !rom.isFolder { problems.append("ROM \(rom.sha1) has configs but isn’t a folder ROM.") }
+                if configs.isEmpty || Set(configs).count != configs.count {
+                    problems.append("ROM \(rom.sha1) has empty or repeated configs.")
+                }
+                for path in configs where (try? CatalogStore.checkedRelativePath(path)) == nil {
+                    problems.append("ROM \(rom.sha1) has a config outside its folder: \(path).")
+                }
+            }
+            if let steam = rom.steam {
+                if !rom.isFolder { problems.append("ROM \(rom.sha1) is from Steam but isn’t a folder ROM.") }
+                if steam.app <= 0 { problems.append("ROM \(rom.sha1) has a malformed Steam app id.") }
+                if let folder = steam.folder, (try? CatalogStore.checkedRelativePath(folder)) == nil {
+                    problems.append("ROM \(rom.sha1) has a Steam folder outside the install folder: \(folder).")
+                }
+            }
             guard let unpack = rom.unpack else {
                 if !accepted.contains(rom.sha1) { problems.append("ROM \(rom.sha1) isn’t accepted by any Requirement.") }
                 continue

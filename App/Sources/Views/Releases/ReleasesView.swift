@@ -314,7 +314,7 @@ private struct ReleaseAction: View {
     }
 
     private func button(_ action: Status.Action, _ status: Status) -> some View {
-        Button(status.title(action)) { viewState.run(action, for: port, in: model) }
+        Button(model.title(action, for: port)) { viewState.run(action, for: port, in: model) }
             .disabled(!status.allows(action))
             .controlSize(.small)
     }
