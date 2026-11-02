@@ -1,0 +1,146 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "info",
+      "files",
+      "--device",
+      "00000000-0000000000000000",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "dev.frontport.port.spikeapp.a1b2c3d4e5",
+      "--timeout",
+      "120",
+      "-j",
+      "raw/files-0-initial.json"
+    ],
+    "commandType": "devicectl.device.info.files",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "domain": "appDataContainer",
+    "domainIdentifier": "dev.frontport.port.spikeapp.a1b2c3d4e5",
+    "files": [
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:26:20.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 64
+        },
+        "name": "Documents",
+        "relativePath": "Documents",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:26:20.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 128
+        },
+        "name": "Library",
+        "relativePath": "Library",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:26:20.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 64
+        },
+        "name": "Library/Caches",
+        "relativePath": "Library/Caches",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:26:20.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 64
+        },
+        "name": "Library/Preferences",
+        "relativePath": "Library/Preferences",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:26:20.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 64
+        },
+        "name": "SystemData",
+        "relativePath": "SystemData",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:26:20.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 64
+        },
+        "name": "tmp",
+        "relativePath": "tmp",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      }
+    ]
+  }
+}

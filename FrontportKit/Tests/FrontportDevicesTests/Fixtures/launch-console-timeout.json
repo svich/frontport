@@ -1,0 +1,31 @@
+{
+  "error": {
+    "code": 2,
+    "domain": "ArgumentParserInternal.ExitCode",
+    "userInfo": {}
+  },
+  "errorSignature": "(ArgumentParserInternal.ExitCode 2)",
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "00000000-0000000000000000",
+      "--console",
+      "--terminate-existing",
+      "--timeout",
+      "20",
+      "-j",
+      "raw/launch-console-sdk18.json",
+      "dev.frontport.port.spikeapp.a1b2c3d4e5"
+    ],
+    "commandType": "devicectl.device.process.launch",
+    "details": "Exceeded command timeout",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "timeout",
+    "version": "651.32"
+  }
+}

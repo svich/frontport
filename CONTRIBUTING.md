@@ -170,6 +170,13 @@ requests an hour. They keep GitHub's answers in
 `$TMPDIR/FrontportUITests/releases-cache` between launches, so only a run
 without that cache spends much of the limit.
 
+The Device test installs Testport on an iPhone through Install on iPhone…
+and the sheet that asks which Devices, then uninstalls it from there, with no
+iPhone or Xcode: stand-ins for `devicectl`, the keychain and the Device
+Packager (`App/Sources/Views/Debug/FakeDevices.swift`) give it one iPhone and
+one Apple Team, and the app's own Device Library fetches, records and removes
+it. Nothing is installed on the Mac.
+
 One test runs a real Port, so it runs only when you ask for it. It doesn't
 run while the Port's container has Data, and it deletes the Data it made.
 
@@ -188,9 +195,12 @@ Debug-only launch arguments stand in for what a test can't provide:
   the Port's Runtime ROM;
 - `-FrontportCatalogURL <url> -FrontportCatalogKey <base64>` loads the
   Catalog from that folder, verified with that Ed25519 public key instead of
-  the built-in one, and ignores the bundled Catalog; and
+  the built-in one, and ignores the bundled Catalog;
 - `-FrontportGitHubAPI <url>` discovers Releases from that stand-in for
-  GitHub's API.
+  GitHub's API; and
+- `FRONTPORT_FAKE_DEVICE=<port>`, in the app's environment rather than its
+  arguments, puts the stand-ins for iPhones and iPads in place of the real
+  ones, and gives the Port an iOS version from its own Releases.
 
 Before submitting a pull request:
 

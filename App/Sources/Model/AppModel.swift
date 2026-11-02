@@ -7,11 +7,13 @@ import os
 /// What the detail column shows.
 enum Screen: Hashable {
     case catalog
-    case library
     case releases
     case roms
-    /// An installed Port's page: Overview, Snapshots and Runs.
+    /// A Port's page on this Mac: Overview, Snapshots and Runs. Opening it for a Port only on Devices opens its first
+    /// Device's page instead (`page(for:)`).
     case port(PortID)
+    /// A Port's page on one Device: its app there, its ROMs there and what the Device needs.
+    case portOnDevice(PortID, DeviceID)
     /// One Platform's Ports to install, by Game.
     case platform(PlatformID)
     /// One Genre's Ports to install, by Game.
@@ -22,10 +24,6 @@ enum Screen: Hashable {
     case store(PortID)
     /// A Project's Games and Releases, by its repository.
     case project(String)
-}
-
-enum LibraryLayout: String, CaseIterable {
-    case grid, list
 }
 
 /// Where switching an Installation's Channel would land, for confirming it first.
@@ -60,6 +58,11 @@ struct AppServices: Sendable {
     var library: any LibraryManaging
     var launcher: any PortLaunching
     var artwork: any ArtworkProviding
+    /// Installations on iPhones and iPads, `devicectl` and the user's Apple Teams; nil where Frontport doesn't install
+    /// on Devices.
+    var devices: (any DeviceLibraryManaging)? = nil
+    var deviceControl: (any DeviceControlling)? = nil
+    var provisioning: (any Provisioning)? = nil
 }
 
 /// What views talk to: every intent the UI can trigger, and the state it shows, read here or from the modules it
@@ -73,9 +76,6 @@ final class AppModel {
         didSet { searchText = "" }
     }
     var searchText = ""
-    var libraryLayout: LibraryLayout {
-        didSet { UserDefaults.standard.set(libraryLayout.rawValue, forKey: Self.libraryLayoutKey) }
-    }
 
     // MARK: State
 
@@ -121,10 +121,20 @@ final class AppModel {
     private(set) var addedCatalogs: [CatalogSummary] = []
     /// Bumped when artwork may have changed (a new SteamGridDB key), so artwork views look again.
     private(set) var artworkGeneration = 0
+    /// The paired Devices as last read, the Apple Team chosen, and what Frontport Seeds and Renews on them on its own.
+    let deviceUpkeep: DeviceUpkeep
+    /// Which Devices to install a Port's prepared iOS version on, asked in a sheet on the main window once it's
+    /// prepared, whatever screen shows then.
+    var devicePicker: DevicePicker?
+    /// The sheets for other Ports prepared while one shows, first first: each shows once the one before is closed.
+    var waitingDevicePickers: [DevicePicker] = []
+    /// The previews' prepared iOS versions, by Port, for the snapshot driver's sheet.
+    @ObservationIgnored let previewPreparedApps: [PortID: PreparedDeviceApp]
     var failure: Failure?
 
     let paths: AppPaths
-    private let services: AppServices?
+    /// Nil for previews. Read by the extensions in other files, which change Ports only through `perform`.
+    let services: AppServices?
     /// Frontport's own updates, checked along with the Ports'.
     private let updater: AppUpdater?
     private var history: [Screen] = []
@@ -137,7 +147,6 @@ final class AppModel {
     @ObservationIgnored private var workspaceObservers: [any NSObjectProtocol] = []
     private let log = Logger(subsystem: "dev.frontport.Frontport", category: "AppModel")
 
-    private static let libraryLayoutKey = "libraryLayout"
     /// Update checks run at launch and then this often, only while Frontport is open.
     static let checkInterval = Duration.seconds(6 * 60 * 60)
 
@@ -146,17 +155,21 @@ final class AppModel {
         self.paths = paths
         services = nil
         updater = nil
-        libraryLayout = Self.storedLibraryLayout()
+        previewPreparedApps = preview.preparedDeviceApps
         activities = Activities(preview.activities)
         survey = Survey(
             preview: preview.catalog, installations: preview.installations, matching: preview.matching,
             releases: preview.releases, updates: preview.updates, lastChecked: preview.lastChecked,
-            activities: activities, paths: paths)
+            activities: activities, paths: paths, deviceInstallations: preview.deviceInstallations,
+            devices: preview.deviceReadings.map(\.device), iosReleases: preview.iosReleases)
+        deviceUpkeep = DeviceUpkeep(
+            preview: preview.deviceReadings, teams: preview.appleTeams, seedFailures: preview.deviceSeedFailures,
+            survey: survey, activities: activities)
         launched = preview.running
         snapshots = preview.snapshots
         runs = preview.runs
         addedCatalogs = preview.addedCatalogs
-        selection = initialScreen
+        selection = .catalog
     }
 
     /// A model over real services. State loads in `start()`.
@@ -165,30 +178,48 @@ final class AppModel {
         self.services = services
         self.updater = updater
         activities = Activities()
+        previewPreparedApps = [:]
         survey = Survey(
-            .init(catalog: services.catalog, library: services.library, roms: services.roms, releases: services.releases),
+            .init(
+                catalog: services.catalog, library: services.library, roms: services.roms, releases: services.releases,
+                devices: services.devices),
             activities: activities, paths: paths)
-        libraryLayout = Self.storedLibraryLayout()
+        deviceUpkeep = DeviceUpkeep(
+            services: services.devices.flatMap { devices in
+                services.deviceControl.map { control in
+                    let provisioning = services.provisioning
+                    return .init(
+                        devices: devices, readings: { try await control.readings() },
+                        teams: { await provisioning?.teams() ?? [] })
+                }
+            },
+            survey: survey, activities: activities, preferences: DefaultsDevicePreferences())
         survey.onFailure = { [weak self] in self?.present($0) }
-    }
-
-    private static func storedLibraryLayout() -> LibraryLayout {
-        UserDefaults.standard.string(forKey: libraryLayoutKey).flatMap(LibraryLayout.init) ?? .grid
+        deviceUpkeep.perform = { [weak self] kind, port, work, end in self?.run(kind, on: port, work, end: end) }
     }
 
     // MARK: Derived state
-
-    /// Library when it has Ports, else Catalog.
-    var initialScreen: Screen { survey.libraryPorts.isEmpty ? .catalog : .library }
 
     var running: Set<PortID> { launched.union(opened) }
     func isRunning(_ port: PortID) -> Bool { launched.contains(port) || opened.contains(port) }
     /// Changes whenever the Port's Data may have, so views that measure it look again.
     func revision(of port: PortID) -> Int { revisions[port] ?? 0 }
 
-    /// What Library Ports still need, for the ROMs screen: ROMs to add, then ROMs to Seed.
+    /// What Library Ports still need, for the ROMs screen: ROMs to add, then ROMs to Seed. A Port only Devices have
+    /// needs the ROMs its iOS version Seeds there.
     var neededROMs: [NeededROM] {
         survey.libraryPorts.flatMap { entry in
+            let onDevices = survey.deviceInstallations(of: entry.id)
+            if survey.installation(entry.id) == nil, !onDevices.isEmpty {
+                var missing: [Requirement] = []
+                for installation in onDevices {
+                    for requirement in deviceMatching(of: installation, isReachable: false)?.requirements(.missing) ?? []
+                    where !missing.contains(requirement) {
+                        missing.append(requirement)
+                    }
+                }
+                return missing.map { NeededROM(port: entry.id, requirement: $0) }
+            }
             let state = survey.matching(for: entry.id)
             return state.missing().map { NeededROM(port: entry.id, requirement: $0) }
                 + state.unseeded.map { NeededROM(port: entry.id, requirement: $0, isUnseeded: true) }
@@ -224,6 +255,7 @@ final class AppModel {
 
     func open(_ screen: Screen) {
         searchText = ""
+        let screen = if case .port(let port) = screen { page(for: port) } else { screen }
         guard screen != selection else { return }
         if let selection { history.append(selection) }
         selection = screen
@@ -245,13 +277,17 @@ final class AppModel {
         watchWorkspace()
         // What an earlier session's failed or interrupted operations left; it may take a while for a build folder.
         Task { await services.library.removeLeftovers() }
+        Task { await services.devices?.removeLeftovers() }
         await load()
-        if selection == nil { selection = initialScreen }
+        if selection == nil { selection = .catalog }
+        Task { await deviceUpkeep.refreshIfNeeded() }
         updateChecks = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
                 updater?.checkInBackground()
                 await refresh()
+                // A Port on a Device may be due to be Renewed, though no screen that shows Devices is open.
+                await deviceUpkeep.refreshIfNeeded(unlessReadWithin: DeviceUpkeep.interval)
                 try? await Task.sleep(for: Self.checkInterval)
             }
         }
@@ -382,43 +418,61 @@ final class AppModel {
         }
     }
 
-    /// Runs one change to a Port as its Activity, after the one under way if there is one (`Activities`). A failure is
-    /// presented, and the Port's state is reloaded before the Activity clears; `then` runs after a success.
-    ///
-    /// Applying ROMs that the Library refuses because the Port runs waits for it to quit, and `seedingWait` hears of
-    /// every Activity that ends.
-    private func perform(
+    /// Runs one change to a Port on this Mac as its Activity (`run`), given the services and the Port's entry; `then`
+    /// runs after a success. Changes on Devices start in `deviceUpkeep`.
+    func perform(
         _ kind: Activity.Kind, on port: PortID,
         _ work: @escaping @Sendable (AppServices, CatalogEntry, @escaping ProgressHandler) async throws -> Void,
         then: (@MainActor (AppModel) -> Void)? = nil
     ) {
         guard let services, let entry = survey.entry(port) else { return }
-        activities.run(kind, on: port) { progress in
-            try await work(services, entry, progress)
-        } end: { [weak self] outcome in
+        run(kind, on: port, { progress in try await work(services, entry, progress) }, then: then)
+    }
+
+    /// Runs one change to a Port as its Activity, after the one under way if there is one (`Activities`), on this Mac
+    /// or a Device. The Port's state is reloaded before the Activity clears; `then` runs after a success. A failure is
+    /// presented, or, for a change given its `end`, the one `end` returns once the state is reloaded.
+    ///
+    /// Applying ROMs that the Library refuses because the Port runs waits for it to quit, and `seedingWait` hears of
+    /// every Activity that ends.
+    private func run(
+        _ kind: Activity.Kind, on port: PortID, _ work: @escaping Activities.Work, end: DeviceUpkeep.End? = nil,
+        then: (@MainActor (AppModel) -> Void)? = nil
+    ) {
+        activities.run(kind, on: port, work) { [weak self] outcome in
             guard let self else { return }
             var succeeded = false
             switch outcome {
             case .succeeded: succeeded = true
             case .failed(FrontportError.running) where kind == .applyROMs: seedingWait.refused(port)
-            case .failed(let error): present(error, port: port)
-            case .cancelled: break
+            case .failed(let error) where end == nil: present(error, port: port)
+            case .failed, .cancelled: break
             }
             await reload(port, after: kind)
+            if let error = end?(outcome) { present(error, port: port) }
             if succeeded { then?(self) }
             revisions[port, default: 0] += 1
             carryOut(seedingWait.ended(port, seeded: kind == .applyROMs && succeeded, running: isRunning(port)), for: port)
         }
     }
 
-    /// State that a change to the Port may have touched.
+    /// State that a change to the Port may have touched. After an uninstall, the page of the place it left closes: to
+    /// the Port's page on this Mac or another Device while it's still there, else to the Catalog.
     private func reload(_ port: PortID, after kind: Activity.Kind) async {
         await survey.changed(port, by: kind)
-        if kind == .uninstall, selection == .port(port) { selection = initialScreen }
+        let left: Screen? = switch kind {
+        case .uninstall: .port(port)
+        case .device(.uninstall, let device): .portOnDevice(port, device)
+        default: nil
+        }
+        if let left, selection == left {
+            let next = page(for: port)
+            selection = next == left || !survey.lineup.library.contains(port) ? .catalog : next
+        }
         await loadHistory(for: port)
     }
 
-    private func present(_ error: any Error, port: PortID? = nil) {
+    func present(_ error: any Error, port: PortID? = nil) {
         if error is CancellationError { return }
         log.error("\(error.localizedDescription, privacy: .public)")
         failure = Failure(port: port, error: error as? FrontportError ?? .fileOperation(error.localizedDescription))
@@ -481,13 +535,14 @@ final class AppModel {
                 }
             }
         }
-        // Steam may have installed a game while Frontport was in the background.
+        // Steam may have installed a game while Frontport was in the background, and a Device may have come or gone.
         let activation = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let model = self else { return }
                 Task { await model.refreshSteamOffers() }
+                model.deviceUpkeep.activated()
             }
         }
         workspaceObservers.append(activation)
@@ -550,6 +605,7 @@ final class AppModel {
         for entry in survey.libraryPorts where survey.installation(entry.id) != nil && !entry.acceptedROMs.isDisjoint(with: added) {
             applyROMs(entry.id)
         }
+        deviceUpkeep.romsAdded(added)
         await survey.romsChanged()
         await refreshSteamOffers()
         return results

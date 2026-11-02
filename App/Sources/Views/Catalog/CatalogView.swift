@@ -36,10 +36,9 @@ struct CatalogView: View {
 }
 
 /// The hero: one installable Port, changing daily. Its art keeps SteamGridDB's 1920×620 shape at any width, as
-/// Steam's library shows it, so it's never cropped; one row below names it and offers Install.
+/// Steam's library shows it, so it's never cropped; one row below names it and opens its store page.
 private struct PortOfTheDay: View {
     @Environment(AppModel.self) private var model
-    @Environment(ViewState.self) private var viewState
     let entry: CatalogEntry
 
     var body: some View {
@@ -78,19 +77,6 @@ private struct PortOfTheDay: View {
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                let status = model.status(of: entry.id)
-                if case .addROM(let stage)? = status.main {
-                    Button(model.title(.addROM(stage), for: entry.id)) { viewState.run(.addROM(stage), for: entry.id, in: model) }
-                        .buttonStyle(.addROM)
-                        .controlSize(.large)
-                        .help("Frontport needs the ROM to build this Port")
-                } else {
-                    Button(status.title(.install)) { viewState.run(.install, for: entry.id, in: model) }
-                        .buttonStyle(.glassProminent)
-                        .controlSize(.large)
-                        .disabled(!status.allows(.install))
-                        .help(model.help(.install, for: entry.id) ?? "")
-                }
                 Button("Details") { model.open(.store(entry.id)) }
                     .buttonStyle(.glass)
                     .controlSize(.large)
@@ -132,7 +118,7 @@ private struct NewPortsSection: View {
                     .accessibilityIdentifier("catalog.new.all")
                 }
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 20, alignment: .top)], spacing: 26) {
-                    ForEach(ports) { CatalogCard(entry: $0) }
+                    ForEach(ports) { CatalogCard(entry: $0, showsAction: false) }
                 }
             }
         }
@@ -459,7 +445,7 @@ struct PlatformPhotoCredit: View {
     }
 }
 
-/// A Catalog entry: landscape grid art, its Game, its Project line, Install and Pills.
+/// A Catalog entry: landscape grid art, its Game, its Project line, Install where shown, and Pills.
 struct CatalogCard: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
@@ -467,6 +453,8 @@ struct CatalogCard: View {
     var title: String?
     /// In place of the Project line.
     var detail: String?
+    /// Off on the Catalog, which offers no actions: its cards only open store pages.
+    var showsAction = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -494,10 +482,12 @@ struct CatalogCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
                 .onTapGesture { open() }
-                if model.status(of: entry.id).isInLibrary {
-                    InLibraryLink(port: entry.id)
-                } else {
-                    PortActionButton(port: entry.id, controlSize: .small)
+                if showsAction {
+                    if model.status(of: entry.id).isInLibrary {
+                        InLibraryLink(port: entry.id)
+                    } else {
+                        PortActionButton(port: entry.id, controlSize: .small)
+                    }
                 }
             }
             EntryPills(entry: entry)
@@ -511,7 +501,7 @@ struct CatalogCard: View {
     }
 
     private func open() {
-        model.open(model.survey.installation(entry.id) == nil ? .store(entry.id) : .port(entry.id))
+        model.open(.store(entry.id))
     }
 }
 

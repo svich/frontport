@@ -17,6 +17,15 @@ struct PreviewData {
     var snapshots: [PortID: [Snapshot]]
     var runs: [PortID: [Run]]
     var addedCatalogs: [CatalogSummary] = []
+    /// The iPhones and iPads as last read, those away included, and the Apple Teams in the keychain.
+    var deviceReadings: [DeviceReading] = []
+    var appleTeams: [AppleTeam] = []
+    var deviceInstallations: [DeviceInstallation] = []
+    var iosReleases: [PortID: Release] = [:]
+    /// iOS versions downloaded for Devices and not yet installed on all of them.
+    var preparedDeviceApps: [PortID: PreparedDeviceApp] = [:]
+    /// Why Seeding last failed on a Device, by Port then Device.
+    var deviceSeedFailures: [PortID: [DeviceID: String]] = [:]
 
     /// Where each Port's Requirements stand over these ROMs, as a reading would find them: an installed Port's Build
     /// ROMs built in, and its Runtime ROMs Seeded but for `unseeded`.
@@ -46,7 +55,10 @@ struct PreviewData {
 
     /// Seven Ports installed (2Ship running, Ship of Harkinian and OpenGOAL's Jak and Daxter and Jak II with updates,
     /// SpaghettiKart needing a ROM, Starship building, Zelda 64: Recompiled with its ROM not Seeded) and eight more in
-    /// the Catalog, Ghostship with a Snapshot left from an earlier Installation.
+    /// the Catalog, Ghostship with a Snapshot left from an earlier Installation. Ghostship's iOS version is on an
+    /// iPhone connected over USB, its ROM Seeded there, and on an iPad mini, an older Release with an Update, a day left
+    /// to Renew and Seeding its ROM failed, and prepared for the next Device; an iPad over Wi-Fi has nothing yet, and an
+    /// old iPhone is away.
     static func standard(paths: AppPaths = .default) -> PreviewData {
         let installed: [Installation] = [
             Installation(
@@ -84,6 +96,9 @@ struct PreviewData {
                 ROMRecord(
                     sha1: Sample.sf64, game: "star-fox-64", name: "NTSC 1.1 (US)", format: "z64", size: 12_582_912,
                     added: Sample.date(2026, 10, 24), originalFilename: "Star Fox 64 (USA) (Rev 1).v64"),
+                ROMRecord(
+                    sha1: Sample.sm64, game: "super-mario-64", name: "NTSC (US)", format: "z64", size: 8_388_608,
+                    added: Sample.date(2026, 10, 29), originalFilename: "Super Mario 64 (USA).z64"),
                 ROMRecord(
                     sha1: Sample.jak, game: "jak-and-daxter", name: "NTSC-U", format: "iso", size: 1_420_000_000,
                     added: Sample.date(2026, 9, 21), originalFilename: "Jak and Daxter - The Precursor Legacy (USA).iso"),
@@ -131,7 +146,15 @@ struct PreviewData {
                 ],
             ],
             runs: ["shipwright": Sample.runs(paths: paths)],
-            addedCatalogs: [Sample.addedCatalog]
+            addedCatalogs: [Sample.addedCatalog],
+            deviceReadings: Sample.deviceReadings,
+            appleTeams: [Sample.appleTeam],
+            deviceInstallations: [Sample.ghostshipOnIPhone, Sample.ghostshipOnIPadMini],
+            iosReleases: ["ghostship": Sample.ghostshipIOS],
+            preparedDeviceApps: ["ghostship": Sample.ghostshipPrepared],
+            deviceSeedFailures: [
+                "ghostship": [Sample.iPadMini.id: "The Device couldn’t do that. The connection to it was interrupted."]
+            ]
         )
     }
 
@@ -251,6 +274,66 @@ private enum Sample {
             codeSigning: CodeSigning(exceptions: ["allow-unsigned-executable-memory"]),
             buildAssets: BuildAssetsSpec(path: "Contents/Resources/game", format: "6a06877"), catalog: addedCatalogURL)
     }
+
+    static let appleTeamID = AppleTeamID("A1B2C3D4E5")!
+    static let certificate = SigningCertificate(
+        sha1: String(repeating: "AB", count: 20), name: "Apple Development: Robin Park", team: appleTeamID,
+        expires: date(2027, 8, 14))
+    static let appleTeam = AppleTeam(id: appleTeamID, name: "Robin Park", certificates: [certificate])
+
+    static let iPhone = Device(
+        id: "00008110-0000000000000001", name: "Robin’s iPhone", model: "iPhone 13", osVersion: "27.0.1", families: [1])
+    static let iPadMini = Device(
+        id: "00008101-0000000000000004", name: "Robin’s iPad mini", model: "iPad mini", osVersion: "26.1", families: [2])
+    static let deviceReadings = [
+        DeviceReading(device: iPhone, connection: .wired, isLocked: false, developerMode: true),
+        DeviceReading(device: iPadMini, connection: .wired, isLocked: false, developerMode: true),
+        DeviceReading(
+            device: Device(
+                id: "00008103-0000000000000002", name: "Robin’s iPad", model: "iPad Air", osVersion: "27.0",
+                families: [2]),
+            connection: .network, isLocked: false, developerMode: true),
+        DeviceReading(
+            device: Device(
+                id: "00008030-0000000000000003", name: "Old iPhone", model: "iPhone 11", osVersion: "18.6",
+                families: [1]),
+            connection: .away),
+    ]
+
+    static let ghostshipIOS = release(
+        "ghostship", "3.0.0", on: date(2026, 9, 7), asset: "Nautilus-Alfa-iOS.zip", size: 41_000_000,
+        repo: "HarbourMasters/Ghostship", notes: "")
+
+    /// For iPhone and iPad from iOS 16, so the old iPhone could take it once it's connected.
+    static let ghostshipPrepared = PreparedDeviceApp(
+        port: "ghostship", release: ghostshipIOS, channel: .stable, appName: "Ghostship.app", minimumOS: "16.0",
+        families: [1, 2])
+
+    static let ghostshipOnIPhone = DeviceInstallation(
+        port: "ghostship", device: iPhone.id, release: ghostshipIOS, channel: .stable,
+        installedAt: date(2026, 10, 30), appName: "Ghostship.app",
+        bundleId: PortID("ghostship").deviceBundleID(team: appleTeamID), team: appleTeamID,
+        certificate: certificate.sha1, certificateExpires: certificate.expires,
+        profile: DeviceInstallation.Profile(
+            uuid: "00000000-0000-0000-0000-000000000000", name: "iOS Team Provisioning Profile: *",
+            expires: date(2027, 5, 6)),
+        seeded: ["Super Mario 64": [sm64]], entry: catalog.entry("ghostship")!)
+
+    static let ghostshipIOSPrevious = release(
+        "ghostship", "2.1.0", on: date(2026, 7, 14), asset: "Nautilus-Alfa-iOS.zip", size: 39_500_000,
+        repo: "HarbourMasters/Ghostship", notes: "")
+
+    /// An older Release, so 3.0.0 is offered, signed with a Provisioning Profile that has a day and a bit left whenever
+    /// the screens are drawn, so Renew is due, and with its ROM not Seeded there yet: the last try failed.
+    static let ghostshipOnIPadMini = DeviceInstallation(
+        port: "ghostship", device: iPadMini.id, release: ghostshipIOSPrevious, channel: .stable,
+        installedAt: date(2026, 8, 2), appName: "Ghostship.app",
+        bundleId: PortID("ghostship").deviceBundleID(team: appleTeamID), team: appleTeamID,
+        certificate: certificate.sha1, certificateExpires: certificate.expires,
+        profile: DeviceInstallation.Profile(
+            uuid: "00000000-0000-0000-0000-000000000001", name: "iOS Team Provisioning Profile: dev.frontport.port.ghostship.a1b2c3d4e5",
+            expires: Date.now.addingTimeInterval(30 * 60 * 60)),
+        entry: catalog.entry("ghostship")!)
 
     static let shipwright930 = release(
         "shipwright", "9.3.0", title: "Dewey Alfa", on: date(2026, 10, 7), asset: "SoH-Dewey-Alfa-Mac.zip",
@@ -448,7 +531,10 @@ private enum Sample {
                 source: github("HarbourMasters/Ghostship"), bundleId: "dev.frontport.port.ghostship",
                 releases: gitHub("HarbourMasters/Ghostship", asset: "Ghostship-*-Mac.zip"),
                 requirements: [runtime("Super Mario 64", [sm64], seed: "Ghostship")],
-                artwork: Artwork(steamgriddb: 5515765, fallback: 37177)),
+                artwork: Artwork(steamgriddb: 5515765, fallback: 37177),
+                ios: IOSSpec(
+                    releases: gitHub("HarbourMasters/Ghostship", asset: "Nautilus-*-iOS.zip"),
+                    seedPaths: ["Documents/sm64.z64"])),
             openGOALPort(1, game: "jak-and-daxter", name: "Jak and Daxter", rom: jak, steamgriddb: 37452),
             openGOALPort(2, game: "jak-ii", name: "Jak II", rom: jak2, steamgriddb: 36801),
             openGOALPort(3, game: "jak-3", name: "Jak 3", rom: jak3, steamgriddb: 35757),

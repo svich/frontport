@@ -41,6 +41,81 @@ public struct Installation: Codable, Hashable, Sendable, Identifiable {
     }
 }
 
+/// One Port on one Device: the record stored as `Devices/<udid>/<port>/install.json`, written once `devicectl` has
+/// installed the app it describes, which is kept beside it for Renew.
+public struct DeviceInstallation: Codable, Hashable, Sendable {
+    /// The Provisioning Profile the app was signed with, as far as Renew goes.
+    public struct Profile: Codable, Hashable, Sendable {
+        public var uuid: String
+        public var name: String
+        public var expires: Date
+
+        public init(uuid: String, name: String, expires: Date) {
+            self.uuid = uuid
+            self.name = name
+            self.expires = expires
+        }
+    }
+
+    public var port: PortID
+    public var device: DeviceID
+    /// The iOS Release, its asset's digest included.
+    public var release: Release
+    public var channel: Channel
+    public var installedAt: Date
+    /// File name of the app in `Devices/<udid>/<port>/`, such as "fallout-ce.app".
+    public var appName: String
+    /// `PortID.deviceBundleID(team:)` for `team`, which names its Data on the Device.
+    public var bundleId: String
+    public var team: AppleTeamID
+    /// The Apple Development certificate it was signed with, by SHA-1, and when that expires.
+    public var certificate: String
+    public var certificateExpires: Date
+    public var profile: Profile
+    /// Present when the Release has Build Assets, inside the app.
+    public var buildAssets: BuildAssetsRecord?
+    /// What was last Seeded on the Device: each Requirement's label, with the SHA-1s of the ROMs copied for it.
+    public var seeded: [String: [String]]
+    /// The folder ROMs' files, relative to the container, that a Seeding which stopped part way was copying: one cut
+    /// short is copied again (`DeviceSeeding`). Nil once Seeding copied all it set out to.
+    public var filling: [String]?
+    /// The SHA-256 of the iOS Recipe a source-built app was built by, as `PreparedDeviceApp` has it: another one in
+    /// the Catalog is an Update (`IOSVersion.update`). Nil for one downloaded, and in a record from before Frontport
+    /// kept it.
+    public var recipeSHA256: String?
+    /// The full Catalog entry as of the last change, so the Port can still be Renewed and uninstalled once the Catalog
+    /// no longer lists it, and Seeded once it drops the iOS version (`IOSVersion(seeding:listed:)`).
+    public var entry: CatalogEntry
+
+    public init(
+        port: PortID, device: DeviceID, release: Release, channel: Channel, installedAt: Date, appName: String,
+        bundleId: String, team: AppleTeamID, certificate: String, certificateExpires: Date, profile: Profile,
+        buildAssets: BuildAssetsRecord? = nil, seeded: [String: [String]] = [:], filling: [String]? = nil,
+        recipeSHA256: String? = nil, entry: CatalogEntry
+    ) {
+        self.port = port
+        self.device = device
+        self.release = release
+        self.channel = channel
+        self.installedAt = installedAt
+        self.appName = appName
+        self.bundleId = bundleId
+        self.team = team
+        self.certificate = certificate
+        self.certificateExpires = certificateExpires
+        self.profile = profile
+        self.buildAssets = buildAssets
+        self.seeded = seeded
+        self.filling = filling
+        self.recipeSHA256 = recipeSHA256
+        self.entry = entry
+    }
+
+    /// When the app stops launching on the Device: its Provisioning Profile's expiry, or its certificate's when that
+    /// comes first.
+    public var expires: Date { min(profile.expires, certificateExpires) }
+}
+
 /// What an Installation's Build Assets were made from, to decide whether an update can carry them over.
 public struct BuildAssetsRecord: Codable, Hashable, Sendable {
     /// SHA-1s of the ROMs the Recipe consumed.

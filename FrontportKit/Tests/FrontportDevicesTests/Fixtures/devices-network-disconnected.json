@@ -1,0 +1,229 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "list",
+      "devices",
+      "--timeout",
+      "30",
+      "-j",
+      "raw/list-devices.json"
+    ],
+    "commandType": "devicectl.list.devices",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "devices": [
+      {
+        "_deprecationNotice": {
+          "deprecatedFields": [
+            "hardwareProperties",
+            "deviceProperties",
+            "connectionProperties"
+          ],
+          "message": "The 'hardwareProperties', 'deviceProperties', 'connectionProperties' fields are deprecated and will be removed in a future release. Use the 'properties' dictionary instead.",
+          "replacement": "properties"
+        },
+        "capabilities": [
+          {
+            "featureIdentifier": "com.apple.coredevice.feature.acquireusageassertion",
+            "name": "Acquire Usage Assertion"
+          },
+          {
+            "featureIdentifier": "com.apple.coredevice.feature.connectdevice",
+            "name": "Connect to Device"
+          },
+          {
+            "featureIdentifier": "com.apple.coredevice.feature.default.user.credentials",
+            "name": "Modify Credentials for Default Users for a Device"
+          },
+          {
+            "featureIdentifier": "com.apple.coredevice.feature.tags",
+            "name": "Modify Tags"
+          },
+          {
+            "featureIdentifier": "com.apple.coredevice.feature.unpairdevice",
+            "name": "Unpair Device"
+          }
+        ],
+        "connectionProperties": {
+          "authenticationType": "manualPairing",
+          "isMobileDeviceOnly": false,
+          "lastConnectionDate": "2026-10-31T00:00:00.000Z",
+          "pairingState": "paired",
+          "potentialHostnames": [
+            "Test-Users-iPhone.coredevice.local",
+            "00000000-0000-0000-0000-000000000000.coredevice.local",
+            "00000000-0000000000000000.coredevice.local"
+          ],
+          "transportType": "localNetwork",
+          "tunnelState": "disconnected",
+          "tunnelTransportProtocol": "tcp"
+        },
+        "deviceProperties": {
+          "bootState": "booted",
+          "bootedFromSnapshot": true,
+          "bootedSnapshotName": "com.apple.os.update-AC20F7859BD03D9BA826DBF71603E6DE2547B8867B8C07E729F65DBF791700EF",
+          "ddiServicesAvailable": false,
+          "developerModeStatus": "enabled",
+          "hasInternalOSBuild": false,
+          "name": "Test User’s iPhone",
+          "osBuildUpdate": "24A446",
+          "osVersionNumber": "27.0.1",
+          "rootFileSystemIsWritable": false,
+          "supportsCheckedAllocations": false
+        },
+        "hardwareProperties": {
+          "cpuType": {
+            "name": "arm64e",
+            "subType": -2147483646,
+            "type": 16777228
+          },
+          "deviceType": "iPhone",
+          "ecid": 1234567890123456,
+          "hardwareModel": "D17AP",
+          "internalStorageCapacity": 128000000000,
+          "isProductionFused": true,
+          "marketingName": "iPhone 13",
+          "platform": "iOS",
+          "productType": "iPhone14,5",
+          "reality": "physical",
+          "serialNumber": "XXXXXXXXXX",
+          "supportedCPUTypes": [
+            {
+              "name": "arm64e",
+              "subType": -2147483646,
+              "type": 16777228
+            },
+            {
+              "name": "arm64",
+              "subType": 0,
+              "type": 16777228
+            }
+          ],
+          "supportedDeviceFamilies": [
+            1
+          ],
+          "thinningProductType": "iPhone14,5",
+          "udid": "00000000-0000000000000000"
+        },
+        "identifier": "00000000-0000-0000-0000-000000000000",
+        "properties": {
+          "connection": {
+            "authenticationType": "manualPairing",
+            "lastConnectionDate": 815148180,
+            "pairingState": "paired",
+            "state": "disconnected",
+            "transportType": "localNetwork",
+            "tunnelTransportProtocol": "tcp"
+          },
+          "hardware": {
+            "cpuCount": {
+              "logicalCores": 6,
+              "packages": 1,
+              "physicalCores": 6
+            },
+            "cpuType": {
+              "subtype": 18446744071562067970,
+              "type": 16777228
+            },
+            "deviceType": "iPhone",
+            "ecid": 1234567890123456,
+            "hasActionButton": false,
+            "internalStorageCapacity": 128000000000,
+            "marketingName": "iPhone 13",
+            "platform": "iOS",
+            "productType": "iPhone14,5",
+            "reality": "physical",
+            "serialNumber": "XXXXXXXXXX",
+            "supportedBiometrics": [
+              "faceID"
+            ],
+            "supportedCPUTypes": [
+              {
+                "subtype": 18446744071562067970,
+                "type": 16777228
+              },
+              {
+                "subtype": 0,
+                "type": 16777228
+              }
+            ],
+            "supportedDeviceFamilies": [
+              1
+            ],
+            "supportsSiri": true,
+            "thinningProductType": "iPhone14,5",
+            "udid": "00000000-0000000000000000"
+          },
+          "software": {
+            "osBuildVersions": {
+              "buildVersion": {
+                "majorLetterComponent": "A",
+                "majorNumberComponent": 24,
+                "name": "24A446",
+                "revisionVersion": {
+                  "components": [
+                    24,
+                    1,
+                    446,
+                    0,
+                    0
+                  ],
+                  "originalComponentsCount": 5,
+                  "stringValue": "24.1.446.0.0"
+                },
+                "trainProgram": "iOS",
+                "updateNumberComponent": 446
+              },
+              "supplementalBuildVersion": {
+                "majorLetterComponent": "A",
+                "majorNumberComponent": 24,
+                "name": "24A446",
+                "revisionVersion": {
+                  "components": [
+                    24,
+                    1,
+                    446,
+                    0,
+                    0
+                  ],
+                  "originalComponentsCount": 5,
+                  "stringValue": "24.1.446.0.0"
+                },
+                "trainProgram": "iOS",
+                "updateNumberComponent": 446
+              }
+            },
+            "osVersionNumber": {
+              "components": [
+                27,
+                0,
+                1,
+                0,
+                0
+              ],
+              "originalComponentsCount": 3,
+              "stringValue": "27.0.1"
+            },
+            "supportsCheckedAllocations": false
+          },
+          "state": {
+            "bootState": "booted",
+            "developerModeStatus": {
+              "enabled": {
+                "mode": 1
+              }
+            },
+            "name": "Test User’s iPhone"
+          }
+        },
+        "propertyDisplayNames": null,
+        "visibilityClass": "default"
+      }
+    ]
+  }
+}

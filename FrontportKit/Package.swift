@@ -10,6 +10,7 @@ let modules = [
     "FrontportLibrary",
     "FrontportLauncher",
     "FrontportArtwork",
+    "FrontportDevices",
 ]
 
 let package = Package(
@@ -32,7 +33,8 @@ let package = Package(
         + modules.map {
             .testTarget(
                 name: "\($0)Tests",
-                dependencies: [.target(name: $0), "FrontportCore"] + ($0 == "FrontportLibrary" ? ["FrontportPackager", "FrontportROMs"] : []))
+                dependencies: [.target(name: $0), "FrontportCore"] + ($0 == "FrontportLibrary" ? ["FrontportPackager", "FrontportROMs"] : []),
+                resources: $0 == "FrontportDevices" ? [.copy("Fixtures")] : nil)
         }
         // Every real module composed over the bundled Catalog; opt-in, as it downloads and launches real Ports.
         + [.testTarget(name: "FrontportIntegrationTests", dependencies: ["FrontportCore"] + modules.map { .target(name: $0) })]

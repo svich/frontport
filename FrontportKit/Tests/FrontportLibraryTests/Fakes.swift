@@ -78,7 +78,7 @@ struct FakeFetcher: AssetFetching {
 
     init(appName: String) { self.appName = Box(appName) }
 
-    func fetch(_ release: Release, into directory: URL, progress: @escaping ProgressHandler) async throws -> URL {
+    func fetch(_ release: Release, into directory: URL, downloads: PortID, progress: @escaping ProgressHandler) async throws -> URL {
         inFlight.update { $0.now += 1; $0.most = max($0.most, $0.now) }
         defer { inFlight.update { $0.now -= 1 } }
         try await Task.sleep(for: .milliseconds(30))
@@ -104,10 +104,14 @@ struct FakeBuilder: RecipeBuilding {
     func toolchainStatus() async -> ToolchainStatus { .ready }
     func prepareToolchain(progress: @escaping ProgressHandler) async throws {}
 
+    /// Builds only for the Mac: refuses an iOS build.
     func build(
-        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, log: URL,
+        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, sdk: BuildSDK, log: URL,
         progress: @escaping ProgressHandler
     ) async throws -> BuildProduct {
+        guard sdk == .macosx else {
+            throw FrontportError.cantInstallOnDevice("This Builder can’t build \(entry.name)’s iOS version.")
+        }
         let sha1s = roms.sha1s
         builds.update { $0.append(sha1s) }
         let out = paths.buildOutput(for: entry.id)

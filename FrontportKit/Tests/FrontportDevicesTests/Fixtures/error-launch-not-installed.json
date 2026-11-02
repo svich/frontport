@@ -1,0 +1,58 @@
+{
+  "error": {
+    "code": 10002,
+    "domain": "com.apple.dt.CoreDeviceError",
+    "userInfo": {
+      "BundleIdentifier": {
+        "string": "dev.frontport.port.spikeapp.a1b2c3d4e5"
+      },
+      "NSLocalizedDescription": {
+        "string": "The application failed to launch."
+      },
+      "NSLocalizedFailureReason": {
+        "string": "The requested application dev.frontport.port.spikeapp.a1b2c3d4e5 is not installed."
+      },
+      "NSLocalizedRecoverySuggestion": {
+        "string": "Provide a valid bundle identifier."
+      },
+      "NSUnderlyingError": {
+        "error": {
+          "code": -10814,
+          "domain": "NSOSStatusErrorDomain",
+          "userInfo": {
+            "_LSFile": {
+              "string": "LSBindingEvaluator.mm"
+            },
+            "_LSFunction": {
+              "string": "runEvaluator"
+            },
+            "_LSLine": {
+              "int": 1975
+            }
+          }
+        }
+      }
+    }
+  },
+  "errorSignature": "(com.apple.dt.CoreDeviceError 10002 (NSOSStatusErrorDomain -10814))",
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "00000000-0000000000000000",
+      "--timeout",
+      "30",
+      "dev.frontport.port.spikeapp.a1b2c3d4e5",
+      "-j",
+      "raw/err-launch-not-installed.json"
+    ],
+    "commandType": "devicectl.device.process.launch",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "failed",
+    "version": "651.32"
+  }
+}

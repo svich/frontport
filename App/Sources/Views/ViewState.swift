@@ -94,6 +94,17 @@ final class ViewState {
         }
     }
 
+    /// Takes an action the Port's DeviceStatus offers on the Device, asking first before Uninstall…, which takes its
+    /// Data there too. Update and Renew keep the Data, so they don't ask.
+    func run(_ action: DeviceStatus.Action, for port: PortID, on device: DeviceID, in model: AppModel) {
+        switch action {
+        case .update: model.deviceUpkeep.update(port, on: device)
+        case .renew: model.deviceUpkeep.renew(port, on: device)
+        case .seed: model.deviceUpkeep.seed(port, on: device)
+        case .uninstall: confirm(.uninstallFromDevice(device), for: port, in: model)
+        }
+    }
+
     func addROMs(_ urls: [URL], to model: AppModel) async {
         guard !urls.isEmpty else { return }
         isAddingROMs = true

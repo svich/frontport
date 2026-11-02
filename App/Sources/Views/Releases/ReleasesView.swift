@@ -226,9 +226,11 @@ private struct ReleaseRow: View {
                 }
                 .font(.system(size: 14, weight: .semibold))
                 if let entry {
+                    // Names from the Catalog: a developer such as "Coop Deluxe Team" isn't Frontport's wording.
                     Text(forLine(entry))
                         .font(.callout)
                         .foregroundStyle(.secondary)
+                        .catalogContent("byline.\(release.port.rawValue)")
                 }
                 notes
                     .lineSpacing(2)

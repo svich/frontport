@@ -48,7 +48,8 @@ Between runs:
 | `TMPDIR` | `Builds/<port>/tmp`: a private tmp folder, shared by both steps of a run and removed after it. |
 | `HOME` | An empty folder inside `$TMPDIR`; the user's home folder is out of reach. |
 | `PATH` | `$FRONTPORT_TOOLCHAIN/bin`, the developer tools' own `bin` folders, then `/usr/bin:/bin:/usr/sbin:/sbin`. |
-| `DEVELOPER_DIR`, `SDKROOT` | The active developer directory and its macOS SDK, so compilers run without the `xcrun` shims. |
+| `DEVELOPER_DIR`, `SDKROOT` | The active developer directory and its macOS SDK, so compilers run without the `xcrun` shims. For an iOS Recipe, Xcode's and its iPhoneOS SDK ([iOS Recipes](#ios-recipes)). |
+| `FRONTPORT_SDK` | `iphoneos` for an iOS Recipe, as `xcrun --sdk` names its SDK; unset for a Mac one. |
 | `LANG` | `en_US.UTF-8`. Nothing else is inherited from Frontport's environment. |
 
 Every path is canonical (symlinks resolved). All paths may contain spaces (`Application Support`): quote them.
@@ -129,6 +130,26 @@ An unpack Recipe turns an installer the Catalog lists into the ROMs it holds ([A
 - **Input:** `$FRONTPORT_ROMS` holds exactly one file, the installer, as `<sha1>.<format>`.
 - **Output:** what the installer holds, in `$FRONTPORT_OUT`. Frontport hashes each folder there as a folder ROM, keeps those the installer `yields`, and ignores the rest. No app.
 
+## iOS Recipes
+
+An iOS Recipe builds a Port's iOS version, which Frontport signs and installs on Devices ([DESIGN › Devices](../../docs/DESIGN.md#devices)). The entry names it in `ios.releases.recipe`, pinned by `ios.releases.recipeSHA256`. The Builder runs it like any Recipe, `fetch` then `build`, in the same sandbox, with these differences:
+
+- **Workspace:** `Builds/<port>.ios/`, apart from the Mac build's `Builds/<port>/`; the build log is `Logs/<port>.ios/build.log`. Frontport keeps the app it prepared for Devices beside the Recipe's folders, in `prepared/` and `preparing/`, which a Recipe never touches. `FRONTPORT_PORT` is still the Port's id.
+- **Environment:** `FRONTPORT_SDK` is `iphoneos`; check it, so the Recipe is never run as a Mac one. `DEVELOPER_DIR` is full Xcode's, whether or not the Command Line Tools are selected or installed, and `SDKROOT` its iPhoneOS SDK, so `cmake -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT="$SDKROOT"` builds for a Device. `xcrun_db` names a file in `$TMPDIR`: xcrun keeps its cache in the per-user temporary folder, which the sandbox denies, and without one takes about 2 s a call. A tool the build runs on the Mac, such as an image scaler, builds with `xcrun --sdk macosx clang`; `sips` doesn't run in the sandbox, which lacks LaunchServices.
+- **No actool or ibtool:** they fail in the sandbox, which denies folders they need, and CMake's Ninja generator copies asset catalogs and storyboards into the app uncompiled anyway: delete those copies, and drop upstream's `UILaunchStoryboardName` for the `UILaunchScreen` key. Icons are loose opaque PNGs instead of an asset catalog, `<name>@2x.png` and `<name>@3x.png` for iPhone, `<name>@2x~ipad.png` for iPad, each `<name>` listed in `CFBundleIcons` or `CFBundleIcons~ipad` › `CFBundlePrimaryIcon` › `CFBundleIconFiles`: 120 and 180 px (`AppIcon60x60`), 152 px (`AppIcon76x76`) and 167 px (`AppIcon83.5x83.5`).
+- **Info.plist:** CMake's default one lacks iOS's keys, so bring upstream's or write one, with `MinimumOSVersion` equal to `LC_BUILD_VERSION`'s minimum (the deployment target), `UIDeviceFamily`, `CFBundleSupportedPlatforms` (`iPhoneOS`) and `UILaunchScreen`. `CFBundleShortVersionString` and `CFBundleVersion` are at most three integers each, such as `1.1.0` and `7` for `v1.1.0-7-g0609bcf`. A Port whose files are Seeded into `Documents` also gets `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`, so Files shows that folder.
+- **UIScene:** iOS ends an app linked against the iOS 27 SDK or later that has no scene delegate (`UIApplicationSceneManifest`) as soon as it launches. An engine without one, such as SDL2's UIKit backend, gets its executable stamped with an older SDK, last, after the final link: `vtool -set-build-version ios <minimum> 18.0 -replace -output "$exe.stamped" "$exe" && mv "$exe.stamped" "$exe"`.
+- **Output:** exactly one unsigned, flat `$FRONTPORT_OUT/*.app` (no `Contents/`), whose main executable is for iOS on arm64 (`LC_BUILD_VERSION` platform `IOS`, not the Simulator). Libraries are static, or frameworks and dylibs inside it; app extensions, nested apps and other programs are refused. Frontport sets its bundle ID and signs it for each Device. Nothing else in `$FRONTPORT_OUT` is taken: Build Assets for an iOS version aren't supported yet.
+
+To run an iOS Recipe end to end through the Builder (network, Xcode with the iOS platform, a few minutes):
+
+```sh
+cd FrontportKit
+FRONTPORT_NETWORK_TESTS=1 FRONTPORT_RECIPE=fallout-ce-ios swift test --filter DeviceRecipeIntegrationTests
+```
+
+`FRONTPORT_RECIPE_ROOT` and `FRONTPORT_RECIPE_REF` work as above. The test also checks the app against the entry and the points above, as the Device Packager will: iOS on arm64, an SDK before 27 unless it has a scene manifest, the Info.plist keys and versions, its icons, and no code besides its executable but libraries.
+
 ## Recipes
 
 | Recipe | Upstream | Tested ref | `buildAssets.path` |
@@ -142,6 +163,7 @@ An unpack Recipe turns an installer the Catalog lists into the ROMs it holds ([A
 | `fallout-ce.sh` | [alexbatalov/fallout1-ce](https://github.com/alexbatalov/fallout1-ce) (its macOS app plays from the folder it sits in) | `0609bcfd0ec40ff0571d0f57fab2821eb461dc8b` | none: the game's folder is a Runtime ROM |
 | `opengothic.sh` | [Try/OpenGothic](https://github.com/Try/OpenGothic) (its macOS Release is a bare executable), with glslang 16.6.0 | `v0.92` | none: the game's folder is a Runtime ROM |
 | `xash3d.sh` | [FWGS/xash3d-fwgs](https://github.com/FWGS/xash3d-fwgs) (only rolling builds, no app), with [FWGS/hlsdk-portable](https://github.com/FWGS/hlsdk-portable)'s `master`, `opfor` and `bshift` branches pinned in the Recipe, for `xash3d-half-life`, `xash3d-opposing-force` and `xash3d-blue-shift` | `a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc` | none: the Steam game folders are Runtime ROMs |
+| `fallout-ce-ios.sh` | [alexbatalov/fallout1-ce](https://github.com/alexbatalov/fallout1-ce)'s iOS version (its `.ipa` has no digest), for `fallout-ce`'s `ios` | `0609bcfd0ec40ff0571d0f57fab2821eb461dc8b` | none: the game's folder is Seeded into `Documents` |
 | `fallout2-ce.sh` | [alexbatalov/fallout2-ce](https://github.com/alexbatalov/fallout2-ce) (its macOS app plays from the folder it sits in) | `e97087b9582f37075db347a89898887320753f8b` | none: the game's folder is a Runtime ROM |
 | `arcanum-ce.sh` | [alexbatalov/arcanum-ce](https://github.com/alexbatalov/arcanum-ce) (no Releases; its macOS app plays from the folder it sits in), with SDL3 3.4.8, SDL3_mixer 3.2.2, zlib 1.3.2 and fpattern 1.9.1 | `a7ff41b300ef712f0e7d088183a3d08957110cdd` | none: the game's folder is a Runtime ROM |
 | `dhewm3.sh` | [dhewm/dhewm3](https://github.com/dhewm/dhewm3) (no macOS Release), with SDL2 2.32.10 and OpenAL Soft 1.25.2, for `dhewm3-doom-3` and `dhewm3-resurrection-of-evil` | `1.5.5` | none: the Steam game folders are Runtime ROMs |

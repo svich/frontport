@@ -24,8 +24,7 @@ public actor Library: LibraryManaging {
     static let log = Logger(subsystem: "dev.frontport.Frontport", category: "Library")
 
     private var records: [PortID: Installation]?
-    private var busy: Set<PortID> = []
-    private var waiting: [PortID: [CheckedContinuation<Void, Never>]] = [:]
+    private let queue = PortQueue()
 
     public init(
         paths: AppPaths, catalog: any CatalogProviding, releases: any ReleaseDiscovering, fetcher: any AssetFetching,
@@ -309,24 +308,9 @@ public actor Library: LibraryManaging {
     }
 
     private func exclusive<T>(_ port: PortID, _ body: () async throws -> T) async throws -> T {
-        await acquire(port)
-        defer { release(port) }
+        await queue.acquire(port)
+        defer { queue.release(port) }
         return try await body()
-    }
-
-    private func acquire(_ port: PortID) async {
-        if busy.insert(port).inserted { return }
-        await withCheckedContinuation { waiting[port, default: []].append($0) }
-    }
-
-    private func release(_ port: PortID) {
-        guard var queue = waiting[port], !queue.isEmpty else {
-            busy.remove(port)
-            return
-        }
-        let next = queue.removeFirst()
-        waiting[port] = queue.isEmpty ? nil : queue
-        next.resume()
     }
 
     // MARK: Records

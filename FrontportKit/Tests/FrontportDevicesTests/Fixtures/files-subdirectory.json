@@ -1,0 +1,3910 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "info",
+      "files",
+      "--device",
+      "00000000-0000000000000000",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "dev.frontport.port.spikeapp.a1b2c3d4e5",
+      "--timeout",
+      "120",
+      "--subdirectory",
+      "Documents/big",
+      "-j",
+      "raw/files-6-big.json"
+    ],
+    "commandType": "devicectl.device.info.files",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "domain": "appDataContainer",
+    "domainIdentifier": "dev.frontport.port.spikeapp.a1b2c3d4e5",
+    "files": [
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 62914560
+        },
+        "name": "big1.dat",
+        "relativePath": "big1.dat",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 62914560
+        },
+        "name": "big2.dat",
+        "relativePath": "big2.dat",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 62914560
+        },
+        "name": "big3.dat",
+        "relativePath": "big3.dat",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 493,
+          "size": 6464
+        },
+        "name": "data",
+        "relativePath": "data",
+        "resources": {
+          "isDirectory": true,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f1.bin",
+        "relativePath": "data/f1.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f10.bin",
+        "relativePath": "data/f10.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f100.bin",
+        "relativePath": "data/f100.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f101.bin",
+        "relativePath": "data/f101.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f102.bin",
+        "relativePath": "data/f102.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f103.bin",
+        "relativePath": "data/f103.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f104.bin",
+        "relativePath": "data/f104.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f105.bin",
+        "relativePath": "data/f105.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f106.bin",
+        "relativePath": "data/f106.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f107.bin",
+        "relativePath": "data/f107.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f108.bin",
+        "relativePath": "data/f108.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f109.bin",
+        "relativePath": "data/f109.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f11.bin",
+        "relativePath": "data/f11.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f110.bin",
+        "relativePath": "data/f110.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f111.bin",
+        "relativePath": "data/f111.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f112.bin",
+        "relativePath": "data/f112.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f113.bin",
+        "relativePath": "data/f113.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f114.bin",
+        "relativePath": "data/f114.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f115.bin",
+        "relativePath": "data/f115.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f116.bin",
+        "relativePath": "data/f116.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f117.bin",
+        "relativePath": "data/f117.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f118.bin",
+        "relativePath": "data/f118.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f119.bin",
+        "relativePath": "data/f119.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f12.bin",
+        "relativePath": "data/f12.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f120.bin",
+        "relativePath": "data/f120.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f121.bin",
+        "relativePath": "data/f121.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f122.bin",
+        "relativePath": "data/f122.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f123.bin",
+        "relativePath": "data/f123.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f124.bin",
+        "relativePath": "data/f124.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f125.bin",
+        "relativePath": "data/f125.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f126.bin",
+        "relativePath": "data/f126.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f127.bin",
+        "relativePath": "data/f127.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f128.bin",
+        "relativePath": "data/f128.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f129.bin",
+        "relativePath": "data/f129.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f13.bin",
+        "relativePath": "data/f13.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f130.bin",
+        "relativePath": "data/f130.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f131.bin",
+        "relativePath": "data/f131.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f132.bin",
+        "relativePath": "data/f132.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f133.bin",
+        "relativePath": "data/f133.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f134.bin",
+        "relativePath": "data/f134.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f135.bin",
+        "relativePath": "data/f135.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f136.bin",
+        "relativePath": "data/f136.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f137.bin",
+        "relativePath": "data/f137.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f138.bin",
+        "relativePath": "data/f138.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f139.bin",
+        "relativePath": "data/f139.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f14.bin",
+        "relativePath": "data/f14.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f140.bin",
+        "relativePath": "data/f140.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f141.bin",
+        "relativePath": "data/f141.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f142.bin",
+        "relativePath": "data/f142.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f143.bin",
+        "relativePath": "data/f143.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f144.bin",
+        "relativePath": "data/f144.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f145.bin",
+        "relativePath": "data/f145.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f146.bin",
+        "relativePath": "data/f146.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f147.bin",
+        "relativePath": "data/f147.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f148.bin",
+        "relativePath": "data/f148.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f149.bin",
+        "relativePath": "data/f149.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f15.bin",
+        "relativePath": "data/f15.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f150.bin",
+        "relativePath": "data/f150.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f151.bin",
+        "relativePath": "data/f151.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f152.bin",
+        "relativePath": "data/f152.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f153.bin",
+        "relativePath": "data/f153.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f154.bin",
+        "relativePath": "data/f154.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f155.bin",
+        "relativePath": "data/f155.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f156.bin",
+        "relativePath": "data/f156.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f157.bin",
+        "relativePath": "data/f157.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f158.bin",
+        "relativePath": "data/f158.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f159.bin",
+        "relativePath": "data/f159.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f16.bin",
+        "relativePath": "data/f16.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f160.bin",
+        "relativePath": "data/f160.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f161.bin",
+        "relativePath": "data/f161.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f162.bin",
+        "relativePath": "data/f162.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f163.bin",
+        "relativePath": "data/f163.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f164.bin",
+        "relativePath": "data/f164.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f165.bin",
+        "relativePath": "data/f165.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f166.bin",
+        "relativePath": "data/f166.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f167.bin",
+        "relativePath": "data/f167.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f168.bin",
+        "relativePath": "data/f168.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f169.bin",
+        "relativePath": "data/f169.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f17.bin",
+        "relativePath": "data/f17.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f170.bin",
+        "relativePath": "data/f170.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f171.bin",
+        "relativePath": "data/f171.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f172.bin",
+        "relativePath": "data/f172.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f173.bin",
+        "relativePath": "data/f173.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f174.bin",
+        "relativePath": "data/f174.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f175.bin",
+        "relativePath": "data/f175.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f176.bin",
+        "relativePath": "data/f176.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f177.bin",
+        "relativePath": "data/f177.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f178.bin",
+        "relativePath": "data/f178.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f179.bin",
+        "relativePath": "data/f179.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f18.bin",
+        "relativePath": "data/f18.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f180.bin",
+        "relativePath": "data/f180.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f181.bin",
+        "relativePath": "data/f181.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f182.bin",
+        "relativePath": "data/f182.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f183.bin",
+        "relativePath": "data/f183.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f184.bin",
+        "relativePath": "data/f184.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f185.bin",
+        "relativePath": "data/f185.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f186.bin",
+        "relativePath": "data/f186.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f187.bin",
+        "relativePath": "data/f187.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f188.bin",
+        "relativePath": "data/f188.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f189.bin",
+        "relativePath": "data/f189.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f19.bin",
+        "relativePath": "data/f19.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f190.bin",
+        "relativePath": "data/f190.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f191.bin",
+        "relativePath": "data/f191.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f192.bin",
+        "relativePath": "data/f192.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f193.bin",
+        "relativePath": "data/f193.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f194.bin",
+        "relativePath": "data/f194.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f195.bin",
+        "relativePath": "data/f195.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f196.bin",
+        "relativePath": "data/f196.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f197.bin",
+        "relativePath": "data/f197.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f198.bin",
+        "relativePath": "data/f198.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f199.bin",
+        "relativePath": "data/f199.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f2.bin",
+        "relativePath": "data/f2.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f20.bin",
+        "relativePath": "data/f20.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f200.bin",
+        "relativePath": "data/f200.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f21.bin",
+        "relativePath": "data/f21.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f22.bin",
+        "relativePath": "data/f22.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f23.bin",
+        "relativePath": "data/f23.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f24.bin",
+        "relativePath": "data/f24.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f25.bin",
+        "relativePath": "data/f25.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f26.bin",
+        "relativePath": "data/f26.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f27.bin",
+        "relativePath": "data/f27.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f28.bin",
+        "relativePath": "data/f28.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f29.bin",
+        "relativePath": "data/f29.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f3.bin",
+        "relativePath": "data/f3.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f30.bin",
+        "relativePath": "data/f30.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f31.bin",
+        "relativePath": "data/f31.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f32.bin",
+        "relativePath": "data/f32.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f33.bin",
+        "relativePath": "data/f33.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f34.bin",
+        "relativePath": "data/f34.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f35.bin",
+        "relativePath": "data/f35.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f36.bin",
+        "relativePath": "data/f36.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f37.bin",
+        "relativePath": "data/f37.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f38.bin",
+        "relativePath": "data/f38.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f39.bin",
+        "relativePath": "data/f39.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f4.bin",
+        "relativePath": "data/f4.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f40.bin",
+        "relativePath": "data/f40.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f41.bin",
+        "relativePath": "data/f41.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f42.bin",
+        "relativePath": "data/f42.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f43.bin",
+        "relativePath": "data/f43.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f44.bin",
+        "relativePath": "data/f44.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f45.bin",
+        "relativePath": "data/f45.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f46.bin",
+        "relativePath": "data/f46.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f47.bin",
+        "relativePath": "data/f47.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f48.bin",
+        "relativePath": "data/f48.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f49.bin",
+        "relativePath": "data/f49.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f5.bin",
+        "relativePath": "data/f5.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f50.bin",
+        "relativePath": "data/f50.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f51.bin",
+        "relativePath": "data/f51.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f52.bin",
+        "relativePath": "data/f52.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f53.bin",
+        "relativePath": "data/f53.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f54.bin",
+        "relativePath": "data/f54.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f55.bin",
+        "relativePath": "data/f55.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f56.bin",
+        "relativePath": "data/f56.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f57.bin",
+        "relativePath": "data/f57.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f58.bin",
+        "relativePath": "data/f58.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f59.bin",
+        "relativePath": "data/f59.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f6.bin",
+        "relativePath": "data/f6.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f60.bin",
+        "relativePath": "data/f60.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f61.bin",
+        "relativePath": "data/f61.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f62.bin",
+        "relativePath": "data/f62.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f63.bin",
+        "relativePath": "data/f63.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f64.bin",
+        "relativePath": "data/f64.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f65.bin",
+        "relativePath": "data/f65.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f66.bin",
+        "relativePath": "data/f66.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f67.bin",
+        "relativePath": "data/f67.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f68.bin",
+        "relativePath": "data/f68.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f69.bin",
+        "relativePath": "data/f69.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f7.bin",
+        "relativePath": "data/f7.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f70.bin",
+        "relativePath": "data/f70.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f71.bin",
+        "relativePath": "data/f71.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f72.bin",
+        "relativePath": "data/f72.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f73.bin",
+        "relativePath": "data/f73.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f74.bin",
+        "relativePath": "data/f74.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f75.bin",
+        "relativePath": "data/f75.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f76.bin",
+        "relativePath": "data/f76.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f77.bin",
+        "relativePath": "data/f77.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f78.bin",
+        "relativePath": "data/f78.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f79.bin",
+        "relativePath": "data/f79.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f8.bin",
+        "relativePath": "data/f8.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f80.bin",
+        "relativePath": "data/f80.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f81.bin",
+        "relativePath": "data/f81.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f82.bin",
+        "relativePath": "data/f82.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f83.bin",
+        "relativePath": "data/f83.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f84.bin",
+        "relativePath": "data/f84.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f85.bin",
+        "relativePath": "data/f85.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f86.bin",
+        "relativePath": "data/f86.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f87.bin",
+        "relativePath": "data/f87.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f88.bin",
+        "relativePath": "data/f88.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f89.bin",
+        "relativePath": "data/f89.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:01.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f9.bin",
+        "relativePath": "data/f9.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f90.bin",
+        "relativePath": "data/f90.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f91.bin",
+        "relativePath": "data/f91.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f92.bin",
+        "relativePath": "data/f92.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f93.bin",
+        "relativePath": "data/f93.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f94.bin",
+        "relativePath": "data/f94.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f95.bin",
+        "relativePath": "data/f95.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f96.bin",
+        "relativePath": "data/f96.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f97.bin",
+        "relativePath": "data/f97.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f98.bin",
+        "relativePath": "data/f98.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      },
+      {
+        "metadata": {
+          "extendedAttributes": {},
+          "lastModDate": "2026-10-31T17:28:02.000Z",
+          "ownerGid": 501,
+          "ownerUid": 501,
+          "permissions": 420,
+          "size": 102400
+        },
+        "name": "data/f99.bin",
+        "relativePath": "data/f99.bin",
+        "resources": {
+          "isDirectory": false,
+          "isHidden": false,
+          "isReadable": true,
+          "isSymbolicLink": false,
+          "isWritable": true
+        }
+      }
+    ]
+  }
+}

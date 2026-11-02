@@ -22,7 +22,7 @@ enum Glossary {
     static let verbs: Set<String> = ["install", "installs", "build", "copy", "drop"]
 
     /// Names DESIGN.md gives to screens and sections, removed before checking.
-    static let names = ["Store Page", "store page", "System Requirements"]
+    static let names = ["Store Page", "store page"]
 
     /// The glossary's terms, such as "Port", in the order it defines them, each with its Avoid list.
     static let entries: [(term: String, avoid: [String])] = {

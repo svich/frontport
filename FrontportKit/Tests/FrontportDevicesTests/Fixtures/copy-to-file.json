@@ -1,0 +1,58 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "copy",
+      "to",
+      "--device",
+      "00000000-0000000000000000",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "dev.frontport.port.spikeapp.a1b2c3d4e5",
+      "--timeout",
+      "120",
+      "--source",
+      "local/single.txt",
+      "--destination",
+      "Documents/single.txt",
+      "-j",
+      "raw/copy-file.json"
+    ],
+    "commandType": "devicectl.device.copy.to",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "destination": "file:///private/var/mobile/Containers/Data/Application/511BA04E-680D-4E13-9A4F-7C19ACA5E1F4/Documents/single.txt",
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "domain": "appDataContainer",
+    "domainIdentifier": "dev.frontport.port.spikeapp.a1b2c3d4e5",
+    "file": {
+      "metadata": {
+        "extendedAttributes": {},
+        "lastModDate": "2026-10-31T17:27:00.000Z",
+        "ownerGid": 501,
+        "ownerUid": 501,
+        "permissions": 420,
+        "size": 12
+      },
+      "name": "/private/var/mobile/Containers/Data/Application/511BA04E-680D-4E13-9A4F-7C19ACA5E1F4/Documents/single.txt",
+      "relativePath": "/private/var/mobile/Containers/Data/Application/511BA04E-680D-4E13-9A4F-7C19ACA5E1F4/Documents/single.txt",
+      "resources": {
+        "isDirectory": false,
+        "isHidden": false,
+        "isReadable": true,
+        "isSymbolicLink": false,
+        "isWritable": true
+      }
+    },
+    "source": "file:///tmp/spikes/S3/local/single.txt",
+    "sources": [
+      "file:///tmp/spikes/S3/local/single.txt"
+    ]
+  }
+}

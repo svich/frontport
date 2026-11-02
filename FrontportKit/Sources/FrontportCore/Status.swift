@@ -72,7 +72,8 @@ public struct Status: Hashable, Sendable {
     }
 
     public let state: State
-    /// The action the state calls for; nil for an Unsupported Port, or one Blocked with no way off.
+    /// The action the state calls for; nil for an Unsupported Port, one Blocked with no way off, or one only on a Device
+    /// that the Catalog doesn't list.
     public let main: Action?
     /// The others to offer beside it: Play while an update waits, or the other ways off a Blocked Release.
     public let others: [Action]
@@ -157,8 +158,9 @@ public struct Status: Hashable, Sendable {
         case .running: main = .stop
         case .working: main = .cancel
         case .unsupported: main = nil
-        case .available: main = .install
-        case .needsBuildROM: main = .addROM(.build)
+        // A Port only a Device has, which the Catalog doesn't list, has nothing to install here, nor a ROM to add for it.
+        case .available: main = facts.knowsEntry ? .install : nil
+        case .needsBuildROM: main = facts.knowsEntry ? .addROM(.build) : nil
         case .blocked(let block):
             // An update first, then Play past a warning, then the other ways off; the rest besides.
             main = update != nil || block.severity == .stop ? waysOff.first : .play
@@ -201,7 +203,9 @@ public struct Status: Hashable, Sendable {
         if case .fallback(let release) = offer { release } else { nil }
     }
 
-    /// Installed, or being installed for the first time.
+    /// Installed on this Mac, or being installed here for the first time: where a card shows In Library in place of
+    /// this Mac's action. A Port only on Devices, or being prepared for them, isn't, though the Lineup counts it in the
+    /// Library: it can still be installed here.
     public var isInLibrary: Bool { facts.isInstalled || facts.activity?.kind == .install }
 
     /// Whether the user can take `action` now. Two rules hold every change back: one change at a time, and those that
@@ -210,10 +214,12 @@ public struct Status: Hashable, Sendable {
         guard facts.isKnown else { return .unavailable }
         switch action {
         case .install:
-            guard !facts.isInstalled, facts.isInstallable, !facts.isMissingBuildROMs else { return .unavailable }
+            guard !facts.isInstalled, facts.isInstallable, facts.knowsEntry, !facts.isMissingBuildROMs else {
+                return .unavailable
+            }
             return waiting(quit: false)
         case .addROM(.build):
-            return !facts.isInstalled && facts.isMissingBuildROMs ? .allowed : .unavailable
+            return !facts.isInstalled && facts.knowsEntry && facts.isMissingBuildROMs ? .allowed : .unavailable
         case .addROM(.runtime):
             return facts.isInstalled && facts.isMissingRuntimeROMs ? .allowed : .unavailable
         case .play:

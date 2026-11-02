@@ -71,6 +71,7 @@ targets:
           - FrontportLibrary
           - FrontportLauncher
           - FrontportArtwork
+          - FrontportDevices
       - package: Sparkle
         product: Sparkle
 

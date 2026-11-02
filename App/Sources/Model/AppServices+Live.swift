@@ -3,6 +3,7 @@ import FrontportArtwork
 import FrontportBuilder
 import FrontportCatalog
 import FrontportCore
+import FrontportDevices
 import FrontportLauncher
 import FrontportLibrary
 import FrontportPackager
@@ -21,16 +22,33 @@ extension AppServices {
             ContainerPrimer(executable: $0, paths: paths)
         }
         let launcher = PortLauncher(paths: paths, primer: primer)
+        let fetcher = AssetFetcher(paths: paths)
         let library = Library(
-            paths: paths, catalog: catalog, releases: releases, fetcher: AssetFetcher(paths: paths),
+            paths: paths, catalog: catalog, releases: releases, fetcher: fetcher,
             builder: builder, roms: roms, packager: PortPackager(paths: paths, primer: primer), launcher: launcher,
             primer: primer)
+        let (control, provisioning, devicePackager) = deviceServices(paths: paths)
+        // The same Builder too, for iOS Recipes.
+        let devices = DeviceLibrary(
+            paths: paths, catalog: catalog, releases: releases, fetcher: fetcher, builder: builder, packager: devicePackager,
+            control: control, provisioning: provisioning, roms: roms)
         return AppServices(
             catalog: prepared(catalog), catalogs: catalog, releases: releases, roms: roms, library: library, launcher: launcher,
             artwork: ArtworkStore(
                 paths: paths, keyStore: KeychainAPIKeyStore(),
                 // Set only by scripts/release.sh; empty in every other build.
-                builtInKey: bundle.object(forInfoDictionaryKey: "FrontportSteamGridDBKey") as? String))
+                builtInKey: bundle.object(forInfoDictionaryKey: "FrontportSteamGridDBKey") as? String),
+            devices: devices, deviceControl: control, provisioning: provisioning)
+    }
+
+    /// Xcode's `devicectl`, found when first needed, the keychain's Apple Teams and Xcode's Provisioning Profiles, with
+    /// Xcode making one it doesn't have, and the Device Packager: in Debug, the UI tests' stand-ins when
+    /// `FRONTPORT_FAKE_DEVICE` asks for them.
+    private static func deviceServices(paths: AppPaths) -> (any DeviceControlling, any Provisioning, any DevicePackaging) {
+        #if DEBUG
+        if TestHooks.fakeDevicePort != nil { return (FakeDevices.control, FakeDevices.provisioning, FakeDevices.packager) }
+        #endif
+        return (DeviceCtl(), DeviceProvisioning(maker: ProfileMaker(paths: paths)), DevicePackager())
     }
 
     /// Frontport's own Catalog, bundled and fetched from `catalog/` on `main`, and the ones the user added.

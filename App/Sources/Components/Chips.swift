@@ -41,7 +41,7 @@ struct Pill: View {
     }
 }
 
-/// The Pills a Catalog card shows: Release, ROM state, Network, Builds from source.
+/// The Pills a Catalog card shows: Release, ROM state, Network, Built on your Mac.
 struct EntryPills: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
@@ -65,24 +65,9 @@ struct EntryPills: View {
                 Pill(text: "Network")
             }
             if entry.isSourceBuilt {
-                Pill(text: "Builds from source")
+                Pill(text: "Built on your Mac")
             }
         }
-    }
-}
-
-/// "DECOMP" over artwork.
-struct KindBadge: View {
-    let kind: Kind
-
-    var body: some View {
-        Text(kind.name.uppercased())
-            .font(.system(size: 10, weight: .bold))
-            .tracking(0.7)
-            .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(.black.opacity(0.58), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 }
 

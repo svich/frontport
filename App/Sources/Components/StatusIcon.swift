@@ -1,7 +1,8 @@
 import FrontportCore
 import SwiftUI
 
-/// The sidebar's status glyph for a Port: running, update, needs ROM or ROMs not Seeded, work in progress, Blocked.
+/// The sidebar's status glyph for a Port under This Mac: running, update, needs ROM or ROMs not Seeded, work in
+/// progress, Blocked.
 struct StatusIcon: View {
     @Environment(AppModel.self) private var model
     let port: PortID
@@ -9,18 +10,8 @@ struct StatusIcon: View {
     var body: some View {
         switch model.status(of: port).state {
         case .working(let activity):
-            let text = model.activityText(activity, for: port)
-            Group {
-                if let fraction = activity.progress.fraction {
-                    ProgressRing(fraction: fraction)
-                        .frame(width: 14, height: 14)
-                } else {
-                    ProgressView().controlSize(.mini)
-                }
-            }
-            .help(text)
-            .accessibilityLabel(text)
-            .accessibilityIdentifier(identifier)
+            ActivityIcon(activity: activity, text: model.activityText(activity, for: port))
+                .accessibilityIdentifier(identifier)
         case .running:
             Circle()
                 .fill(.green)
@@ -57,12 +48,72 @@ struct StatusIcon: View {
                 .help(block.reason)
                 .accessibilityLabel("Blocked")
                 .accessibilityIdentifier(identifier)
-        case .unsupported, .available, .needsBuildROM, .ready:
+        case .unsupported, .ready, .available, .needsBuildROM:
             EmptyView()
         }
     }
 
     private var identifier: String { "status.\(port.rawValue)" }
+}
+
+/// The sidebar's status glyph for a Port under one of the user's Devices: a change under way there, Renew due or
+/// expired, ROMs not Seeded there, an Update.
+struct DeviceStatusIcon: View {
+    @Environment(AppModel.self) private var model
+    let port: PortID
+    let device: DeviceID
+
+    var body: some View {
+        if let reading = model.deviceReading(device) {
+            let status = model.deviceStatus(of: port, on: reading)
+            if case .working(let activity) = status.state {
+                ActivityIcon(activity: activity, text: model.activityText(activity, for: port))
+                    .accessibilityIdentifier(identifier)
+            } else if let renew = model.renewText(status) {
+                Image(systemName: reading.device.isPad ? "ipad.badge.exclamationmark" : "iphone.badge.exclamationmark")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.orange)
+                    .help(renew)
+                    .accessibilityLabel("Renew due")
+                    .accessibilityIdentifier(identifier)
+            } else if status.matching?.hasUnseeded == true {
+                Image(systemName: "exclamationmark.triangle")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.orange)
+                    .help(model.seedingText(status, for: port) ?? "Its ROMs aren’t Seeded there yet")
+                    .accessibilityLabel("ROMs not Seeded")
+                    .accessibilityIdentifier(identifier)
+            } else if let update = status.update {
+                Image(systemName: "arrow.down.circle")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.tint)
+                    .help("\(update.version) available")
+                    .accessibilityLabel("Update available")
+                    .accessibilityIdentifier(identifier)
+            }
+        }
+    }
+
+    private var identifier: String { "status.\(device.rawValue).\(port.rawValue)" }
+}
+
+/// A change under way: a ring once it reports how far it is, a spinner until then.
+private struct ActivityIcon: View {
+    let activity: Activity
+    let text: String
+
+    var body: some View {
+        Group {
+            if let fraction = activity.progress.fraction {
+                ProgressRing(fraction: fraction)
+                    .frame(width: 14, height: 14)
+            } else {
+                ProgressView().controlSize(.mini)
+            }
+        }
+        .help(text)
+        .accessibilityLabel(text)
+    }
 }
 
 /// A determinate progress ring, for small spaces.

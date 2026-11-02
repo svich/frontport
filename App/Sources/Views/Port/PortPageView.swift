@@ -66,7 +66,7 @@ extension Snapshot {
     var title: String { reason == .restore ? "On \(release)" : "Before \(target ?? release)" }
 }
 
-/// Roll Back, Uninstall and shortcuts, in the toolbar.
+/// Installing on this Mac or on iPhone or iPad, Roll Back, Uninstall and shortcuts, in the toolbar.
 private struct PortMenu: View {
     @Environment(AppModel.self) private var model
     @Environment(ViewState.self) private var viewState
@@ -76,6 +76,8 @@ private struct PortMenu: View {
         let status = model.status(of: port)
         let isListed = model.survey.isListed(port)
         Menu {
+            InstallItems(port: port)
+            Divider()
             if status.check(.rollBack) != .unavailable {
                 item(.rollBack, status)
             }
@@ -91,11 +93,43 @@ private struct PortMenu: View {
         }
         .menuIndicator(.hidden)
         .help("More")
+        .accessibilityIdentifier("port.more")
     }
 
     private func item(_ action: Status.Action, _ status: Status) -> some View {
         Button(model.title(action, for: port)) { viewState.run(action, for: port, in: model) }
             .disabled(!status.allows(action))
+    }
+}
+
+/// Installing somewhere the Port isn't yet, atop the More menu of each of its pages: on this Mac while it isn't here, and
+/// on iPhone or iPad.
+struct InstallItems: View {
+    @Environment(AppModel.self) private var model
+    @Environment(ViewState.self) private var viewState
+    let port: PortID
+
+    var body: some View {
+        let status = model.status(of: port)
+        if model.survey.installation(port) == nil, let main = status.main, let title = installTitle(main) {
+            Button(title) { viewState.run(main, for: port, in: model) }
+                .disabled(!status.allows(main))
+                .accessibilityIdentifier("port.more.install")
+        }
+        if let devices = model.deviceInstallStatus(of: port), devices.availability != .unavailable {
+            Button(model.installOnDevicesTitle(devices)) { model.installOnDevices(port) }
+                .disabled(!devices.isAllowed)
+                .accessibilityIdentifier("port.more.installOnDevices")
+        }
+    }
+
+    /// Installing on this Mac: right away, or once the ROM it's built from is added.
+    private func installTitle(_ action: Status.Action) -> String? {
+        switch action {
+        case .install: "Install on This Mac"
+        case .addROM: "Install on This Mac…"
+        default: nil
+        }
     }
 }
 

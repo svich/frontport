@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-01T12:00:00Z",
+  "issued": "2026-11-01T18:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -1000,7 +1000,17 @@
       "codeSigning": { "exceptions": [] },
       "screenshots": [],
       "tags": ["bugfixes"],
-      "firstRelease": "2023-02-09T19:54:12Z"
+      "firstRelease": "2023-02-09T19:54:12Z",
+      "ios": {
+        "releases": {
+          "type": "git",
+          "repo": "alexbatalov/fallout1-ce",
+          "refs": { "stable": "0609bcfd0ec40ff0571d0f57fab2821eb461dc8b" },
+          "recipe": "recipes/fallout-ce-ios.sh",
+          "recipeSHA256": "cc7dab4b0285444952d4a10dbab68d8c7d6dd31195d4d81381c1c9379e54e22e"
+        },
+        "seedPaths": ["Documents"]
+      }
     },
     {
       "id": "fallout2-ce",

@@ -15,7 +15,6 @@ final class CatalogTests: XCTestCase {
         let session = try Session.launch(self)
         session.wait(for: "screen.catalog")
         session.waitForCatalog()
-        XCTAssertFalse(session.element("screen.library").exists)
         XCTAssertFalse(catalog.genres.isEmpty)
         let groups =
             lineup.platforms.map { platform, games, _ in

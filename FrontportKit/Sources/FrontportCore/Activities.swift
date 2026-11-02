@@ -27,7 +27,7 @@ public final class Activities {
     /// failing.
     public private(set) var seedingFailures: [PortID: String] = [:]
     /// Told when a Port's Activity starts or ends, not as it progresses.
-    @ObservationIgnored public var onChange: @MainActor (PortID) -> Void = { _ in }
+    @ObservationIgnored private var observers: [@MainActor (PortID) -> Void] = []
 
     private struct Change {
         var kind: Activity.Kind
@@ -47,9 +47,14 @@ public final class Activities {
 
     public subscript(port: PortID) -> Activity? { underWay[port] }
 
+    /// Tells `observer` whenever a Port's Activity starts or ends, not as it progresses, after those told before it.
+    public func onChange(_ observer: @escaping @MainActor (PortID) -> Void) {
+        observers.append(observer)
+    }
+
     /// Runs a change as the Port's Activity, now or once the one under way and those asked before have ended. Its
-    /// progress shows as the Activity's, newest only, so a burst never floods the main actor; a Seeding message is kept
-    /// in `seedingFailures`. `end` runs once, whatever came of it, before the Activity clears.
+    /// progress shows as the Activity's, newest only, so a burst never floods the main actor; a Seeding message of a
+    /// change on this Mac is kept in `seedingFailures`. `end` runs once, whatever came of it, before the Activity clears.
     public func run(_ kind: Activity.Kind, on port: PortID, _ work: @escaping Work, end: @escaping End) {
         let change = Change(kind: kind, work: work, end: end)
         if underWay[port] != nil || tasks[port] != nil {
@@ -76,12 +81,15 @@ public final class Activities {
 
     private func start(_ change: Change, on port: PortID) {
         underWay[port] = Activity(change.kind)
-        onChange(port)
+        for observer in observers { observer(port) }
         let (updates, continuation) = AsyncStream.makeStream(of: ProgressUpdate.self, bufferingPolicy: .bufferingNewest(1))
         let progress = Task { [weak self] in
             for await update in updates {
                 self?.underWay[port]?.progress = update
-                if update.phase == .seeding, let message = update.message { self?.seedingFailures[port] = message }
+                // Seeding on a Device isn't the Port's Data on this Mac.
+                if update.phase == .seeding, !change.kind.isForDevices, let message = update.message {
+                    self?.seedingFailures[port] = message
+                }
             }
         }
         tasks[port] = Task { [weak self] in
@@ -114,6 +122,6 @@ public final class Activities {
             await change.end(.cancelled)
         }
         tasks[port] = nil
-        onChange(port)
+        for observer in observers { observer(port) }
     }
 }

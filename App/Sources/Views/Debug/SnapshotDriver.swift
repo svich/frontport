@@ -44,27 +44,19 @@ enum SnapshotDriver {
         Shot(name: "platform-n64", fullHeight: 1100) { model, _ in
             model.selection = .platform("n64")
         },
-        Shot(name: "library-grid") { model, _ in
-            model.libraryLayout = .grid
-            model.selection = .library
-        },
-        Shot(name: "library-list") { model, _ in
-            model.libraryLayout = .list
-            model.selection = .library
-        },
-        Shot(name: "store-shipwright", fullHeight: 1400) { model, _ in
+        Shot(name: "store-shipwright", fullHeight: 2200) { model, _ in
             model.selection = .store("shipwright")
         },
         Shot(name: "game-super-mario-64", fullHeight: 1000) { model, _ in
             model.selection = .game("super-mario-64")
         },
-        Shot(name: "store-ghostship", fullHeight: 1400) { model, _ in
+        Shot(name: "store-ghostship", fullHeight: 2500) { model, _ in
             model.selection = .store("ghostship")
         },
-        Shot(name: "store-opengoal-jak1", fullHeight: 1400) { model, _ in
+        Shot(name: "store-opengoal-jak1", fullHeight: 2200) { model, _ in
             model.selection = .store("opengoal-jak1")
         },
-        Shot(name: "store-macnativegames-totk", fullHeight: 1600, previewOnly: true) { model, _ in
+        Shot(name: "store-macnativegames-totk", fullHeight: 2400, previewOnly: true) { model, _ in
             model.selection = .store("macnativegames-totk")
         },
         Shot(name: "project-opengoal", fullHeight: 1500) { model, _ in
@@ -102,6 +94,12 @@ enum SnapshotDriver {
             model.selection = .port("zelda64recomp")
             state.portTab = .overview
         },
+        Shot(name: "port-on-device", fullHeight: 1500, previewOnly: true) { model, _ in
+            model.selection = .port("ghostship")
+        },
+        Shot(name: "port-on-device-due", fullHeight: 1500, previewOnly: true) { model, _ in
+            model.selection = model.survey.deviceInstallations(of: "ghostship").last.map { .portOnDevice("ghostship", $0.device) }
+        },
         Shot(name: "port-steam-download", previewOnly: true) { model, state in
             model.previewSteamDownload(steamDownload)
             model.selection = .port("spaghettikart")
@@ -112,7 +110,7 @@ enum SnapshotDriver {
             model.selection = .roms
         },
         Shot(name: "search") { model, _ in
-            model.selection = .library
+            model.selection = .catalog
             model.searchText = "mario"
         },
     ]
@@ -128,7 +126,7 @@ enum SnapshotDriver {
             await model.load()
             await model.refresh()
             if let first = model.survey.libraryPorts.first { port = first.id }
-            model.selection = model.initialScreen
+            model.selection = .catalog
         }
         try? await Task.sleep(for: .seconds(1))
         guard let window = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }) else {
@@ -136,7 +134,6 @@ enum SnapshotDriver {
             return
         }
         allowFramesTallerThanScreen(window)
-        let layout = model.libraryLayout
         let appearances: [(String, NSAppearance.Name)] = [("light", .aqua), ("dark", .darkAqua)]
         for (suffix, appearance) in appearances {
             NSApp.appearance = NSAppearance(named: appearance)
@@ -162,6 +159,16 @@ enum SnapshotDriver {
             }
             viewState.intakeReport = nil
             await settle()
+            if !isLive {
+                model.selection = .store("ghostship")
+                model.previewDevicePicker("ghostship")
+                await settle()
+                if let sheet = window.attachedSheet {
+                    capture(sheet, named: "device-picker-\(suffix)", in: directory)
+                }
+                model.previewDevicePicker(nil)
+                await settle()
+            }
             openSettings()
             await settle()
             if let settings = NSApp.windows.first(where: { $0 !== window && $0.isVisible && $0.canBecomeKey }) {
@@ -169,7 +176,6 @@ enum SnapshotDriver {
                 settings.close()
             }
         }
-        model.libraryLayout = layout
         NSApp.terminate(nil)
     }
 

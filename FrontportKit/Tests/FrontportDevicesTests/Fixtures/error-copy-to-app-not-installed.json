@@ -1,0 +1,46 @@
+{
+  "error": {
+    "code": 7000,
+    "domain": "com.apple.dt.CoreDeviceError",
+    "userInfo": {
+      "NSLocalizedDescription": {
+        "string": "The specified file could not be transferred."
+      },
+      "NSUnderlyingError": {
+        "error": {
+          "code": -1,
+          "domain": "ContainerLookupErrorDomain",
+          "userInfo": {}
+        }
+      }
+    }
+  },
+  "errorSignature": "(com.apple.dt.CoreDeviceError 7000 (ContainerLookupErrorDomain -1))",
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "copy",
+      "to",
+      "--device",
+      "00000000-0000000000000000",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "dev.frontport.port.notinstalled.a1b2c3d4e5",
+      "--timeout",
+      "60",
+      "--source",
+      "local/single.txt",
+      "--destination",
+      "Documents/single.txt",
+      "-j",
+      "raw/err-copy-not-installed.json"
+    ],
+    "commandType": "devicectl.device.copy.to",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "failed",
+    "version": "651.32"
+  }
+}

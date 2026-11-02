@@ -39,7 +39,7 @@ public actor ROMStore: ROMStoring {
     }
 
     /// The files in ROMs, by SHA-1, as the index lists them.
-    private func files() -> [String: ROMFile] {
+    func files() -> [String: ROMFile] {
         Dictionary(loadedIndex().map { ($0.sha1, ROMFile(record: $0, url: paths.rom(for: $0))) }, uniquingKeysWith: { $1 })
     }
 

@@ -9,6 +9,8 @@ struct PortConfirmation: Hashable {
         case switchChannel(ChannelSwitch)
         /// The way off a Blocked Release when nothing newer or previous is there: an older Release.
         case install(Release)
+        /// Removes it from a Device, and its Data there with it.
+        case uninstallFromDevice(DeviceID)
     }
 
     var port: PortID
@@ -50,6 +52,8 @@ private struct PortConfirmationDialog: ViewModifier {
                 Button("Switch to \(plan.channel.name)") { model.switchChannel(port, to: plan) }
             case .install(let release):
                 Button("Install \(release.version)") { model.update(port, to: release) }
+            case .uninstallFromDevice(let device):
+                Button("Uninstall", role: .destructive) { model.deviceUpkeep.uninstall(port, from: device) }
             }
             Button("Cancel", role: .cancel) {}
         } message: { confirmation in
@@ -77,6 +81,8 @@ private struct PortConfirmationDialog: ViewModifier {
             return "Switch \(name) to the \(plan.channel.name) Channel?"
         case .install(let release):
             return "Install \(name) \(release.version)?"
+        case .uninstallFromDevice(let device):
+            return "Uninstall \(name) from \(model.deviceName(device))?"
         }
     }
 
@@ -120,6 +126,9 @@ private struct PortConfirmationDialog: ViewModifier {
             return "\(current) is Blocked, and there’s no newer Release or previous one to roll back to. "
                 + "\(release.version) is the newest that isn’t. It’s older, so \(name) may not load your current "
                 + "Data. Frontport takes a Snapshot of it first."
+        case .uninstallFromDevice(let device):
+            return "Its Data on \(model.deviceName(device)) goes too: its progress, preferences and the ROMs it keeps "
+                + "there. Frontport has no Snapshot of it, so this can’t be undone."
         }
     }
 }

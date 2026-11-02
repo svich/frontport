@@ -1,0 +1,29 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "info",
+      "apps",
+      "--device",
+      "00000000-0000000000000000",
+      "--timeout",
+      "60",
+      "-j",
+      "raw/apps-after-uninstall.json"
+    ],
+    "commandType": "devicectl.device.info.apps",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "apps": [],
+    "defaultAppsIncluded": false,
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "hiddenAppsIncluded": false,
+    "internalAppsIncluded": false,
+    "removableAppsIncluded": true
+  }
+}

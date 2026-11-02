@@ -152,14 +152,14 @@ struct ProjectUpdateBanner: View {
     }
 }
 
-/// Developer, source, website, Channels and where Releases come from.
+/// Developer, code, website, Channels and where Releases come from.
 private struct ProjectDetails: View {
     let project: Project
 
     var body: some View {
         GroupedSection("Details") {
             GroupedRow("Developer", value: project.developer)
-            GroupedRow("Source") {
+            GroupedRow("Code") {
                 Link(project.source.shortDisplay, destination: project.source)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -172,7 +172,7 @@ private struct ProjectDetails: View {
             }
             GroupedRow(
                 "Releases",
-                value: project.isSourceBuilt ? "Pinned by the Catalog, built from source" : "From GitHub Releases")
+                value: project.isSourceBuilt ? "Pinned by the Catalog, built on your Mac" : "From GitHub Releases")
         }
     }
 }

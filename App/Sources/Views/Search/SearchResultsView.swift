@@ -28,10 +28,10 @@ struct SearchResultsView: View {
 
 #if DEBUG
 #Preview("Search") {
-    ScreenPreview(.library) { model, _ in model.searchText = "mario" }
+    ScreenPreview(.catalog) { model, _ in model.searchText = "mario" }
 }
 
 #Preview("Search · No Results") {
-    ScreenPreview(.library) { model, _ in model.searchText = "metroid" }
+    ScreenPreview(.catalog) { model, _ in model.searchText = "metroid" }
 }
 #endif

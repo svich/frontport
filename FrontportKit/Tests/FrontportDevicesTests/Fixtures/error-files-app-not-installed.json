@@ -1,0 +1,35 @@
+{
+  "error": {
+    "code": 3,
+    "domain": "CoreDevice.ActionError",
+    "userInfo": {
+      "NSDebugDescription": {
+        "string": "This operation could not be performed due to an error in StreamingAction: The system failed to get a list of files on the remote device."
+      }
+    }
+  },
+  "errorSignature": "(CoreDevice.ActionError 3)",
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "info",
+      "files",
+      "--device",
+      "00000000-0000000000000000",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "dev.frontport.port.notinstalled.a1b2c3d4e5",
+      "--timeout",
+      "60",
+      "-j",
+      "raw/err-files-not-installed.json"
+    ],
+    "commandType": "devicectl.device.info.files",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "failed",
+    "version": "651.32"
+  }
+}

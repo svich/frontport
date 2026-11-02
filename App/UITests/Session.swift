@@ -34,13 +34,12 @@ final class Session {
             try session.restoreReleasesCache()
         }
         session.app.launchEnvironment["FRONTPORT_ROOT"] = session.root.path(percentEncoded: false)
-        // The user's own defaults would otherwise pick the Library layout, and window state an earlier run left (such
-        // as the snapshot driver's) could open the app with no window.
+        // Window state an earlier run left (such as the snapshot driver's) could open the app with no window.
         session.app.launchArguments =
-            ["-libraryLayout", "grid", "-ApplePersistenceIgnoreState", "YES"] + (world?.arguments ?? []) + arguments
+            ["-ApplePersistenceIgnoreState", "YES"] + (world?.arguments ?? []) + arguments
         test.addTeardownBlock { @MainActor in session.close() }
         session.app.launch()
-        session.waitForAny("screen.catalog", "screen.library", timeout: 60)
+        session.wait(for: "screen.catalog", timeout: 60)
         return session
     }
 
@@ -48,7 +47,7 @@ final class Session {
     func relaunch() {
         app.terminate()
         app.launch()
-        waitForAny("screen.catalog", "screen.library", timeout: 60)
+        wait(for: "screen.catalog", timeout: 60)
     }
 
     /// Attaches the Port's run logs, and the files in `folders`, to a failed test's result before the root and
@@ -284,7 +283,7 @@ final class Session {
 
     /// Waits for an install started from the store page to finish, failing with the alert's text if it fails.
     func waitForInstall(_ port: String, timeout: TimeInterval, file: StaticString = #filePath, line: UInt = #line) {
-        let done = element("store.inLibrary")
+        let done = element("store.open")
         var failure: String?
         let finished = waitUntil(timeout, poll: 2) {
             if done.exists { return true }

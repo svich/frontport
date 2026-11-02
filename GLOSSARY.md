@@ -38,7 +38,7 @@ The original title a Port is based on, such as Ocarina of Time.
 _Avoid_: title, port
 
 **Platform**:
-The system a Game was originally released on, such as the Nintendo 64. Never the Mac a Port runs on, or the operating system a Release targets. Its Games come on cartridges, ISOs or files.
+The system a Game was originally released on, such as the Nintendo 64. Never the Mac or Device a Port runs on, or the operating system a Release targets. Its Games come on cartridges, ISOs or files.
 _Avoid_: console, system, original platform
 
 **Base**:
@@ -126,11 +126,11 @@ _Avoid_: entitlements, capabilities, rights
 ### Installing
 
 **Library**:
-The Ports installed on this Mac.
+The Ports installed on this Mac or its Devices.
 _Avoid_: installs, collection, apps
 
 **Installation**:
-One Port in the Library, at one Release on one Channel. A Port has at most one.
+One Port in the Library, on this Mac or on one Device, at one Release on one Channel. A Port has at most one in each place.
 _Avoid_: install, copy, instance
 
 **Channel**:
@@ -138,7 +138,7 @@ The stream of Releases an Installation follows, such as stable or nightly.
 _Avoid_: track, branch, ring
 
 **Data**:
-Everything a Port keeps for itself on this Mac: progress, settings, its Runtime ROMs and anything it extracted. Survives uninstalling.
+Everything a Port keeps for itself on this Mac, or on a Device for its iOS version: progress, settings, its Runtime ROMs and anything it extracted. Survives uninstalling from the Mac, but not from a Device.
 _Avoid_: saves, container, profile
 
 **Seed**:
@@ -176,3 +176,25 @@ _Avoid_: job, task, operation
 **Status**:
 What a Port is doing or needs, as the user sees it, and which actions that allows now, each with why when it doesn't.
 _Avoid_: state, condition
+
+### Devices
+
+**Device**:
+An iPhone or iPad paired with this Mac, which Frontport installs Ports' iOS versions on. Never a Platform.
+_Avoid_: phone, handset, target
+
+**iOS version**:
+The version of a Port a Device runs, listed in its Catalog entry's `ios`, with its own Releases, Channel, Blocks and Seed paths. A Port without one stays on the Mac.
+_Avoid_: iOS port, iOS view, mobile version
+
+**Apple Team**:
+The user's Apple developer team: the personal team every Apple account gets for free, or a paid Apple Developer Program team. Its Apple Development certificate, with the key in the keychain, signs Ports for Devices, and whether it's paid sets how long its Provisioning Profiles last. Never a Project's developers.
+_Avoid_: team, certificate, identity, account
+
+**Provisioning Profile**:
+Apple's development provisioning profile, a `.mobileprovision` file: lets apps an Apple Team signs run on the Devices it names, for one bundle ID or every one its wildcard covers, until it expires. Xcode makes them; Frontport takes them. Never a build sandbox profile.
+_Avoid_: profile, Apple Profile, provision
+
+**Renew**:
+To sign a Port's app on a Device again with a Provisioning Profile that lasts longer and install it over, before the old one expires. Keeps its Data.
+_Avoid_: refresh, re-sign, extend

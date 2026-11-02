@@ -8,22 +8,26 @@ public actor RecipeBuilder: RecipeBuilding {
     private let developerTools: DeveloperTools
     private let installer: ToolchainInstaller
     private let home: URL
+    private let xcode: Xcode.Locator
     /// The install in progress, which concurrent callers join.
     private var installing: Task<Void, any Error>?
 
     /// - Parameters:
     ///   - home: the folder the sandbox denies as a whole; the user's home folder outside tests.
+    ///   - xcode: how iOS builds find Xcode with the iOS platform, whose iOS SDK they build with.
     public init(
         paths: AppPaths = .default,
         manifest: ToolchainManifest = .pinned,
         developerTools: DeveloperTools = .system,
         download: ToolchainDownload? = nil,
-        home: URL = FileManager.default.homeDirectoryForCurrentUser
+        home: URL = FileManager.default.homeDirectoryForCurrentUser,
+        xcode: Xcode.Locator = .system
     ) {
         self.paths = paths
         self.developerTools = developerTools
         self.installer = ToolchainInstaller(paths: paths, manifest: manifest, download: download ?? ToolchainInstaller.urlSession)
         self.home = home
+        self.xcode = xcode
     }
 
     // MARK: Toolchain
@@ -41,6 +45,32 @@ public actor RecipeBuilder: RecipeBuilding {
             throw FrontportError.toolchainMissing(
                 "Install the Command Line Tools from the window macOS just opened, then try again.")
         }
+        try await installPrefix(progress: progress)
+    }
+
+    /// For an iOS build, Xcode stands in for the Command Line Tools, which it doesn't use.
+    public func toolchainStatus(for sdk: BuildSDK) async -> ToolchainStatus {
+        switch sdk {
+        case .macosx:
+            return await toolchainStatus()
+        case .iphoneos:
+            guard (try? await Xcode.find(xcode)) != nil else { return .needsCommandLineTools }
+            return installer.isInstalled ? .ready : .needsPrefix
+        }
+    }
+
+    public func prepareToolchain(for sdk: BuildSDK, progress: @escaping ProgressHandler) async throws {
+        switch sdk {
+        case .macosx:
+            try await prepareToolchain(progress: progress)
+        case .iphoneos:
+            _ = try await Xcode.find(xcode)
+            try await installPrefix(progress: progress)
+        }
+    }
+
+    /// Installs the pinned prefix unless it is, joining an install in progress.
+    private func installPrefix(progress: @escaping ProgressHandler) async throws {
         guard !installer.isInstalled else { return }
         if let installing {
             return try await installing.value
@@ -59,27 +89,29 @@ public actor RecipeBuilder: RecipeBuilding {
     // MARK: Build
 
     public func build(
-        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, log: URL,
+        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, sdk: BuildSDK, log: URL,
         progress: @escaping ProgressHandler
     ) async throws -> BuildProduct {
-        guard let developer = await developerTools.directory() else {
-            throw FrontportError.toolchainMissing("The Command Line Tools aren’t installed.")
-        }
+        let developer = try await developerDirectory(for: sdk)
         guard installer.isInstalled else {
             throw FrontportError.toolchainMissing("Frontport’s build tools aren’t installed.")
         }
         let port = entry.id
-        let workspace = try Workspace(paths: paths, port: port)
+        let workspace = try Workspace(paths: paths, port: sdk.workspace(for: port))
         try workspace.prepare(ref: ref, recipeSHA256: try Hashing.sha256(file: recipe))
         try BuildOutput.restart(log)
         var built = false
         defer { workspace.finish(keepingOutput: built) }
 
-        let sdk = await developerTools.sdk(developer)
+        let sdkRoot: URL?
+        switch sdk {
+        case .macosx: sdkRoot = await developerTools.sdk(developer)
+        case .iphoneos: sdkRoot = Xcode(developer: developer).iosSDK
+        }
         let metal = await developerTools.metalToolchain(developer)
         let environment = try workspace.environment(
-            port: port, ref: ref, toolchain: installer.root, toolchainBin: installer.bin, developer: developer, sdk: sdk,
-            metal: metal)
+            port: port, ref: ref, toolchain: installer.root, toolchainBin: installer.bin, developer: developer,
+            sdk: sdkRoot, metal: metal, buildSDK: sdk)
 
         if !workspace.isFetched {
             progress(ProgressUpdate(.fetching, message: "Fetching \(entry.name) \(ref)"))
@@ -95,6 +127,20 @@ public actor RecipeBuilder: RecipeBuilding {
         let product = try workspace.product()
         built = true
         return product
+    }
+
+    /// The developer folder a build with `sdk` runs with: the active one for the Mac, the Command Line Tools' or
+    /// Xcode's; for Devices, Xcode with its iOS SDK, which the Command Line Tools don't have.
+    private func developerDirectory(for sdk: BuildSDK) async throws -> URL {
+        switch sdk {
+        case .macosx:
+            guard let developer = await developerTools.directory() else {
+                throw FrontportError.toolchainMissing("The Command Line Tools aren’t installed.")
+            }
+            return developer
+        case .iphoneos:
+            return try await Xcode.find(xcode).developer
+        }
     }
 
     // MARK: Unpack
@@ -165,7 +211,9 @@ public actor RecipeBuilder: RecipeBuilding {
     }
 }
 
-/// `Builds/<port>/`: the source tree, output, ROMs, tmp, and the state that decides whether to fetch again.
+/// `Builds/<port>/`, or `Builds/<port>.ios/` for an iOS build: the source tree, output, ROMs, tmp, and the state that
+/// decides whether to fetch again. A run starts over only these, so what else is there stays, such as the Device
+/// Library's `prepared/` beside an iOS build.
 ///
 /// The build step may write anywhere in it, and a Recipe's processes may outlive their step, so Frontport never
 /// follows a link there: it reads only regular files, replaces folders that aren't plain folders, and takes the
@@ -285,8 +333,12 @@ struct Workspace: Sendable {
         return BuildProduct(app: app, assets: assets)
     }
 
+    /// The Recipe's environment (catalog/recipes/README.md › Environment), `sdk` being `SDKROOT`. An iOS build also gets
+    /// `FRONTPORT_SDK`, and `xcrun_db` in tmp: xcrun keeps its cache in the per-user temporary folder, which the sandbox
+    /// denies, and falls back to asking xcodebuild, about 2 s a call, without one it can write.
     func environment(
-        port: PortID, ref: String, toolchain: URL, toolchainBin: URL, developer: URL, sdk: URL?, metal: URL? = nil
+        port: PortID, ref: String, toolchain: URL, toolchainBin: URL, developer: URL, sdk: URL?, metal: URL? = nil,
+        buildSDK: BuildSDK = .macosx
     ) throws -> [String: String] {
         let path = ([toolchainBin] + DeveloperTools.binaryFolders(in: developer)).map { $0.path(percentEncoded: false) }
             + ["/usr/bin", "/bin", "/usr/sbin", "/sbin"]
@@ -306,6 +358,10 @@ struct Workspace: Sendable {
         ]
         if let sdk { environment["SDKROOT"] = sdk.path(percentEncoded: false) }
         if let metal { environment["FRONTPORT_METAL"] = metal.appending(path: "usr/bin").path(percentEncoded: false) }
+        if buildSDK == .iphoneos {
+            environment["FRONTPORT_SDK"] = buildSDK.rawValue
+            environment["xcrun_db"] = try BuildSandbox.canonical(temporary) + "/xcrun_db"
+        }
         return environment
     }
 

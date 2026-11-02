@@ -44,7 +44,7 @@ struct StorageSection: View {
                     if isInstalled || hasData {
                         FolderRow(
                             "Data", size: dataSize(measured, isInstalled: isInstalled),
-                            detail: "Progress, settings and the ROMs it keeps",
+                            detail: "Progress, preferences and the ROMs it keeps",
                             url: model.paths.data(for: entry.bundleId), exists: hasData
                         ) {
                             Button(status.title(.deleteData), role: .destructive) {

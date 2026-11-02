@@ -29,6 +29,17 @@ dir = "FrontportKit"
 env = { FRONTPORT_SYNTHETIC_TESTS = "1" }
 run = "swift test --filter SyntheticEndToEndTests"
 
+[tasks.test-device]
+description = "Run the opt-in Device tests on a paired iPhone or iPad, attended: FRONTPORT_DEVICE_TESTS=<udid> FRONTPORT_DEVICE_TEAM=<team ID> mise run test-device (signs with your Apple Team, has Xcode make a Provisioning Profile for the throwaway bundle ID dev.frontport.port.spike.<team>, installs a stand-in app on the Device and uninstalls it)"
+dir = "FrontportKit"
+run = """
+if [ -z "$FRONTPORT_DEVICE_TESTS" ] || [ -z "$FRONTPORT_DEVICE_TEAM" ]; then
+  echo "Set FRONTPORT_DEVICE_TESTS to the Device's UDID and FRONTPORT_DEVICE_TEAM to your Apple Team's ID." >&2
+  exit 1
+fi
+swift test --filter 'DeviceSigningTests|DeviceHostTests|DeviceEndToEndTests|ProfileMakerTests|ProfileMakerDeviceTests'
+"""
+
 [tasks.release]
 description = "Build, sign, notarize and staple a release, and update the Sparkle appcast (see scripts/README.md)"
 run = "scripts/release.sh"

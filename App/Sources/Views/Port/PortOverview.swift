@@ -1,17 +1,18 @@
 import FrontportCore
 import SwiftUI
 
-/// The Port page's Overview: header art, Play, the update, About, ROMs, Permissions and Storage.
+/// The Port page's Overview on this Mac: header art, Play, the update, its Installation, ROMs, Permissions and Storage.
+/// Each Device the Port is on has a page of its own (`DevicePortPage`).
 struct PortOverview: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Header(entry: entry)
+            PortHeader(entry: entry)
             ActionRow(entry: entry)
             if let activity = model.activities[entry.id] {
-                ActivityCard(entry: entry, activity: activity)
+                PortActivityCard(entry: entry, activity: activity)
             } else if model.isDownloadingFromSteam(for: entry.id), let download = model.steamDownload {
                 SteamDownloadCard(download: download)
             } else if let snapshot = model.switchSnapshots[entry.id] {
@@ -21,7 +22,7 @@ struct PortOverview: View {
             }
             HStack(alignment: .top, spacing: 28) {
                 VStack(alignment: .leading, spacing: 22) {
-                    AboutSection(entry: entry)
+                    InstallationSection(entry: entry)
                     if model.survey.knowsEntry(entry.id) {
                         PortROMs(entry: entry)
                     }
@@ -39,7 +40,7 @@ struct PortOverview: View {
 }
 
 /// Hero art with the logo as the title, and "Game · Kind · by Developer".
-private struct Header: View {
+struct PortHeader: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
@@ -67,7 +68,8 @@ private struct Header: View {
     }
 }
 
-/// Play (or Stop, Add ROM…, Cancel), the installed Release and when it was last played, and the store page.
+/// Play (or Stop, Add ROM…, Cancel), the installed Release and when it was last played, and the store page. Installing
+/// on iPhone or iPad is the More menu's and the store page's.
 private struct ActionRow: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
@@ -91,20 +93,31 @@ private struct ActionRow: View {
                 }
             }
             Spacer()
-            if model.survey.isListed(entry.id) {
-                Button {
-                    model.open(.store(entry.id))
-                } label: {
-                    Label("Store Page", systemImage: "book")
-                }
-                .buttonStyle(.glass)
-                .accessibilityIdentifier("port.storePage")
-            }
+            StorePageButton(entry: entry)
         }
     }
 }
 
-private struct ActivityCard: View {
+/// Opens the Port's store page, beside the action row of each of its pages.
+struct StorePageButton: View {
+    @Environment(AppModel.self) private var model
+    let entry: CatalogEntry
+
+    var body: some View {
+        if model.survey.isListed(entry.id) {
+            Button {
+                model.open(.store(entry.id))
+            } label: {
+                Label("Store Page", systemImage: "book")
+            }
+            .buttonStyle(.glass)
+            .accessibilityIdentifier("port.storePage")
+        }
+    }
+}
+
+/// A change under way, with its progress.
+struct PortActivityCard: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
     let activity: Activity
@@ -143,7 +156,8 @@ private struct ActivityCard: View {
         case .rollback, .restore: return "clock.arrow.circlepath"
         case .permissions: return "lock.shield"
         case .applyROMs: return "sdcard"
-        case .uninstall, .deleteData, .removeBuildFolder: return "trash"
+        case .uninstall, .deleteData, .removeBuildFolder, .device(.uninstall, _): return "trash"
+        case .device, .prepareForDevices: return "iphone"
         }
     }
 }
@@ -264,45 +278,54 @@ private struct UpdateCallout: View {
     }
 }
 
-private struct AboutSection: View {
+/// This Mac's Installation: when it was installed, its Channel, and the Catalog that lists it when the user added that
+/// Catalog. What the Port is, its Developer, Platform and source, is on its store page. Hidden for a Port only on Devices
+/// that the Catalog still lists, which has nothing on this Mac to describe.
+private struct InstallationSection: View {
     @Environment(AppModel.self) private var model
     @Environment(ViewState.self) private var viewState
     let entry: CatalogEntry
 
     var body: some View {
-        GroupedSection("About", footer: footer) {
-            if model.survey.isListed(entry.id) {
-                GroupedRow("Kind", value: entry.kind.name)
-                GroupedRow("Game", value: model.gameName(for: entry))
-                if let platform = model.survey.platform(for: entry) {
-                    GroupedRow("Platform", value: platform.name)
-                }
-                GroupedRow("Source") {
-                    Link(entry.source.shortDisplay, destination: entry.source)
-                }
-            } else {
-                GroupedRow("Catalog", value: "Not listed")
-            }
-            if let installation = model.survey.installation(entry.id) {
-                GroupedRow("Channel") {
-                    Picker("Channel", selection: Binding(
-                        get: { installation.channel },
-                        set: { viewState.confirmSwitch(entry.id, to: $0, in: model) }
-                    )) {
-                        ForEach(entry.channels, id: \.self) { Text($0.name).tag($0) }
+        let installation = model.survey.installation(entry.id)
+        let isListed = model.survey.isListed(entry.id)
+        let catalog = isListed ? model.catalogName(for: entry) : nil
+        if installation != nil || !isListed || catalog != nil {
+            GroupedSection("Installation", footer: footer) {
+                if let installation {
+                    GroupedRow("Installed", value: Format.date(installation.installedAt))
+                    GroupedRow("Channel") {
+                        Picker("Channel", selection: Binding(
+                            get: { installation.channel },
+                            set: { viewState.confirmSwitch(entry.id, to: $0, in: model) }
+                        )) {
+                            ForEach(entry.channels, id: \.self) { Text($0.name).tag($0) }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                        .disabled(!model.status(of: entry.id).allows(.switchChannel))
+                        .help(channelHelp)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-                    .disabled(!model.status(of: entry.id).allows(.switchChannel))
-                    .help(channelHelp)
+                }
+                if !isListed {
+                    GroupedRow("Catalog", value: "Not listed")
+                } else if let catalog {
+                    GroupedRow("Catalog", value: catalog)
+                        .help("Listed by a Catalog you added in Settings, which Frontport doesn’t review")
                 }
             }
+            .testContainer("port.installation")
         }
     }
 
     private var footer: String? {
         guard !model.survey.isListed(entry.id) else { return nil }
+        // Only on Devices, it has nothing on this Mac to play or delete.
+        if model.survey.installation(entry.id) == nil {
+            return "The Catalog no longer lists \(entry.name), so it gets no updates. You can still Renew it on the "
+                + "iPhone or iPad it’s on, or uninstall it from there."
+        }
         let actions = model.survey.knowsEntry(entry.id)
             ? "play it, change its Permissions, roll it back, uninstall it or delete its Data"
             : "play it, uninstall it or delete its Data"

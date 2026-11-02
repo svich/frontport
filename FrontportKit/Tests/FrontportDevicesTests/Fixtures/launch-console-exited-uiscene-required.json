@@ -1,0 +1,58 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "00000000-0000000000000000",
+      "--console",
+      "--terminate-existing",
+      "--timeout",
+      "40",
+      "-j",
+      "raw/launch-console-ok.json",
+      "dev.frontport.port.spikeapp.a1b2c3d4e5"
+    ],
+    "commandType": "devicectl.device.process.launch",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "launchOptions": {
+      "activatedWhenStarted": true,
+      "arguments": [],
+      "environmentVariables": {
+        "TERM": "vt100"
+      },
+      "platformSpecificOptions": {},
+      "startStopped": false,
+      "terminateExistingInstances": true,
+      "user": {
+        "active": true
+      }
+    },
+    "process": {
+      "auditToken": [
+        4294967295,
+        501,
+        501,
+        501,
+        501,
+        30747,
+        0,
+        87171
+      ],
+      "executable": "file:///private/var/containers/Bundle/Application/264A13E0-E16A-467E-AA51-AF96E88A174D/Spike.app/Spike",
+      "processIdentifier": 30747
+    },
+    "terminationResult": {
+      "exitCode": 0,
+      "wasCoreDumpCreated": false
+    }
+  }
+}

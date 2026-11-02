@@ -53,7 +53,8 @@ public struct AppPaths: Hashable, Sendable {
 
     // MARK: Downloads, Toolchain, Builds
 
-    /// `Downloads/`: each Release asset until the Release it holds is installed.
+    /// `Downloads/`: each Release asset until the Release it holds is installed; an iOS Release's in
+    /// `Downloads/<port>.ios/` (`PortID.deviceWorkspace`).
     public var downloads: URL { dir("Downloads") }
     /// `Downloads/<port>/`.
     public func downloads(for port: PortID) -> URL { downloads.appending(path: port.rawValue, directoryHint: .isDirectory) }
@@ -138,6 +139,67 @@ public struct AppPaths: Hashable, Sendable {
     public func blocked(for port: PortID) -> URL { library(for: port).appending(path: "blocked", directoryHint: .isDirectory) }
     /// `Library/<port>/install.json`: the `Installation` record.
     public func installRecord(for port: PortID) -> URL { library(for: port).appending(path: "install.json") }
+
+    // MARK: Devices
+
+    /// `Devices/`: a folder per Device Frontport has installed on.
+    public var devices: URL { dir("Devices") }
+    /// `Devices/<udid>/`.
+    public func device(_ device: DeviceID) -> URL { devices.appending(path: device.rawValue, directoryHint: .isDirectory) }
+    /// `Devices/<udid>/device.json`: the `Device` as last read, so its Installations still show while it's away.
+    public func deviceRecord(_ device: DeviceID) -> URL { self.device(device).appending(path: "device.json") }
+    /// `Devices/<udid>/<port>/`: the Port's Installation on the Device.
+    public func deviceInstallation(for port: PortID, on device: DeviceID) -> URL {
+        self.device(device).appending(path: port.rawValue, directoryHint: .isDirectory)
+    }
+    /// `Devices/<udid>/<port>/install.json`: the `DeviceInstallation` record.
+    public func deviceInstallRecord(for port: PortID, on device: DeviceID) -> URL {
+        deviceInstallation(for: port, on: device).appending(path: "install.json")
+    }
+    /// `Devices/<udid>/<port>/<appName>`: the app as it was signed and installed, kept for Renew.
+    public func deviceApp(for port: PortID, on device: DeviceID, named appName: String) -> URL {
+        deviceInstallation(for: port, on: device).appending(path: appName, directoryHint: .isDirectory)
+    }
+    public func deviceApp(for installation: DeviceInstallation) -> URL {
+        deviceApp(for: installation.port, on: installation.device, named: installation.appName)
+    }
+    /// `Devices/<udid>/<port>/staging/`: where a Release is fetched, packaged and installed from before the swap.
+    public func deviceStaging(for port: PortID, on device: DeviceID) -> URL {
+        deviceInstallation(for: port, on: device).appending(path: "staging", directoryHint: .isDirectory)
+    }
+    /// `Devices/<udid>/<port>/seeds/`: clones of the ROMs laid out as the Device's container wants them, until they're
+    /// copied there.
+    public func deviceSeeds(for port: PortID, on device: DeviceID) -> URL {
+        deviceInstallation(for: port, on: device).appending(path: "seeds", directoryHint: .isDirectory)
+    }
+
+    /// `Provisioning/`: a stub iOS app project per bundle ID, which Xcode makes a Provisioning Profile from.
+    public var provisioning: URL { dir("Provisioning") }
+    /// `Provisioning/<bundle-id>/`, the bundle ID being the Port's for the Apple Team (`PortID.deviceBundleID(team:)`),
+    /// so a well-formed id and an Apple Team's ID name only the folder of its own.
+    public func provisioningProject(for port: PortID, team: AppleTeamID) -> URL {
+        provisioning.appending(path: port.deviceBundleID(team: team), directoryHint: .isDirectory)
+    }
+    /// `Logs/<port>.ios/provisioning.log`: what Xcode said the last time it made a Provisioning Profile for the Port.
+    public func provisioningLog(for port: PortID) -> URL {
+        logs(for: port.deviceWorkspace).appending(path: "provisioning.log")
+    }
+
+    /// `Builds/<port>.ios/prepared/`: the Port's iOS version unpacked and not yet signed, with `prepared.json`, for the
+    /// Devices it's installed on next (`PreparedDeviceApp`).
+    public func devicePrepared(for port: PortID) -> URL {
+        builds(for: port.deviceWorkspace).appending(path: "prepared", directoryHint: .isDirectory)
+    }
+    /// `Builds/<port>.ios/prepared/prepared.json`.
+    public func devicePreparedRecord(for port: PortID) -> URL { devicePrepared(for: port).appending(path: "prepared.json") }
+    /// `Builds/<port>.ios/prepared/<appName>`.
+    public func devicePreparedApp(_ prepared: PreparedDeviceApp) -> URL {
+        devicePrepared(for: prepared.port).appending(path: prepared.appName, directoryHint: .isDirectory)
+    }
+    /// `Builds/<port>.ios/preparing/`: where a Release is fetched and unpacked before it takes `prepared/`'s place.
+    public func devicePreparing(for port: PortID) -> URL {
+        builds(for: port.deviceWorkspace).appending(path: "preparing", directoryHint: .isDirectory)
+    }
 
     // MARK: Port Data
 

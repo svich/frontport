@@ -115,4 +115,16 @@ extension CatalogDocument {
         }
         return document
     }
+
+    /// The document without the Ports installed on a Device from another Catalog, as `excludingPorts(installedFrom…)`
+    /// leaves out this Mac's. A Device Installation's record always has its entry.
+    public func excludingPorts(
+        installedOnDevicesFromOtherCatalogs installations: [PortID: [DeviceInstallation]]
+    ) -> CatalogDocument {
+        var document = self
+        document.ports.removeAll { entry in
+            installations[entry.id]?.contains { $0.entry.catalog != entry.catalog } ?? false
+        }
+        return document
+    }
 }

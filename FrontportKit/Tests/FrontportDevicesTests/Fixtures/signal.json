@@ -1,0 +1,37 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "process",
+      "signal",
+      "--device",
+      "00000000-0000000000000000",
+      "--pid",
+      "30791",
+      "--signal",
+      "SIGKILL",
+      "--timeout",
+      "30",
+      "-j",
+      "raw/signal-kill.json"
+    ],
+    "commandType": "devicectl.device.process.signal",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "deviceTimestamp": "2026-10-31T17:36:12.703Z",
+    "process": {
+      "executable": "file:///private/var/containers/Bundle/Application/022652B9-A273-42B8-90EC-C4E664AD5058/SpikeScene.app/Spike",
+      "processIdentifier": 30791
+    },
+    "signal": {
+      "name": "SIGKILL",
+      "value": 9
+    }
+  }
+}

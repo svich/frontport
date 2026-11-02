@@ -16,6 +16,9 @@ v1 covers:
 - Snapshots
 - run logs
 
+Proposed ([ADR 0016](adr/0016-install-ports-on-devices-with-the-users-apple-team.md)):
+- installing Ports whose Projects make iOS versions on the user's iPhones and iPads (see [Devices](#devices))
+
 Deferred:
 - mods
 - importing the Quiver catalog (see [Deferred](#deferred))
@@ -49,12 +52,14 @@ Frontport.app (unsandboxed)
 ├── Packager    set the bundle ID, link Build Assets and Redirects, sign inside-out
 ├── Library     Installations, updates, Rollback, Snapshots, uninstall
 ├── Launcher    launch Ports, capture run logs
-└── Artwork     fetch and cache SteamGridDB artwork
+├── Artwork     fetch and cache SteamGridDB artwork
+└── Devices     sign Ports with the user's Apple Team, install and Seed them on iPhones and iPads (proposed)
 
 Port .app (ad-hoc signed, App Sandbox) -> its Data: ~/Library/Containers/<bundle-id>/Data
+Port .app on a Device (signed with the user's Apple Team) -> its Data in its container there
 ```
 
-Each component is a module in the `FrontportKit` Swift package that depends only on `FrontportCore`, which holds the shared types and the service protocols. The Library reaches the others only through those protocols. The app target holds the SwiftUI screens and an `AppModel` that wires the real services together. `Frontport.app/Contents/MacOS/frontport-primer` is the [container primer](#lifecycle).
+Each component is a module in the `FrontportKit` Swift package that depends only on `FrontportCore`, which holds the shared types and the service protocols. The Library reaches the others only through those protocols. The app target holds the SwiftUI screens and an `AppModel` that wires the real services together. Every change Frontport makes on Devices, the user's (preparing an iOS version, Install, Update, Uninstall, Seed, Renew) and its own (reading them, and the Seeding and Renewing that follow), starts in `FrontportCore`'s `DeviceUpkeep`, which checks it against the rules first and has the `AppModel` run it as the Port's Activity; the `AppModel` tells it what happened, such as a change that ended; what it keeps for each Installation on a Device, such as what Seeding there waits for and why Seeding or a Renew last failed, is one value, `DeviceUpkeepState`, with its rules. A Port's iOS version is a value of its own, `IOSVersion`, built from its entry: the Device Library, the Device Packager and ROMs take it rather than an entry, and what it gives Releases, the Fetcher and the Builder has a bundle ID the Mac's Library refuses, so neither version is taken for the other. `Frontport.app/Contents/MacOS/frontport-primer` is the [container primer](#lifecycle).
 
 A Port's Status, a value in `FrontportCore`, says what the Port is doing or needs and what the user can do with it now: the action its state calls for, the others to offer, the ways off a Blocked Release, and for any action whether it's allowed, disabled and why, or unavailable. Every screen renders it and every `AppModel` action checks it, so a button and what it runs never disagree. Two rules hold changes back: one change at a time, and a change to the app or its Data waits for the Port to quit. Seeding is never refused for either; it waits its turn.
 
@@ -90,6 +95,10 @@ A Move, also a value in `FrontportCore`, is the one rule for an Installation goi
 ├── Snapshots/<port>/     last 3 Snapshots of the Port's Data
 ├── Logs/<port>/          last 5 run logs, each with its Run record, and the last build's build.log
 ├── Artwork/<id>/         cached SteamGridDB artwork per SteamGridDB game ID
+├── Devices/<udid>/       one Device (proposed)
+│   ├── device.json       its name, model and when Frontport last reached it
+│   └── <port>/           the Port's Installation there: its signed app, kept for Renew, and install.json
+├── Provisioning/<bundle-id>/  the stub project Xcode makes a Provisioning Profile from, kept without its build output
 └── Library/<port>/
     ├── <Port>.app        the current Release
     ├── assets            its Build Assets, a file or folder the app links to
@@ -175,6 +184,30 @@ A source-built entry pins its refs and names its Recipe, whose sha256 the signat
 
 with a Build-Stage Requirement whose Assets the Port reads at `buildAssets.path`. `format` is an opaque string; a Recipe change that alters the Assets bumps it, which makes updates regenerate them.
 
+A Port whose Project makes an iOS version also carries `ios` (proposed, see [Devices](#devices)):
+
+```json
+"ios": {
+  "releases": {
+    "type": "git",
+    "repo": "alexbatalov/fallout1-ce",
+    "refs": { "stable": "<commit>" },
+    "recipe": "recipes/fallout-ce-ios.sh",
+    "recipeSHA256": "<sha256>"
+  },
+  "seedPaths": ["Documents"],
+  "strip": [],
+  "blocked": []
+}
+```
+
+- **`releases`:** shaped like the entry's own, a prebuilt `.ipa` or a zip holding one, or a pinned ref and an iOS Recipe of its own. The iOS version follows its own Releases, since upstream often publishes it apart. One published only under a rolling tag, such as Xash3D's `continuous`, isn't listed: it has no version to Block, pin or update to.
+- **`seedPaths`:** one per Requirement, in the same order, relative to the app's container on the Device, read as `seedPath` is; `null` for a Build-Stage Requirement or one the iOS version doesn't use. A whole folder ROM's is file-shaped, `Documents` and not `Documents/`: the folder its files go in, where `Documents/` would fill a folder `<sha1>.folder` inside it instead.
+- **`buildAssets`:** only with an iOS Recipe and a Build-Stage Requirement. Its `path` is inside the app, relative to its bundle, which is flat, since an iOS app reads nothing outside it and its container; clear of its `Frameworks`, `PlugIns`, signature and `Info.plist`.
+- **`strip`:** paths relative to the app's bundle, never under `Contents/` and never its `Info.plist`, `_CodeSignature` or `embedded.mobileprovision`, which the Packager replaces itself.
+- **`blocked`:** Blocks of iOS Releases, by their own version, kept apart from the entry's `blocked` because the Mac's and the iOS version's assets may share one GitHub release, as Fallout CE's do.
+- **Lint:** no `ios` on an Unsupported Port or one that needs JIT (`allow-jit`, `allow-unsigned-executable-memory`), and the entry's own asset glob may not match an `.ipa`. `ios` ships under Catalog version 4: older builds ignore the key, and both the app and `frontport-catalog` accept only the version they know exactly.
+
 An Unsupported Port carries `"unsupported": "<reason>"`. It's listed in the Catalog but can't be installed ([ADR 0002](adr/0002-no-unsandboxed-fallback.md)).
 
 - **Ids:** a Port's `id` is lowercase letters, digits and hyphens, and its `bundleId` is always `dev.frontport.port.<id>`. They name the Port's folders and its container, so `frontport-catalog` refuses anything else, and so does the Library, whatever the Catalog says.
@@ -183,9 +216,9 @@ An Unsupported Port carries `"unsupported": "<reason>"`. It's listed in the Cata
 
 ## Screens
 
-- **Sidebar:** search, then Catalog, Library, Releases and ROMs, then every installed Port by its Game, with its Project and a status icon (update, running, needs ROM or ROM not Seeded, building).
-- **Launch:** Frontport opens on the Library when it has Ports, and on the Catalog when it's empty.
-- **Catalog:** only Ports that aren't installed: a Port of the Day hero, New Ports, every Platform, Genre and Project, then All Games. Nothing installed, and nothing time-based beyond the Port of the Day and New Ports. People look for a Game, so the Catalog lists Games and names each Port's Project beside it.
+- **Sidebar:** search, then Catalog, Releases and ROMs, then This Mac: every Port installed here by its Game, with its Project and a status icon (update, running, needs ROM or ROM not Seeded, building). Then a section per Device, by its name, with the Ports on it and their status there (Renew due or expired, ROMs not Seeded there, update, a change under way). A Port on both shows in each, opening its page there: on this Mac, or on that Device. A section with no Ports is left out. An Installation the Catalog no longer lists stays, marked "Not in the Catalog", with the entry its `install.json` kept, so it can still be played, re-signed, rolled back, uninstalled and have its Data deleted. A row's menu offers Play, Stop or Update where the Port's state does on this Mac, then Open, Store Page and its folders in Finder.
+- **Launch:** Frontport opens on the Catalog.
+- **Catalog:** only Ports that aren't installed: a Port of the Day hero, New Ports, every Platform, Genre and Project, then All Games. Nothing installed, and nothing time-based beyond the Port of the Day and New Ports. It offers no actions: Install is on the store page. People look for a Game, so the Catalog lists Games and names each Port's Project beside it.
   - **Port of the Day:** the installable, not-installed Port with the highest SHA-256 of `<local date>/<id>`, so it holds all day and installing another Port doesn't change it. Its hero art keeps its 1920×620 shape, so it's never cropped. It's titled with its Game, with its Project and, for a Game with several Ports, "1 of 2 Ports".
   - **New Ports:** the 3 Ports to install whose first Release is newest, leaving out the Port of the Day. All opens New Ports on the Releases screen.
   - **Game cards:** All Games and the Platform and Genre pages show each Game with Ports to install as a card, by name. A chip per Port names its Project and latest version and opens the Port's store page. The card opens the Game page when the Catalog has more than one Port of the Game, and the store page of its one Port otherwise.
@@ -194,29 +227,29 @@ An Unsupported Port carries `"unsupported": "<reason>"`. It's listed in the Cata
   - **Projects:** a Project is the Ports whose `releases.repo` is the same repository, so the Catalog needs no field for it. A tile per Project opens its page.
   - **Catalog fields:** `genres` lists the Genres; each Game names its own, main one first, and each entry has the date of its `firstRelease` upstream.
 - **Game page:** one per Game the Catalog has more than one Port of. Its art and Platform, then a tile per Port with its Project, developer, Kind, summary, Pills, a link to its store page and the action its state calls for, so the Ports can be compared side by side.
-- **Store page:** one per Catalog entry, reached from the Catalog, Releases and the Port page. It's about one Port: titled with its Game, with its Project linking to the Project page.
-  - **Other Ports:** when the Game has other Ports, a note names them, with See All Ports opening the Game page.
-  - **Content:** screenshots, a description, the Project, the latest Release, Platform, source, website, Permissions, accepted ROMs and system requirements.
-  - **ROMs:** what files the Port needs, beside the system requirements: a row per Requirement and extra with its Type, the files it's added from (such as `.nsp, .xci, .nsz or .xcz`, since a Switch game's contents identify it, an NSZ or XCZ kept Unverified, or `folder or .exe` for a folder an installer holds), the versions accepted, counted past two, and whether ROMs has one. A row opens to each accepted ROM, and each installer the Catalog knows that holds one, with its SHA-1 to copy, to check a dump against.
-  - **Action:** Install, Add ROM… or Play, depending on state, naming every ROM still missing when the Port needs more than one. Add ROM… is black on yellow everywhere it shows, like a warning sign, since the Port can't go on without its ROM.
+- **Store page:** one per Catalog entry, reached from the Catalog, Releases and the Port page. It's about the Port itself, what it is and what it needs, and manages nothing once it's installed: that's the Port page's. Titled with its Game, with its Project linking to the Project page. Catalog cards open it whether or not the Port is installed; the sidebar opens the Port page.
+  - **Layout:** like an app's page in the Mac App Store. A header with the Port's icon, its Game, summary and Project, the action and where it stands; a strip of facts (latest Release, Platform, Genre, size, ROMs, developer, and the iOS version when there is one), the Platform and Genre opening their pages; the screenshots in a row that scrolls sideways or, without any, the hero art at its own shape, so none of it is cut off; the description with the Project, website and code beside it; What's New, the latest Release with a summary of its notes; ROMs; Permissions; and Information, a grid of the rest, including Compatibility and, when there is one, the iOS version.
+  - **Other Ports:** at the bottom, when the Game has other Ports, a card each opening its store page, with See All opening the Game page.
+  - **ROMs:** what files the Port needs: a row per Requirement and extra with its Type, the files it's added from (such as `.nsp, .xci, .nsz or .xcz`, since a Switch game's contents identify it, an NSZ or XCZ kept Unverified, or `folder or .exe` for a folder an installer holds), the versions accepted, counted past two, and whether ROMs has one. A row opens to each accepted ROM, and each installer the Catalog knows that holds one, with its SHA-1 to copy, to check a dump against.
+  - **Action:** Install, Add ROM… or Play, depending on state, naming every ROM still missing when the Port needs more than one. Add ROM… is black on yellow everywhere it shows, like a warning sign, since the Port can't go on without its ROM. Once the Port is in the Library, on this Mac or on a Device, Open leads to its Port page, beside only the Mac's action; Install on iPhone or iPad… shows until then.
+  - **Permissions:** a card each with what the Catalog sets, read-only; they're changed on the Port page.
   - **Leftover Data:** while a Port that isn't installed still has Data or Snapshots, its store page offers Delete Data….
   - **No donate buttons:** none of the Ports checked accepts donations.
   - **Catalog fields:** this adds a description, screenshot URLs and the website to each entry. Screenshots come from each project, with its permission, not from SteamGridDB.
 - **Project page:** what the Project is, its details, its Games as cards, and its Releases, newest first, marking the latest and the one each Library Port has. When a Release updates Library Ports, a banner offers Update for all of them.
-- **Library:** installed Ports as a grid or a list.
-  - **Not in the Catalog:** an Installation the Catalog no longer lists stays, marked "Not in the Catalog", with the entry its `install.json` kept, so it can still be played, re-signed, rolled back, uninstalled and have its Data deleted.
 - **Releases:** New Ports and Updates in a toolbar picker.
   - **New Ports:** every Catalog Port by the year of its first Release, newest first.
   - **Updates:** one card per Project with an update, listing each Library Port it updates with Update for all of them, then every other Catalog Release, once per Project and version, grouped by month. Each shows a short summary of its upstream release notes and links to them.
 - **ROMs:** what installed Ports still need (ROMs to add, or to Seed), what's been added, and Add ROMs….
-- **Port page:** Overview, Snapshots and Runs in a toolbar picker, with a link to its store page.
+- **Port page:** Overview, Snapshots and Runs in a toolbar picker, with a link to its store page. It's about the user's copy on this Mac: Play, the update, ROMs and whether they're Seeded, Permissions and Storage. Each Device the Port is on has a page of its own (see [Devices](#devices)), so neither's actions are taken for the other's; opening a Port only on Devices opens its first Device's page. Installing somewhere new, on this Mac or on iPhone or iPad, is in each page's More menu and on the store page.
+  - **Installation:** when it was installed, its Channel, and the Catalog that lists it when the user added that Catalog, or that none does. What the Port is, its Developer, Platform and source, is on the store page.
   - **Storage:** a row per folder the Port has on disk, with its size, what it holds and Open, which opens it in Finder: Data with Delete Data…, Snapshots, the Installation (its app, Build Assets and previous Release) with Uninstall…, and, for a source-built Port, the build folder with Remove…. A file cloned elsewhere, such as a game a Recipe extracted into the Build Assets, frees nothing when the folder goes, so the build folder's row also says how much removing it frees: what APFS reports no other file shares (`ATTR_CMNEXT_PRIVATESIZE`). The store page of a Port that isn't installed shows the same section while anything is left over.
 
 ## Artwork
 
 Covers come from [SteamGridDB](https://www.steamgriddb.com):
 - **Lookup:** each Catalog entry pins a SteamGridDB game ID, so Frontport never guesses by name. It uses the Port's own entry when there is one (most Ports have one), and otherwise the Game's.
-- **Where each kind goes:** a landscape grid on Library tiles and Catalog cards, the hero and logo on the Port page header, and the icon in the sidebar. Game cards and the Game page show the Game's own grid, from its `steamgriddb` id, and Project tiles and update cards show the Games' icons.
+- **Where each kind goes:** a landscape grid on Catalog cards, the hero and logo on the Port page header, and the icon in the sidebar. Game cards and the Game page show the Game's own grid, from its `steamgriddb` id, and Project tiles and update cards show the Games' icons.
 - **Caching:** Frontport caches artwork in `Artwork/` with the asset ID and author for the credit, and re-fetches artwork older than 7 days during update checks. An empty answer is cached too.
 - **API key:** the user's own SteamGridDB key, entered in Settings and kept in the Keychain, or else the key a release build ships with ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Without either, Frontport never calls the API and shows only cached artwork or the fallback. While Frontport is signed ad-hoc, the Keychain item is tied to each build, so a rebuild asks for Keychain access again.
 - **Requests:** each sends `User-Agent: Frontport`, so SteamGridDB can tell Frontport's traffic apart. Only API requests carry the key, never image downloads.
@@ -372,7 +405,91 @@ The Recipe contract is in [`catalog/recipes/README.md`](../catalog/recipes/READM
 - **Output:** exactly one `.app`, with any Build Assets in `out/assets`.
 - **Upstream downloads:** anything upstream's build would download is fetched and checked against a pinned sha256 in the fetch step instead.
 
-The toolchain is the Xcode Command Line Tools plus pinned cmake and ninja in `Toolchain/`, verified by sha256; Homebrew isn't used. Each Recipe builds the libraries it needs from pinned, verified source tarballs into `Builds/<port>/prefix`, so a Catalog update can change them without a Frontport release. Frontport asks for the Command Line Tools the first time the user installs a source-built Port, so users who only install prebuilt Ports never need them. `sandbox-exec` is deprecated but still ships, and Chromium, Codex CLI and Claude Code use it. Tools that need LaunchServices or the per-user temp folder, such as `sips` and `iconutil`, don't work in the build sandbox, though ImageIO called from a Recipe's own tool does.
+The toolchain is the Xcode Command Line Tools plus pinned cmake and ninja in `Toolchain/`, verified by sha256; Homebrew isn't used. Each Recipe builds the libraries it needs from pinned, verified source tarballs into `Builds/<port>/prefix`, so a Catalog update can change them without a Frontport release. Frontport asks for the Command Line Tools the first time the user installs a source-built Port, so users who only install prebuilt Ports never need them. An iOS Recipe builds with Xcode's tools instead, which Devices need anyway, so it never asks for them. `sandbox-exec` is deprecated but still ships, and Chromium, Codex CLI and Claude Code use it. Tools that need LaunchServices or the per-user temp folder, such as `sips` and `iconutil`, don't work in the build sandbox, though ImageIO called from a Recipe's own tool does.
+
+## Devices
+
+Status: proposed ([ADR 0016](adr/0016-install-ports-on-devices-with-the-users-apple-team.md)). Installing prebuilt iOS versions, Seeding, Renew and Update are implemented and tested over stand-ins for `devicectl`, Xcode and the keychain; on a real Device, only the spikes and the opt-in tests (`mise run test-device`) have run (Verified facts). iOS Recipes build in the build sandbox, and Fallout CE, built from its own, has been installed, Seeded and played on an iPhone (Verified facts). Play on <Device> and finding deleted apps are not built yet.
+
+A Device is an iPhone or iPad paired with the Mac. Frontport installs on it the iOS version of a Port whose entry has `ios`, built or fetched on the Mac and signed with the user's Apple Team. It never runs an iOS app on the Mac.
+
+- **Requirements:** full Xcode with the iOS platform, the user's Apple account added in Xcode › Settings › Accounts, and on the Device Developer Mode, turned on once in its Settings › Privacy & Security. Frontport asks for Xcode the first time the user installs on a Device.
+- **Apple Team:** Settings › Devices lists the user's Apple Teams, read from the Apple Development certificates whose keys are in the keychain (a certificate's organizational unit is its Apple Team's ID), and keeps the one chosen. A free one works within Apple's limits (below).
+- **Devices:** the paired ones `xcrun devicectl list devices --json-output` reports, by UDID, read when Frontport opens or comes to the front, and every 10 seconds while Install on iPhone or iPad…, a Port's Devices, the sheet that asks which Devices or Settings › Devices shows. Each is remembered in `Devices/<udid>/device.json`, so its Installations still show while it's away, and its name, model and iOS version there follow what a reading that reaches it says.
+
+### Installation on a Device
+
+An Installation is on this Mac or on one Device, and a Port has at most one in each place. One on a Device follows the `ios` Releases on its own Channel, keeps its record and its signed app in `Devices/<udid>/<port>/`, and goes through the Port's Activities like any other change, one at a time.
+
+The user starts with Install on iPhone or iPad…, beside the Mac's Install, whether or not the Port is on this Mac. Frontport first prepares the iOS version for no Device in particular, as one Activity, then asks which Devices to install it on, and installs on each in turn, an Activity apiece.
+
+1. **Resolve:** the newest `ios` Release on the Channel that isn't Blocked and has a digest, or the pinned ref. Blocks name iOS Releases by their own version.
+2. **Requirements:** as on the Mac. A missing Build-Stage ROM stops it; a missing Runtime ROM is Seeded once added.
+3. **Fetch:** a prebuilt `.ipa` (a zip with one app in `Payload/`) is fetched into `Downloads/<port>.ios/`, checked against its digest and unpacked. A source-built one runs its iOS Recipe in the build sandbox, in `Builds/<port>.ios/`, which can't clash with a Port's id, with Xcode's iOS SDK (`FRONTPORT_SDK=iphoneos`), needing Xcode and the pinned prefix but not the Command Line Tools, and its log in `Logs/<port>.ios/build.log` (catalog/recipes/README.md › iOS Recipes). Either way the result must be exactly one `.app` whose main executable is built for iOS (`LC_BUILD_VERSION` platform `IOS`) and arm64; a Mac app or a Simulator one is refused. It's kept unsigned in `Builds/<port>.ios/prepared/`, with its Release, Channel, oldest iOS (`LC_BUILD_VERSION`'s minimum), `UIDeviceFamily` and, built, its iOS Recipe's `recipeSHA256` in `prepared.json`, and the download goes. Asked again for the same Release, built by the same Recipe, while the entry doesn't Block it, Frontport skips straight to the next step; a newer Release replaces it, and it goes with the Port's last Installation on a Device, or at launch when no Device has the Port.
+4. **Choose:** a sheet lists every Device Frontport knows, chosen with a checkbox. One that can't take the app says why: Not connected, Developer Mode off, an older iOS than the app's oldest, iPhone or iPad only, or Installed. The only one that can is chosen to start with, and one plugged in while the sheet shows can be chosen within 10 seconds. Install waits while Xcode or the Apple Team is missing, saying so. Cancel keeps what was fetched. A sheet for another Port prepared meanwhile waits its turn. Then for each Device chosen, in turn, the entry as it is then refusing a Release Blocked since or a Channel it no longer offers, and the app's oldest iOS and `UIDeviceFamily` checked against it first:
+5. **Provisioning Profile:** one naming the Device, already in Xcode's provisioning profiles folder or one Xcode makes (below).
+6. **Package:** an APFS clone of the prepared app, so it stays unsigned for the next Device: set `CFBundleIdentifier` to `dev.frontport.port.<id>.<team>`, `<team>` being the Apple Team's ID in lowercase, remove upstream signatures, `embedded.mobileprovision` and `ios.strip` paths, clone the Build Assets in at `ios.buildAssets.path`, and copy the Provisioning Profile in as `embedded.mobileprovision`. No Redirects and no links out: an iOS app can't follow one, so the link check refuses every link leading out of the app.
+7. **Sign:** inside-out with the Apple Team's Apple Development certificate, never `--deep`: each nested library and framework, then the app with the entitlements every Provisioning Profile grants (`application-identifier`, `com.apple.developer.team-identifier`, `get-task-allow`) and nothing more, then `codesign --verify --strict`. Nested programs other than frameworks are refused, since iOS runs only the app's own executable and its extensions, and the Catalog lists no Port with an extension. The signed app is checked against the Device again.
+8. **Install:** `xcrun devicectl device install app --device <udid>`, over USB or Wi-Fi. Installing over the same bundle ID keeps the Port's Data. The record follows the install; a failed install leaves the Installation as it was, and the prepared app for another try.
+9. **Seed** the Runtime ROMs.
+
+**Update:** offered on the Device's row while the newest `ios` Release on the Installation's Channel is newer than its own and not Blocked; for a source-built one, while the Catalog pins another ref or another iOS Recipe for that Channel than it was built from (the record keeps the Recipe's `recipeSHA256`), whatever the dates say, as for a source-built Mac Port. Never back, since a Device keeps no previous Release and no Snapshot of its Data. It prepares that Release, reusing what's prepared, then takes steps 5 to 8 over the Installation, which keeps its Data there and the record's note of what was Seeded, and Seeds. It needs the Apple Team the app is signed with: another's bundle ID is an install of its own.
+
+### Provisioning Profiles
+
+Apple's development provisioning profiles, always called that in full, since the build sandbox has profiles of its own.
+
+- **Taken:** for each Device as it's installed on, once the iOS version is prepared and the Device chosen, since it must name the Device; a Device the app can't run on costs none. From `~/Library/Developer/Xcode/UserData/Provisioning Profiles`, a development provisioning profile (`get-task-allow`) of the Apple Team whose `application-identifier` is the bundle ID or a wildcard covering it, whose `ProvisionedDevices` lists the Device, and whose certificate's key is in the keychain, it and that certificate not expiring within a day. An explicit App ID wins over a wildcard; then the one expiring last. A profile granting more than the entitlements above is still taken, but only those go into the signature.
+- **Made:** without one, Frontport writes a stub iOS app project with the bundle ID and the Apple Team in `Provisioning/<bundle-id>/` and runs `xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration -destination id=<udid> build` on it. Xcode, with the user's account, registers the App ID and the Device on the Apple Team and puts the Provisioning Profile in its folder, where Frontport takes it as above; finding none there still is a failure. Frontport never handles an Apple sign-in.
+  - **Stub:** a one-target Swift app for iPhone and iPad with a scene delegate, written afresh each time and kept, so it can be opened in Xcode should making one fail. Only a Port's own bundle ID names its folder. Its DerivedData goes in a temporary folder, and that and any build output go afterwards, whatever came of it.
+  - **Xcode's word:** it gets 5 minutes. What it says goes to `Logs/<port>.ios/provisioning.log`, and its errors become what to do: no Apple Account for the Apple Team, the Device or an App ID it couldn't register (a free Apple Team may register 10 App IDs a week), a bundle ID another Apple Team has, the Device out of reach or with Developer Mode off; anything else as Xcode said it.
+- **Expiry:** the record keeps the Provisioning Profile's expiry and its certificate's. A free Apple Team's Provisioning Profiles last 7 days, a paid one's a year.
+
+### Renew
+
+Re-signing the kept app with a Provisioning Profile that lasts longer, and installing it over, which keeps Data. Once its Provisioning Profile or certificate expires within 2 days, Frontport Renews it on its own whenever the Device is reachable and unlocked and no Activity of the Port is under way, unless the user turned that off in Settings › Devices; the Port page offers Renew too, and the sidebar marks the Port until it's done. Frontport can only Renew while it's open, so a Port signed with a free Apple Team stops launching on the Device after 7 days without one. Another Apple Team means a new bundle ID, so it's an install of its own with Data of its own, and Renew refuses it.
+
+- **How:** a Provisioning Profile for the app's own bundle ID that names the Device and outlasts the signature it has, profile and certificate both, taken or made as above; then a clone of the kept app signed again with it, installed over the one there, swapped in, and the new expiry recorded. Refused first while the app isn't on the Device (`devicectl device info apps`), so one the user deleted is never put back, or while the Port runs there, which installing over it would stop. Whatever fails, the kept app and the record stay. It needs only the record, so it works for a Port the Catalog no longer lists.
+- **On its own:** decided after each reading of the Devices, which also runs at each update check while Frontport is open, ahead of the Seeding it retries, again once an Activity of a Port ends, and when the user turns it on or chooses an Apple Team. One that failed, on its own or the user's, isn't tried on its own again until Frontport next comes to the front, the user chooses an Apple Team or a reading an hour later, so it never loops. A failure on its own shows on the Device's row rather than as an alert.
+
+### Seeding on a Device
+
+- **How:** `devicectl device copy to --domain-type appDataContainer --domain-identifier <bundle-id>`, from clones of the ROMs laid out as Seeding lays them out in Data, but by `ios.seedPaths` and in `Devices/<udid>/<port>/seeds/`, never a Port's Data on this Mac. A folder `seedPath`, one ending in `/`, receives each ROM as `<sha1>.<format>`, as on the Mac. Frontport lists the top folders they go into on the Device (`devicectl device info files`), reads each folder ROM's marker there (`devicectl device copy from`), prunes the staging folder to exactly what's to copy, and copies files first, markers after. `copy to` skips a file of the same size and modification time, so each file it copies is dated now. These `devicectl` details stay in FrontportDevices behind two container calls, list and put; the Device Library's `DeviceSeeder` plans, puts, lists again and records.
+- **File ROMs:** skipped when the Device has a file of its size at its path and the record says that ROM was Seeded there; otherwise copied over it.
+- **Folder ROMs:** filled in, as on the Mac: only the ROM's files missing there, a link counting as there, then the `.frontport-rom` marker, so the Game's options and saves among them are never overwritten. The exception: until the marker is there, a file the last Seeding set out to copy (the record's `filling`) and shorter than the ROM's counts as cut short and is copied again. A folder marked as another ROM's is left alone and reported on the Port's row; the user uninstalls to start over.
+- **Record:** after copying, Frontport lists the Device again and records per Requirement the ROMs there, by their own SHA-1 (an Unverified ROM's own); ADR 0010's tag doesn't survive the copy. Before copying, it drops the ROMs a copy overwrites and notes the folder ROMs' files to copy, so a Device that goes away part way leaves a record that claims nothing more than is there.
+- **State:** from the latest listing while the Device is reachable, read when the Port's Devices show and after each Seeding: Seeded once the files and marker are there. Otherwise the record says what was last Seeded. A ROM removed from ROMs stays Seeded there. A Port only Devices have counts on the ROMs screen for what its iOS version Seeds.
+- **When:** after an install, as an Activity of its own whose failure leaves the Port installed, and when ROMs it takes are added. Never while the Device is away, locked or has Developer Mode off, nor while the Port runs on it (an executable inside its app in `devicectl device info processes`): the ROMs wait for Try Again or the next reading that finds the Device ready, which then asks again what runs there. A wait ends when Frontport quits, so after a launch the first reading that finds the Device ready Seeds what its record says isn't there, once.
+
+### Launch and logs
+
+The user starts the Port from the Device's Home Screen. The Port page's Play on <Device> runs `devicectl device process launch --console`, so its stdout and stderr land in the run log, under `Logs/<port>.ios/`. Crash logs come from `devicectl device copy from --domain-type systemCrashLogs`, filtered by the executable's name.
+
+### Uninstall
+
+`devicectl device uninstall app` removes the app and, since iOS keeps nothing, its Data; the confirmation says so. An app the user deleted on the Device is found missing (`devicectl device info apps`) on the next reading, and its Installation there removed. Snapshots of a Device's Data, and so Rollback there, are deferred.
+
+### Screens
+
+- **Install on iPhone or iPad…:** beside the Mac's action on the store page's Install bar until the Port is in the Library, and in the Port page's More menu, when the entry has `ios`. It says "iPhone" when every Device Frontport knows is an iPhone, "iPad" when every one is an iPad. Disabled, saying why, without Xcode, without an Apple Team, while Frontport knows no Device, while an Activity of the Port is under way, and for an entry the Catalog no longer lists; a Device being away doesn't disable it.
+- **Store page:** iPhone and iPad in the fact strip and in Information when the entry has `ios`, with its latest iOS Release.
+- **Port page on a Device:** opened from the Port's row in the Device's section. It leads with what the Device needs first, Update to <version>, Renew or Seed, beside the Release there; then its Installation (Release with Update, when it was installed, Signed until with Renew once it's due and the days left ("1 day left to Renew") or why it wasn't Renewed last time, the connection, the model, Uninstall…) beside ROMs there (each Seeded, Not Seeded with Seed or Try Again, or Add…, then where Seeding stands while anything isn't there). Each action comes from the Port's DeviceStatus, which says why one is disabled (Xcode missing, no Apple Team or another one than the app's, the Device away or locked, Developer Mode off, the Port running there for Seed and Renew, a change under way). Play on <Device> is still to come. Uninstalling it there opens the Port's page on this Mac or another Device while it's still there.
+- **Sidebar:** a Port installed only on a Device is under that Device's section, not This Mac. A Port due to be Renewed on a Device is marked there with the Device's glyph and a warning until it's Renewed.
+- **Settings › Devices:** the Apple Team, Renew on its own (on by default), the Devices with their state, and Forget for one that's away.
+
+### Permissions on a Device
+
+iOS sandboxes every app in its own container, which is the isolation Frontport gives a Port there. It can't withhold the network, so the store page says Network is always on on iPhone and iPad. Files the user picks go through iOS's picker; controllers need nothing. Code-signing exceptions such as `allow-jit` don't exist on iOS, and a Port that needs JIT gets no `ios`.
+
+### Ports with iOS versions (2026-10-31)
+
+| Port | Upstream iOS | Notes |
+|---|---|---|
+| Fallout CE | `fallout-ce-ios.ipa`, v1.1.0 | No digest, so the Catalog builds it with `fallout-ce-ios.sh` from the Mac Port's commit; plays on an iPhone from the Russian CD's files. Reads `master.dat`, `critter.dat` and `data/` from `Documents/`, through file sharing |
+| Fallout 2 CE | `fallout2-ce-ios.ipa`, v1.3.0 | The same |
+| Xash3D FWGS (Half-Life, Opposing Force, Blue Shift) | `xash3d-fwgs-ios-arm64.ipa` in `continuous`, with a digest | Only under that rolling tag, so not listed. The Mac Port pins a commit and builds each Game's code from hlsdk-portable; whether the `.ipa` carries them isn't checked |
+| Ghostship | `Nautilus-Alfa-iOS.zip` in 3.0.0, with a digest | File sharing on. Its notes add on-device extraction for Android only, so the `.o2r` may have to come as Build Assets |
+| Arcanum CE | `ios` CMake preset, built in CI, not published | Upstream says it isn't ready to play: not listed |
 
 ## Verified facts
 
@@ -407,6 +524,24 @@ Spike apps were built and run on 2026-10-24 on macOS 27.0.1 (26A434), arm64, wit
 | .NET 10 in the build sandbox | `dotnet restore` can't reach nuget.org from the fetch sandbox ("bad certificate format": .NET's TLS needs more of the Security framework than the profile allows), so packages come through `curl` into a local feed. Restore and build then run offline |
 | A sandboxed launcher that execs a nested program signed with `app-sandbox`, `inherit` and `allow-unsigned-executable-memory` | The program runs sandboxed, with the container as its home, can't read the home folder, and runs code it wrote into memory it then made executable. But an AppKit program aborts in its LaunchServices check-in (`_RegisterApplication`, signal 6), so a Port's windowed program must be the app's own executable |
 | Metal in the build sandbox (2026-10-25) | Without the GPU rule, `MTLCreateSystemDefaultDevice` returns nil. With `AGXDeviceUserClient` alone the device and a compute pipeline work, but a Metal 4 command queue and shared events fail, which a game's host can abort on; `IOSurfaceRootUserClient` makes both work |
+
+Device spikes ran on 2026-10-31 with Xcode 27.2 (devicectl 651.32) and an iPhone 13 on iOS 27.0.1, paired over the local network, signing with a paid Apple Team that has a wildcard Provisioning Profile.
+
+| Test | Result |
+|---|---|
+| A flat iOS app with an `@rpath` framework and a loose dylib, signed inside-out with `codesign --force --sign <sha1> --timestamp=none` and the 3 entitlements | `--verify --strict` passes; DER entitlements are added without `--generate-entitlement-der`; it installs (about 5 s, also while locked) and launches |
+| The same app built against the iOS 27 SDK without a UIScene delegate | Installs, launches and exits at once with status 0. Stamped with an older SDK (`vtool -set-build-version ios 15.0 18.0`), or given a scene delegate, it runs. Upstream builds made with older SDKs are spared |
+| `devicectl device info apps` | Lists the devicectl-installed app with `builtByDeveloper` and `containerAccessible`, with or without `--require-container-access` |
+| `devicectl device copy to --domain-type appDataContainer` | Works for it. A folder merges into its destination, dotfiles copy, modification times are kept, files only on the Device stay, and a changed local file overwrites the Device's, but one with the same size and modification time is skipped even when its contents differ. 200 MB took 8.7 s the first time, 0.8 s again |
+| Installing over the same bundle ID | Keeps `Documents` |
+| `process launch --console` | The app's stdout and stderr arrive on devicectl's; a launch while locked fails with CoreDeviceError 10002; `--timeout` ends devicectl, not the app. `process terminate --pid` and `signal` work |
+| Uninstalling an app that isn't installed | Succeeds |
+| A stub Xcode project with `-allowProvisioningUpdates` on the paid Apple Team | Builds in 4 s with no prompt, and signs with the existing wildcard Provisioning Profile: no App ID is registered and no profile made. An unknown Apple Team fails with "No Account for Team" |
+| Upstream iOS builds | Fallout CE and Fallout 2 CE: unsigned thin arm64, `LC_VERSION_MIN_IPHONEOS` (iOS 11, SDK 16.2), no frameworks. Ghostship 3.0.0: a zip holding an unsigned `.ipa`, iPhone only, with `ghostship.o2r` and extraction specs, so it extracts the ROM itself |
+| Fallout CE's iOS CMake with Ninja in the unchanged build sandbox, `SDKROOT` the iPhoneOS SDK | Builds an arm64 app in about a minute. The SDK is inside Xcode.app. Ninja copies `AppIcon.xcassets` and `LaunchScreen.storyboard` uncompiled. `xcrun` can't write its cache there, falling back at about 2 s a call, until `xcrun_db` points into `$TMPDIR` |
+| `fallout-ce-ios.sh` through the Builder (`DeviceRecipeIntegrationTests`, 2026-11-01) | In the unchanged build sandbox, fetch and build take about 40 s with no xcrun noise, leaving one flat unsigned app: thin arm64, `LC_BUILD_VERSION` platform `IOS`, minimum 15.0, SDK stamped 18.0, four loose icons, `UILaunchScreen`, `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`. The Device Packager's inspection takes it |
+| Fallout CE from the Russian 1C CD image, through intake, its iOS Recipe and `DeviceAppRootTests` on the iPhone 13 (2026-11-01) | Built, signed with the paid Apple Team's wildcard Provisioning Profile and installed in 35 s; Seeding copied the disc folder's 383 files and the marker into `Documents/` in about 30 s more. With the SDK stamped 18.0 it runs under iOS 27, its UIKit window created by SDL2 without a scene delegate, and finds the CD's upper-case files: intro movies, menu, music, touch and a new game work. Its first launch showed only black, while running; launched again, it played its intro |
+| actool and ibtool in the build sandbox | Fail: they need `/Library/Developer/PrivateFrameworks` and the per-user temp folder, which `TMPDIR` doesn't move. iOS Recipes use the `UILaunchScreen` key and loose icons instead |
 
 The synthetic end-to-end test (`SyntheticEndToEndTests` in `FrontportIntegrationTests`, opt-in with `FRONTPORT_SYNTHETIC_TESTS=1`) ran on 2026-10-25 on the same Mac. It composes every real module over a test Catalog signed with a key it generates, fake GitHub releases, a Recipe and a toolchain package, all served over HTTP from the loopback interface, and runs stand-in Ports in their real containers. Its ROMs are synthetic (noise with the right magic and sizes) and its Ports are a small Swift app and a C app built by its Recipe, so it proves the pipeline, not that any real game or real Recipe works.
 
@@ -450,6 +585,7 @@ Not yet verified:
 - Whether Zelda64Recomp crashes when stopped during play rather than at a prompt.
 - Gameplay that needs JIT in the Recomp Ports.
 - The Catalog refresh from its real URL, which now serves the Catalog. `refresh()` is verified only against a local server.
+- Devices: only Fallout CE has been installed, by `DeviceAppRootTests` rather than the app's own buttons. Making a Provisioning Profile for a free Apple Team, Wi-Fi versus USB, and a Device going away are unchecked. Renew and Update have run only through stand-ins; whether Xcode makes a later Provisioning Profile for Renew while the one it has is still valid, rather than signing the stub with that, is unchecked (`ProfileMakerDeviceTests` runs the make path for a throwaway bundle ID). Seeding on a Device has run only through stand-ins; `DeviceEndToEndTests` checks it on a real one. Fallout CE's loose icons, its saves, and why its first launch showed only black are unchecked.
 - A Developer ID release. `scripts/release.sh` is written and its dry run works, but no identity, notarytool profile or Sparkle key exists here, so signing, notarization, stapling and the appcast haven't run.
 
 ## Port landscape (2026-10-24)
@@ -496,3 +632,4 @@ Answered during the first implementation: the build profiles ([Build sandbox](#b
 3. SteamGridDB API access: whether SteamGridDB permits a key in release builds ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Also whether entries pin specific artwork or take the top-rated.
 4. Permissions not yet modeled: `network.server` for hosting (sm64coopdx), and whether Recomp Ports need Files for their in-app pickers.
 5. Requirements that a single `oneOf` can't express: Starship's voice-pack extras and zelda3's language ROMs.
+6. Devices: whether Snapshots of a Device's Data (`devicectl device copy from`) are worth having before updates, and whether to offer the iOS Simulator for testing iOS Recipes.

@@ -49,16 +49,25 @@ public protocol ReleaseDiscovering: Sendable {
 
 /// Downloads and unpacks prebuilt Releases (the Fetcher, in FrontportReleases).
 public protocol AssetFetching: Sendable {
-    /// Downloads the Release's asset into `Downloads/` (reusing a cached file whose digest matches),
+    /// Downloads the Release's asset into `Downloads/<downloads>/` (reusing a cached file whose digest matches),
     /// verifies its SHA-256 against `ReleaseAsset.sha256`, unpacks it into `directory`, and returns the
-    /// .app inside. Throws `digestMissing` when upstream published no digest.
-    func fetch(_ release: Release, into directory: URL, progress: @escaping ProgressHandler) async throws -> URL
+    /// .app inside. Throws `digestMissing` when upstream published no digest. `downloads` is the Release's Port for
+    /// the Mac, or for a Device its `PortID.deviceWorkspace`.
+    func fetch(_ release: Release, into directory: URL, downloads: PortID, progress: @escaping ProgressHandler) async throws -> URL
+}
+
+extension AssetFetching {
+    /// The Mac's: downloads into the Release's Port's own folder, `Downloads/<port>/`.
+    public func fetch(_ release: Release, into directory: URL, progress: @escaping ProgressHandler) async throws -> URL {
+        try await fetch(release, into: directory, downloads: release.port, progress: progress)
+    }
 }
 
 /// State of the source-build toolchain.
 public enum ToolchainStatus: Hashable, Sendable {
     case ready
-    /// The Xcode Command Line Tools aren't installed; Frontport asks for them on the first source build.
+    /// The Xcode Command Line Tools aren't installed; Frontport asks for them on the first source build. For an iOS
+    /// build, Xcode isn't (`RecipeBuilding.toolchainStatus(for:)`).
     case needsCommandLineTools
     /// The pinned prefix in `Toolchain/` is missing or outdated.
     case needsPrefix
@@ -77,18 +86,46 @@ public struct BuildProduct: Hashable, Sendable {
     }
 }
 
-/// Runs Recipes in the build sandbox (FrontportBuilder).
+/// The SDK a Recipe builds with, named as `xcrun --sdk` names it: the Mac's for the Port, or Xcode's iPhoneOS SDK for its
+/// iOS version, for Devices.
+public enum BuildSDK: String, Hashable, Sendable {
+    case macosx
+    case iphoneos
+
+    /// The Builder's folder for a build of the Port: `Builds/<port>/` for the Mac, and for Devices `Builds/<port>.ios/`,
+    /// named as the Port's other iOS folders are.
+    public func workspace(for port: PortID) -> PortID {
+        switch self {
+        case .macosx: port
+        case .iphoneos: port.deviceWorkspace
+        }
+    }
+}
+
+/// Runs Recipes in the build sandbox (FrontportBuilder). One that builds only for the Mac needn't implement the SDK-aware
+/// toolchain calls.
 public protocol RecipeBuilding: Sendable {
     func toolchainStatus() async -> ToolchainStatus
 
     /// Prompts for the Command Line Tools if needed and installs the pinned prefix.
     func prepareToolchain(progress: @escaping ProgressHandler) async throws
 
-    /// Runs the Recipe's fetch step (network, writes `Builds/<port>/src`) then its build step (no network),
-    /// feeding it the Build-Stage ROMs. Output of both steps goes to `log`, which then holds only this run. The
-    /// product stays in `Builds/<port>/out` for the caller to take and then remove; a run that fails leaves no output.
+    /// What a build with `sdk` still needs. The Mac's is `toolchainStatus()`. An iOS build runs with Xcode's own tools,
+    /// so with Xcode found it needs only the pinned prefix, whether or not the Command Line Tools are installed; without
+    /// it, `needsCommandLineTools`.
+    func toolchainStatus(for sdk: BuildSDK) async -> ToolchainStatus
+
+    /// Readies what a build with `sdk` needs. The Mac's is `prepareToolchain(progress:)`. For an iOS build it never
+    /// offers the Command Line Tools: it throws `xcodeMissing` or `noIOSPlatform` without Xcode with the iOS platform,
+    /// else installs the pinned prefix.
+    func prepareToolchain(for sdk: BuildSDK, progress: @escaping ProgressHandler) async throws
+
+    /// Runs the Recipe's fetch step (network, writes the workspace's `src`) then its build step (no network), feeding it
+    /// the Build-Stage ROMs, in `sdk`'s workspace for the Port (`BuildSDK.workspace(for:)`). Output of both steps goes
+    /// to `log`, which then holds only this run. The product stays in the workspace's `out` for the caller to take and
+    /// then remove; a run that fails leaves no output. An iOS build needs Xcode with the iOS platform.
     func build(
-        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, log: URL,
+        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, sdk: BuildSDK, log: URL,
         progress: @escaping ProgressHandler
     ) async throws -> BuildProduct
 
@@ -97,6 +134,23 @@ public protocol RecipeBuilding: Sendable {
     func unpack(
         _ installer: URL, named name: String, workspace: PortID, recipe: URL, log: URL, progress: @escaping ProgressHandler
     ) async throws -> [URL]
+}
+
+extension RecipeBuilding {
+    /// The Mac's: builds in `Builds/<port>/`.
+    public func build(
+        _ entry: CatalogEntry, ref: String, recipe: URL, roms: BuildROMs, log: URL,
+        progress: @escaping ProgressHandler
+    ) async throws -> BuildProduct {
+        try await build(entry, ref: ref, recipe: recipe, roms: roms, sdk: .macosx, log: log, progress: progress)
+    }
+
+    /// For a Builder that builds only for the Mac, whose `build` refuses `iphoneos`: the Mac's.
+    public func toolchainStatus(for sdk: BuildSDK) async -> ToolchainStatus { await toolchainStatus() }
+
+    public func prepareToolchain(for sdk: BuildSDK, progress: @escaping ProgressHandler) async throws {
+        try await prepareToolchain(progress: progress)
+    }
 }
 
 /// Unpacks an installer the Catalog lists into the folders it holds (FrontportLibrary composes the Catalog and the
@@ -151,6 +205,20 @@ public protocol ROMStoring: Sendable {
     /// caller makes sure Data can be written to and that the Port isn't running. Requirements Seeded before a failure
     /// stay Seeded.
     func seed(_ entry: CatalogEntry) async throws
+
+    /// Lays out clones of the Matches of the Runtime Requirements the iOS version Seeds in `root`, as Seeding lays them
+    /// out in Data but by their iOS seedPaths, for `devicectl` to copy into the app's container on a Device: a file at a
+    /// file seedPath, each ROM as `<sha1>.<format>` in a folder one, a folder ROM filled in with its marker. A
+    /// Requirement without a Match gets nothing. `root` is a fresh folder inside `Devices/`, and anywhere else is
+    /// refused, so nothing it lays out lands in a Port's Data on this Mac.
+    func stage(_ version: IOSVersion, into root: URL) async throws -> [StagedSeed]
+}
+
+extension ROMStoring {
+    /// For ROMs that never lay anything out for Devices, such as a test's.
+    public func stage(_ version: IOSVersion, into root: URL) async throws -> [StagedSeed] {
+        throw FrontportError.fileOperation("ROMs can’t be laid out for iPhone and iPad here.")
+    }
 }
 
 /// Prepares an app to run sandboxed as a Port (FrontportPackager).
@@ -169,6 +237,24 @@ public protocol PortPackaging: Sendable {
     /// to, which it makes as `package` does. `installedAssets` is where the Library keeps the Build Assets the app links
     /// to, as for `package`, or nil when it has no such link.
     func resign(_ app: URL, entry: CatalogEntry, permissions: Permissions, installedAssets: URL?) async throws
+}
+
+/// Prepares a Port's iOS version to install on Devices (FrontportPackager).
+public protocol DevicePackaging: Sendable {
+    /// Reads what a Device is checked against from an app as upstream ships it, changing nothing: refuses one that
+    /// isn't an arm64, unencrypted iPhone and iPad app, or holds a link leading out of it. Its `bundleId` is
+    /// upstream's.
+    func inspect(_ app: URL, version: IOSVersion) async throws -> DeviceAppInfo
+
+    /// In place: refuses an app that isn't one arm64, unencrypted iPhone and iPad app with only frameworks and
+    /// libraries nested, sets its `CFBundleIdentifier` to `signing.bundleId`, removes upstream signatures and the iOS
+    /// version's `strip` paths, embeds the Provisioning Profile and signs inside-out with `signing.certificate`. The
+    /// `bundleId` it returns is `signing.bundleId`.
+    func package(_ app: URL, version: IOSVersion, signing: DeviceSigning) async throws -> DeviceAppInfo
+
+    /// Signs an app it packaged again, with another Provisioning Profile or certificate of the same Apple Team, for
+    /// Renew, refusing one whose bundle ID isn't `signing.bundleId`. When that fails, the app is as it was.
+    func resign(_ app: URL, signing: DeviceSigning) async throws -> DeviceAppInfo
 }
 
 /// Has macOS lay out a Port's Data folder without running the Port (FrontportPackager).
@@ -291,4 +377,138 @@ public protocol LibraryManaging: Sendable {
     /// Applies the Catalog's Blocks: disables Installations on a stop-Blocked Release and re-enables those no
     /// longer Blocked. Returns the Installations that changed.
     func enforceBlocks(_ catalog: CatalogDocument) async throws -> [Installation]
+}
+
+/// The iPhones and iPads paired with this Mac, through Xcode's `devicectl` (FrontportDevices). A call the Device can't
+/// carry out throws `deviceUnavailable` with `devicectl`'s own words.
+public protocol DeviceControlling: Sendable {
+    /// Every paired Device, read now: how it's reachable, and, when it is, whether it's locked and has Developer Mode
+    /// on.
+    func readings() async throws -> [DeviceReading]
+
+    /// The bundle IDs of the apps a developer installed on the Device, such as Frontport's Ports.
+    func apps(on device: DeviceID) async throws -> Set<String>
+
+    /// Installs a signed app over the one with its bundle ID, which keeps that one's Data.
+    func install(_ app: URL, on device: DeviceID) async throws
+
+    /// Removes the app and its Data. An app that isn't installed counts as removed.
+    func uninstall(_ bundleId: String, from device: DeviceID) async throws
+
+    /// What the app's container on the Device holds where `seeds` go: every file and folder at each one's path and
+    /// below it, at every depth, links listed as links, with paths relative to the container; a folder it doesn't have
+    /// yet holds nothing. More may be listed. Each of `markers` listed as a file, not a folder or link, is read, and
+    /// what it names goes in the listing's `markers`.
+    func list(_ seeds: [StagedSeed], markers: [String], of bundleId: String, on device: DeviceID) async throws -> DeviceListing
+
+    /// Puts every file under `root` into the app's container on the Device at the same path relative to it, over what
+    /// is there, leaving everything else there as it is; the files at `markers` go last, once all the others are there.
+    /// `listing`, the container as last listed, is what the files replace. `root` is used up: its files may be moved
+    /// or dated anew.
+    func put(_ root: URL, markers: [String], over listing: DeviceListing, of bundleId: String, on device: DeviceID) async throws
+
+    /// The executables running on the Device, by process ID.
+    func processes(on device: DeviceID) async throws -> [Int32: URL]
+}
+
+/// The user's Apple Teams and their Provisioning Profiles (FrontportDevices).
+public protocol Provisioning: Sendable {
+    /// The Apple Teams whose Apple Development certificates have their keys in the keychain, by name.
+    func teams() async -> [AppleTeam]
+
+    /// How to sign `bundleId` for `device` with `team`: a Provisioning Profile that lets it run there, lasting past a
+    /// day from now and past `outlasting`, and the certificate it names. Throws `noAppleTeam` when the keychain holds
+    /// no certificate of `team`, `provisioningFailed` when there's no such Provisioning Profile.
+    func signing(for bundleId: String, team: AppleTeamID, device: DeviceID, outlasting: Date?) async throws -> DeviceSigning
+}
+
+/// The records of Installations on Devices and of the Devices remembered (FrontportLibrary): what the Survey reads.
+public protocol DeviceRecords: Sendable {
+    /// Every Installation on a Device, by Device then Port.
+    func installations() async -> [DeviceInstallation]
+
+    /// The Devices remembered in `Devices/<udid>/device.json`, by name.
+    func devices() async -> [Device]
+}
+
+/// Installations on Devices and everything that changes them (FrontportLibrary): the iOS version of a Port, fetched on
+/// this Mac, packaged and signed with the user's Apple Team, and installed through `devicectl`. One operation runs per
+/// Port at a time, whichever Device it's for. It never writes the Mac's Library, a Port's container on the Mac or a
+/// Port's Mac downloads, builds and logs, and refuses any entry whose id or bundle ID could name a folder other than
+/// its own.
+public protocol DeviceLibraryManaging: DeviceRecords {
+    /// Remembers the Device as it was just read, so its Installations still show while it's away.
+    func remember(_ device: Device) async throws
+
+    /// Forgets a Device with the records of its Installations, leaving their apps and Data on it.
+    func forget(_ device: DeviceID) async throws
+
+    /// Readies the iOS version for Devices, none in particular: resolves the newest iOS Release on the Channel, fetches
+    /// it into `Downloads/<port>.ios/` and unpacks it, or for a source-built one runs its iOS Recipe in
+    /// `Builds/<port>.ios/`, then reads what Devices are checked against, signing nothing. The prepared app replaces the
+    /// one before, which is reused instead when it's for that Release on that Channel, and stays while a Device has the
+    /// Port. Throws `blocked` or `noRelease` when the iOS version doesn't offer that Release (`IOSVersion.check`).
+    func prepare(_ version: IOSVersion, channel: Channel, progress: @escaping ProgressHandler) async throws -> PreparedDeviceApp
+
+    /// The Port's prepared app, if there is one.
+    func prepared(_ port: PortID) async -> PreparedDeviceApp?
+
+    /// Installs the Port's prepared app on the Device, signed with `team`: check it against the Device, take a
+    /// Provisioning Profile that names the Device, package and sign a clone of it, install, record. The prepared app
+    /// stays as it was, for the next Device. The record follows `devicectl`'s install: a failed install leaves nothing
+    /// recorded. With nothing prepared any more, as when the last Device's uninstall took it, it prepares again on the
+    /// iOS version's default Channel. Throws `alreadyInstalled` when the Port is on the Device, and `blocked` or
+    /// `noRelease` when `version` no longer offers its Release (`IOSVersion.check`).
+    func installPrepared(
+        _ version: IOSVersion, on device: DeviceReading, team: AppleTeamID, progress: @escaping ProgressHandler
+    ) async throws -> DeviceInstallation
+
+    /// Installs the newest iOS Release on `channel` over the Port's Installation on the Device, which keeps its Data
+    /// there: prepares it, reusing what's prepared for that Release, then packages, signs and installs a clone as
+    /// installing does, and records it with what the record said was Seeded there. Moves forward only
+    /// (`IOSVersion.update`): the Release installed, built by the same iOS Recipe, returns the Installation as it is,
+    /// and an older one is refused. Needs the
+    /// Installation, `team` being the Apple Team it's signed with (`otherAppleTeam` otherwise), and the Device
+    /// reachable and in Developer Mode. Seed afterwards.
+    func update(
+        _ version: IOSVersion, on device: DeviceReading, team: AppleTeamID, channel: Channel,
+        progress: @escaping ProgressHandler
+    ) async throws -> DeviceInstallation
+
+    /// Renews the Port's Installation on the Device: takes, or has Xcode make, a Provisioning Profile for its bundle
+    /// ID that names the Device and lasts longer than the app's signature does now, signs a clone of the app kept for
+    /// it again with that, installs it over the one there, which keeps its Data, then swaps it in and records the new
+    /// expiry. Whatever fails, the app kept and the record stay as they were. Needs the Installation, `team` being the
+    /// Apple Team it's signed with (`otherAppleTeam` otherwise: another's bundle ID is an install of its own), and the
+    /// Device reachable, unlocked and in Developer Mode. Refused, before Xcode is asked, while the app isn't on the
+    /// Device (`deviceUnavailable(.notInstalled)`), so one the user deleted is never put back, and while the Port runs
+    /// there (`running`). The record's entry is enough, so it works for a Port the Catalog no longer lists.
+    func renew(
+        _ port: PortID, on device: DeviceReading, team: AppleTeamID, progress: @escaping ProgressHandler
+    ) async throws -> DeviceInstallation
+
+    /// Removes the Port's app from the Device, and its Data with it, then its record and kept app. An app already gone
+    /// from the Device counts as removed; a Device that can't be reached keeps the Installation.
+    func uninstall(_ port: PortID, from device: DeviceID) async throws
+
+    /// Seeds the Port's Runtime ROMs on the Device: lays their Matches out in `seeds/`, lists the Device, copies only
+    /// what `DeviceSeeding.plan` says, files then markers, lists it again and records what's there. Needs the Port's
+    /// Installation on the Device and the Device reachable, unlocked and in Developer Mode, refused otherwise with
+    /// `DeviceReadiness`'s error, which Seeding's wait reads back; throws `running` while the Port runs there. When the Device goes away part way, the record stays as it was. Returns the plan as the Device
+    /// stands afterwards, nil when the iOS version Seeds nothing. `version` is the one Seeding goes by
+    /// (`IOSVersion(seeding:listed:)`).
+    func seed(_ version: IOSVersion, on device: DeviceReading, progress: @escaping ProgressHandler) async throws -> DeviceSeedingPlan?
+
+    /// What `seed` would copy to the Device now, read from its listing, copying nothing and leaving the record alone; nil
+    /// when the iOS version Seeds nothing. Needs the Device reachable and in Developer Mode, though it may be locked.
+    func seedingPlan(for version: IOSVersion, on device: DeviceReading) async throws -> DeviceSeedingPlan?
+
+    /// Whether the Port runs on the Device now, as the Device says, which Renew and Seeding refuse; false without its
+    /// Installation there. Throws when the Device can't be asked.
+    func isRunning(_ port: PortID, on device: DeviceID) async throws -> Bool
+
+    /// Removes what operations that failed or were cut short left: every `staging/` and `seeds/` on a Device, a
+    /// `Devices/<udid>/<port>/` without a record, every iOS download and `preparing/`, and the iOS build folder, with
+    /// its prepared app, and logs of a Port on no Device. Call it at launch, before anything else changes a Port.
+    func removeLeftovers() async
 }

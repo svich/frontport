@@ -2,13 +2,14 @@ import Darwin
 import Foundation
 import FrontportCore
 
-/// Archive formats the Fetcher unpacks, recognized by file name.
+/// Archive formats the Fetcher unpacks, recognized by file name. An `.ipa` is a zip holding one iOS app in
+/// `Payload/`, sometimes itself inside a zip, as Ghostship ships it.
 enum ArchiveFormat: Hashable, Sendable {
     case zip, tar, dmg
 
     init?(name: String) {
         let name = name.lowercased()
-        if name.hasSuffix(".zip") {
+        if name.hasSuffix(".zip") || name.hasSuffix(".ipa") {
             self = .zip
         } else if name.hasSuffix(".dmg") {
             self = .dmg
@@ -63,8 +64,15 @@ struct Unpacker: Sendable {
 
         let found = Self.contents(of: destination)
         if !found.apps.isEmpty || depth >= Self.maxDepth { return found.apps }
+        // An `.ipa` beside other archives is opened only when they hold no app, so a Mac Release that carries its iOS
+        // version too still yields the Mac app alone.
+        let ipas = found.archives.filter { $0.pathExtension.lowercased() == "ipa" }
         var apps: [URL] = []
-        for nested in found.archives {
+        for nested in found.archives where !ipas.contains(nested) {
+            apps += try await unpack(nested, work: work, depth: depth + 1)
+        }
+        if !apps.isEmpty { return apps }
+        for nested in ipas {
             apps += try await unpack(nested, work: work, depth: depth + 1)
         }
         return apps

@@ -1,0 +1,42 @@
+{
+  "info": {
+    "arguments": [
+      "devicectl",
+      "device",
+      "info",
+      "processes",
+      "--device",
+      "00000000-0000000000000000",
+      "--timeout",
+      "30",
+      "-j",
+      "raw/processes-4-running.json"
+    ],
+    "commandType": "devicectl.device.info.processes",
+    "environment": {},
+    "jsonVersion": 5,
+    "outcome": "success",
+    "version": "651.32"
+  },
+  "result": {
+    "deviceIdentifier": "00000000-0000-0000-0000-000000000000",
+    "runningProcesses": [
+      {
+        "executable": "file:///sbin/launchd",
+        "processIdentifier": 1
+      },
+      {
+        "executable": "file:///usr/libexec/UserEventAgent",
+        "processIdentifier": 13693
+      },
+      {
+        "executable": "file:///usr/libexec/logd",
+        "processIdentifier": 13695
+      },
+      {
+        "executable": "file:///private/var/containers/Bundle/Application/4EDDDA75-7812-43C4-A0F9-EAFE70C26CD8/SpikeSDK18.app/Spike",
+        "processIdentifier": 30785
+      }
+    ]
+  }
+}

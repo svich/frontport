@@ -1,8 +1,9 @@
 import FrontportCore
 import SwiftUI
 
-/// A Catalog entry's store page, under its Game: a note when the Game has other Ports, then screenshots, summary, the
-/// action its state calls for, and details.
+/// A Catalog entry's store page, laid out like an app's page in the Mac App Store: its icon, name and the action its
+/// state calls for, a strip of facts, screenshots (or its hero art), the description and what's new, the ROMs it needs,
+/// its Permissions and Information, and its Game's other Ports.
 struct StorePageView: View {
     @Environment(AppModel.self) private var model
     let port: PortID
@@ -11,52 +12,29 @@ struct StorePageView: View {
         Group {
             if let entry = model.survey.entry(port), model.survey.isListed(port) {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 26) {
                         Breadcrumb(entry: entry)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(model.survey.game(for: entry)?.name ?? entry.name)
-                                .font(.system(size: 28, weight: .heavy))
-                                .tracking(-0.5)
-                            HStack(spacing: 0) {
-                                Button(entry.name) {
-                                    if let project = model.survey.lineup.project(for: entry) { model.open(.project(project.id)) }
-                                }
-                                .buttonStyle(.link)
-                                .fontWeight(.semibold)
-                                .help("Show the \(entry.name) Project")
-                                .accessibilityIdentifier("store.project")
-                                Text(" · by \(entry.developer) · \(entry.kind.name)")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .font(.title3)
+                        StoreHeader(entry: entry)
+                        VStack(spacing: 0) {
+                            Divider()
+                            FactStrip(entry: entry).padding(.vertical, 14)
+                            Divider()
                         }
-                        OtherPortsNotice(entry: entry)
-                        HStack(alignment: .top, spacing: 24) {
-                            ScreenshotViewer(entry: entry)
-                                .frame(maxWidth: .infinity)
-                            SummaryColumn(entry: entry)
-                                .frame(width: 290)
+                        ScreenshotShelf(entry: entry)
+                        Description(entry: entry)
+                        WhatsNew(entry: entry)
+                        StoreROMs(entry: entry)
+                        StorePermissions(entry: entry)
+                        Information(entry: entry)
+                        // Leftovers of a Port that isn't installed have no Port page to be removed from.
+                        if model.survey.installation(port) == nil {
+                            StorageSection(entry: entry)
                         }
-                        ActionBar(entry: entry)
-                        HStack(alignment: .top, spacing: 32) {
-                            VStack(alignment: .leading, spacing: 26) {
-                                About(entry: entry)
-                                SystemRequirements(entry: entry)
-                                StoreROMs(entry: entry)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(alignment: .leading, spacing: 22) {
-                                StorePermissions(entry: entry)
-                                if model.survey.installation(port) == nil {
-                                    StorageSection(entry: entry)
-                                }
-                            }
-                            .frame(width: 320)
-                        }
+                        OtherPorts(entry: entry)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 28)
                     .padding(.top, 8)
-                    .padding(.bottom, 36)
+                    .padding(.bottom, 40)
                 }
                 .testContainer("screen.store.\(port.rawValue)")
             } else {
@@ -93,6 +71,7 @@ private struct Breadcrumb: View {
                 Text(model.gameName(for: entry)).fontWeight(.semibold)
             }
         }
+        .font(.callout)
     }
 
     private func crumb(_ title: String, _ screen: Screen) -> some View {
@@ -107,82 +86,98 @@ private struct Breadcrumb: View {
     }
 }
 
-/// The project's screenshots with thumbnails, or the hero art when there are none.
-private struct ScreenshotViewer: View {
+/// A row of facts under the header, as the App Store shows ratings, age and size: the latest Release, Platform, Genre,
+/// size, ROMs, developer and, when it has one, its iOS version.
+private struct FactStrip: View {
+    @Environment(AppModel.self) private var model
     let entry: CatalogEntry
-    @State private var index = 0
+
+    var body: some View {
+        FactRow(facts: facts)
+    }
+
+    private var facts: [Fact] {
+        var facts: [Fact] = []
+        if let release = model.survey.latestRelease(for: entry.id) {
+            facts.append(Fact(
+                caption: "Release", value: .text(release.version),
+                detail: release.published.map(Format.date) ?? entry.name))
+        }
+        if let platform = model.survey.platform(for: entry) {
+            facts.append(Fact(
+                caption: "Platform", value: .image("PlatformIcons/\(platform.id.rawValue)"), detail: platform.name,
+                screen: .platform(platform.id)))
+        }
+        if let game = model.survey.game(for: entry), let id = game.genres.first,
+           let genre = model.survey.catalog?.genre(id) {
+            facts.append(Fact(caption: "Genre", value: .genre(id), detail: genre.name, screen: .genre(id)))
+        }
+        if entry.isSourceBuilt {
+            facts.append(Fact(caption: "Size", value: .symbol("hammer"), detail: "Built on this Mac"))
+        } else if let size = model.survey.latestRelease(for: entry.id)?.asset?.size, size > 0 {
+            let parts = Format.bytes(size).split(separator: " ", maxSplits: 1).map(String.init)
+            facts.append(Fact(caption: "Size", value: .text(parts.first ?? ""), detail: parts.dropFirst().first ?? ""))
+        }
+        let matching = model.survey.matching(for: entry.id)
+        let missing = matching.missing()
+        if entry.requirements.isEmpty {
+            facts.append(Fact(caption: "ROM", value: .symbol("checkmark.circle"), detail: "None needed"))
+        } else if missing.isEmpty {
+            // A Build ROM the Port was made from counts even once it's left ROMs, as the ROMs section says.
+            let builtIn = matching.requirements.filter { $0.state == .builtIn }.count
+            let detail = builtIn == 0 ? "In your ROMs" : builtIn == matching.requirements.count ? "Built in" : "Built in and in ROMs"
+            facts.append(Fact(caption: "ROM", value: .symbol("checkmark.circle.fill"), detail: detail, tint: .green))
+        } else {
+            facts.append(Fact(
+                caption: missing.count == 1 ? "ROM" : "ROMs", value: .text("\(missing.count)"),
+                detail: "Needed", tint: .orange))
+        }
+        facts.append(Fact(caption: "Developer", value: .symbol("person.crop.square"), detail: entry.developer))
+        if entry.ios != nil {
+            facts.append(Fact(
+                caption: "iPhone and iPad", value: .symbol("iphone"),
+                detail: model.survey.latestIOSRelease(for: entry.id)?.version ?? "Available"))
+        }
+        return facts
+    }
+}
+
+/// The project's screenshots in a row that scrolls sideways, or, when it has none, its hero art across the page at its
+/// own shape, so none of it is cut off.
+private struct ScreenshotShelf: View {
+    let entry: CatalogEntry
 
     var body: some View {
         let shots = entry.screenshots
-        VStack(spacing: 10) {
-            if shots.isEmpty {
-                ArtworkImage(.hero, port: entry.id)
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .overlay(alignment: .bottomLeading) {
-                        ArtworkImage(.logo, port: entry.id)
-                            .frame(maxWidth: 320, maxHeight: 130, alignment: .bottomLeading)
-                            .padding(24)
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            } else {
-                let current = min(index, shots.count - 1)
-                Screenshot(url: shots[current])
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .overlay {
-                        if shots.count > 1 {
-                            HStack {
-                                arrow("chevron.left", label: "Previous Screenshot") {
-                                    index = (current - 1 + shots.count) % shots.count
-                                }
-                                Spacer()
-                                arrow("chevron.right", label: "Next Screenshot") {
-                                    index = (current + 1) % shots.count
-                                }
-                            }
-                            .padding(12)
-                        }
-                    }
-                    .accessibilityLabel("Screenshot \(current + 1) of \(shots.count)")
-                if shots.count > 1 {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
-                        ForEach(Array(shots.enumerated()), id: \.offset) { offset, url in
-                            Button {
-                                index = offset
-                            } label: {
-                                Screenshot(url: url)
-                                    .aspectRatio(16 / 9, contentMode: .fit)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                    .opacity(offset == current ? 1 : 0.6)
-                                    .overlay {
-                                        if offset == current {
-                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                .strokeBorder(.tint, lineWidth: 2)
-                                                .padding(-3)
-                                        }
-                                    }
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Screenshot \(offset + 1)")
-                        }
-                    }
-                    .padding(.horizontal, 3)
+        if shots.isEmpty {
+            ArtworkImage(.hero, port: entry.id)
+                .aspectRatio(1920 / 620, contentMode: .fit)
+                .overlay(alignment: .bottomLeading) {
+                    ArtworkImage(.logo, port: entry.id)
+                        .frame(maxWidth: 300, maxHeight: 110, alignment: .bottomLeading)
+                        .padding(22)
                 }
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .frame(maxWidth: .infinity)
+        } else {
+            ScrollView(.horizontal) {
+                HStack(spacing: 14) {
+                    ForEach(Array(shots.enumerated()), id: \.offset) { offset, url in
+                        Screenshot(url: url)
+                            .frame(width: 480, height: 270)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .strokeBorder(.separator, lineWidth: 0.5)
+                            }
+                            .accessibilityLabel("Screenshot \(offset + 1) of \(shots.count)")
+                    }
+                }
+                .scrollTargetLayout()
             }
+            .scrollTargetBehavior(.viewAligned)
+            .scrollIndicators(.never)
         }
-    }
-
-    private func arrow(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .fontWeight(.semibold)
-                .frame(width: 18, height: 18)
-                .accessibilityLabel(label)
-        }
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
-        .controlSize(.large)
     }
 }
 
@@ -206,165 +201,143 @@ private struct Screenshot: View {
     }
 }
 
-private struct SummaryColumn: View {
-    @Environment(AppModel.self) private var model
-    let entry: CatalogEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            ArtworkImage(.grid, port: entry.id)
-                .aspectRatio(92 / 43, contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            Text(entry.summary)
-                .foregroundStyle(.secondary)
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-                .catalogContent("summary")
-            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 14, verticalSpacing: 7) {
-                if let project = model.survey.lineup.project(for: entry) {
-                    row("Project") {
-                        Button(project.name) { model.open(.project(project.id)) }
-                            .buttonStyle(.link)
-                            .fontWeight(.semibold)
-                    }
-                }
-                if let release = model.survey.latestRelease(for: entry.id) {
-                    row("Latest Release") {
-                        Text(["\(entry.name) \(release.version)", release.published.map(Format.date)].compactMap { $0 }
-                            .joined(separator: " · "))
-                    }
-                }
-                if let platform = model.survey.platform(for: entry) {
-                    row("Platform") {
-                        Button(platform.name) { model.open(.platform(platform.id)) }
-                            .buttonStyle(.link)
-                            .help("Show \(platform.name) Ports in the Catalog")
-                    }
-                }
-                if let catalog = model.catalogName(for: entry) {
-                    row("Catalog") {
-                        Text(catalog)
-                            .help("Listed by a Catalog you added in Settings, which Frontport doesn’t review")
-                            .accessibilityIdentifier("store.catalog")
-                    }
-                }
-                row("Developer") { Text(entry.developer) }
-                row("Source") {
-                    Link(entry.source.shortDisplay, destination: entry.source)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                if let website = entry.website {
-                    row("Website") { Link(website.shortDisplay, destination: website) }
-                }
-            }
-        }
-    }
-
-    private func row(_ label: String, @ViewBuilder value: () -> some View) -> some View {
-        GridRow {
-            Text(label).foregroundStyle(.secondary)
-            value()
-        }
-    }
-}
-
-/// "Super Mario 64 also has another Port: sm64coopdx. See All Ports", opening the Game page; nothing when the Game
-/// has one Port.
-private struct OtherPortsNotice: View {
+/// The Game's other Ports, as the App Store shows "You Might Also Like", each opening its store page; nothing when the
+/// Game has one Port.
+private struct OtherPorts: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
     var body: some View {
         let others = model.survey.lineup.ports(of: entry.game).filter { $0.id != entry.id }
         if !others.isEmpty {
-            HStack(spacing: 8) {
-                Image(systemName: "square.stack")
-                    .foregroundStyle(.secondary)
-                Text(text(others))
-                    .foregroundStyle(.secondary)
-                Button("See All Ports") { model.open(.game(entry.game)) }
-                    .buttonStyle(.link)
-                    .accessibilityIdentifier("store.allPorts")
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline) {
+                    SectionHeader(title: "Other Ports of \(model.gameName(for: entry))")
+                    Button("See All") { model.open(.game(entry.game)) }
+                        .buttonStyle(.link)
+                        .help("Compare \(model.gameName(for: entry))’s Ports side by side")
+                        .accessibilityIdentifier("store.allPorts")
+                }
+                FlowGrid(columns: 3, spacing: 14, rowSpacing: 14) {
+                    ForEach(others) { other in
+                        Button {
+                            model.open(.store(other.id))
+                        } label: {
+                            HStack(spacing: 12) {
+                                ArtworkImage(.icon, port: other.id)
+                                    .frame(width: 56, height: 56)
+                                    .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(other.name).fontWeight(.semibold)
+                                    Text("\(other.kind.name) · by \(other.developer)")
+                                        .font(.callout)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                                Spacer(minLength: 0)
+                            }
+                            .contentShape(.rect)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
-            .font(.callout)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
-    }
-
-    private func text(_ others: [CatalogEntry]) -> String {
-        let game = model.gameName(for: entry)
-        let names = others.map(\.name).formatted(.list(type: .and))
-        return others.count == 1
-            ? "\(game) also has another Port: \(names)."
-            : "\(game) also has \(others.count) other Ports: \(names)."
     }
 }
 
-/// The action the Port's Status calls for, with "In Library" once it's there.
-private struct ActionBar: View {
+/// The icon, Game, summary and Project, and the action the Port's Status calls for with a line on where it stands. Once
+/// the Port is in the Library, Open, which leads to its Port page, beside only the Mac's action; Install on iPhone or
+/// iPad… until then.
+private struct StoreHeader: View {
     @Environment(AppModel.self) private var model
     @Environment(ViewState.self) private var viewState
     let entry: CatalogEntry
 
     var body: some View {
         let status = model.status(of: entry.id)
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 26) {
             ArtworkImage(.icon, port: entry.id)
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title(status.state))
-                    .font(.system(size: 16, weight: .bold))
-                    .accessibilityIdentifier("store.status")
-                Text(detail(status.state))
-                    .foregroundStyle(.secondary)
+                .frame(width: 140, height: 140)
+                .clipShape(RoundedRectangle(cornerRadius: 31, style: .continuous))
+                .shadow(color: .black.opacity(0.16), radius: 8, y: 4)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(model.survey.game(for: entry)?.name ?? entry.name)
+                    .font(.system(size: 28, weight: .bold))
+                    .tracking(-0.4)
                     .fixedSize(horizontal: false, vertical: true)
-                    .modifier(DetailIdentifier(state: status.state))
-                if case .working(let activity) = status.state {
-                    ProgressView(value: activity.progress.fraction)
-                        .progressViewStyle(.linear)
-                        .controlSize(.small)
-                        .frame(maxWidth: 260)
-                        .padding(.top, 4)
+                Text(entry.summary)
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .catalogContent("summary")
+                    .padding(.top, 3)
+                HStack(spacing: 0) {
+                    Button(entry.name) {
+                        if let project = model.survey.lineup.project(for: entry) { model.open(.project(project.id)) }
+                    }
+                    .buttonStyle(.link)
+                    .help("Show the \(entry.name) Project")
+                    .accessibilityIdentifier("store.project")
+                    Text(" · \(entry.kind.name) · by \(entry.developer)")
+                        .foregroundStyle(.secondary)
                 }
+                .padding(.top, 6)
+                HStack(spacing: 10) {
+                    // Once it's in the Library, the Port page manages it: the header opens it, and offers only the
+                    // Mac's action. While a change is under way, the header is about it alone.
+                    switch status.main {
+                    case .install?:
+                        button(.install, status, "store.install").buttonStyle(.glassProminent)
+                    case .addROM(let stage)?:
+                        button(.addROM(stage), status, "store.addROM").buttonStyle(.addROM)
+                    case .cancel?:
+                        button(.cancel, status, "store.cancel").buttonStyle(.glass)
+                    case .seed?:
+                        button(.seed, status, "store.seed").buttonStyle(.glassProminent)
+                    case .stop?:
+                        Button {
+                            viewState.run(.stop, for: entry.id, in: model)
+                        } label: {
+                            Label("Stop", systemImage: "stop.fill")
+                        }
+                        .buttonStyle(.glass)
+                        .accessibilityIdentifier("store.stop")
+                    case nil:
+                        EmptyView()
+                    default:
+                        PortActionButton(port: entry.id, playsWhenUpdatable: true)
+                    }
+                    if isInLibrary(status) {
+                        if status.main != .cancel { open }
+                    } else {
+                        InstallOnDevicesButton(port: entry.id, identifier: "store.installOnDevices")
+                    }
+                }
+                .controlSize(.large)
+                .padding(.top, 16)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title(status.state))
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("store.status")
+                    Text(detail(status.state))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .modifier(DetailIdentifier(state: status.state))
+                    if case .working(let activity) = status.state {
+                        ProgressView(value: activity.progress.fraction)
+                            .progressViewStyle(.linear)
+                            .controlSize(.small)
+                            .frame(maxWidth: 280)
+                            .padding(.top, 4)
+                    }
+                }
+                .font(.callout)
+                .padding(.top, 10)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            HStack(spacing: 10) {
-                // While a change is under way, the bar is about it alone.
-                if status.isInLibrary, status.main != .cancel {
-                    inLibrary
-                }
-                switch status.main {
-                case .install?:
-                    button(.install, status, "store.install").buttonStyle(.glassProminent)
-                case .addROM(let stage)?:
-                    button(.addROM(stage), status, "store.addROM").buttonStyle(.addROM)
-                case .cancel?:
-                    button(.cancel, status, "store.cancel").buttonStyle(.glass)
-                case .seed?:
-                    button(.seed, status, "store.seed").buttonStyle(.glassProminent)
-                case .stop?:
-                    Button {
-                        viewState.run(.stop, for: entry.id, in: model)
-                    } label: {
-                        Label("Stop", systemImage: "stop.fill")
-                    }
-                    .buttonStyle(.glass)
-                    .accessibilityIdentifier("store.stop")
-                case nil:
-                    EmptyView()
-                default:
-                    PortActionButton(port: entry.id, playsWhenUpdatable: true)
-                }
-            }
-            .controlSize(.large)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
-        .calloutBackground(.accentColor)
     }
 
     private func button(_ action: Status.Action, _ status: Status, _ identifier: String) -> some View {
@@ -374,10 +347,21 @@ private struct ActionBar: View {
             .accessibilityIdentifier(identifier)
     }
 
-    private var inLibrary: some View {
-        Button("In Library") { model.open(.port(entry.id)) }
+    private var open: some View {
+        Button("Open") { model.open(.port(entry.id)) }
             .buttonStyle(.glass)
-            .accessibilityIdentifier("store.inLibrary")
+            .help("Open its Port page")
+            .accessibilityIdentifier("store.open")
+    }
+
+    /// On this Mac, being installed here, or on an iPhone or iPad.
+    private func isInLibrary(_ status: Status) -> Bool {
+        status.isInLibrary || !model.survey.deviceInstallations(of: entry.id).isEmpty
+    }
+
+    /// "iPhone 13 and iPad Air", the Devices it's on.
+    private var devices: String {
+        model.survey.deviceInstallations(of: entry.id).map { model.deviceName($0.device) }.formatted(.list(type: .and))
     }
 
     /// The detail quotes an Unsupported entry's reason from the Catalog.
@@ -397,6 +381,8 @@ private struct ActionBar: View {
         let game = model.gameName(for: entry)
         switch state {
         case .unsupported: return "Not available"
+        case .available where isInLibrary(model.status(of: entry.id)):
+            return "\(game) · \(entry.name) is in your Library"
         case .available: return "Install \(entry.name)"
         case .working(let activity): return model.activityText(activity, for: entry.id)
         case .needsROM(let missing), .needsBuildROM(let missing):
@@ -413,10 +399,12 @@ private struct ActionBar: View {
         switch state {
         case .unsupported(let reason):
             return "It can’t run inside the macOS sandbox. \(reason)"
+        case .available where isInLibrary(model.status(of: entry.id)):
+            return "On \(devices), not on this Mac"
         case .available:
             var parts: [String] = []
             if entry.isSourceBuilt {
-                parts.append("Frontport builds it from source in a sandbox, with no network.")
+                parts.append("Frontport builds it on your Mac in a sandbox, with no network.")
             } else if let size = model.survey.latestRelease(for: entry.id)?.asset?.size, size > 0 {
                 parts.append("\(Format.bytes(size)) download.")
             }
@@ -425,9 +413,9 @@ private struct ActionBar: View {
         case .working(let activity):
             return activity.progress.message ?? "This can take a few minutes."
         case .needsBuildROM(let missing) where missing.count > 1:
-            return "Frontport builds \(entry.name) from source with them, so it needs them before installing: \(labels(missing))."
+            return "Frontport builds \(entry.name) with them, so it needs them before installing: \(labels(missing))."
         case .needsBuildROM:
-            return "Frontport builds \(entry.name) from source with a supported \(game) ROM, so it needs one before installing."
+            return "Frontport builds \(entry.name) with a supported \(game) ROM, so it needs one before installing."
         case .needsROM:
             return "\(entry.name) is installed, but needs a supported ROM to start."
         case .unseeded:
@@ -466,49 +454,241 @@ private struct ActionBar: View {
     }
 }
 
-private struct About: View {
+/// The description, with the Project's links beside it, as the App Store puts the developer's beside an app's.
+private struct Description: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "About \(entry.name)")
-            let paragraphs = (entry.description.isEmpty ? entry.summary : entry.description)
-                .components(separatedBy: "\n\n")
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
-            ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
-                Text(paragraph)
-                    .font(.system(size: 14))
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-                    .catalogContent("description")
-            }
-            if let project = model.survey.lineup.project(for: entry) {
-                Button(project.ports.count > 1 ? "All Games and Releases from \(project.name)" : "Releases from \(project.name)") {
-                    model.open(.project(project.id))
+        HStack(alignment: .top, spacing: 40) {
+            VStack(alignment: .leading, spacing: 10) {
+                let paragraphs = (entry.description.isEmpty ? entry.summary : entry.description)
+                    .components(separatedBy: "\n\n")
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
+                ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                    Text(paragraph)
+                        .font(.system(size: 14))
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .catalogContent("description")
                 }
-                .buttonStyle(.link)
+            }
+            .frame(maxWidth: 680, alignment: .leading)
+            Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 10) {
+                if let project = model.survey.lineup.project(for: entry) {
+                    link(project.name, "square.stack.3d.up") { model.open(.project(project.id)) }
+                        .fontWeight(.semibold)
+                }
+                if let website = entry.website {
+                    Link(destination: website) { Label("Website", systemImage: "safari") }
+                }
+                Link(destination: entry.source) { Label("Code", systemImage: "chevron.left.forwardslash.chevron.right") }
+            }
+            .frame(width: 200, alignment: .leading)
+        }
+    }
+
+    private func link(_ title: String, _ symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) { Label(title, systemImage: symbol) }
+            .buttonStyle(.link)
+    }
+}
+
+/// The latest Release: its version and date and a short summary of its notes, with All Releases opening the Project.
+private struct WhatsNew: View {
+    @Environment(AppModel.self) private var model
+    let entry: CatalogEntry
+
+    var body: some View {
+        if let release = model.survey.latestRelease(for: entry.id) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline) {
+                    SectionHeader(title: "What’s New")
+                    if let project = model.survey.lineup.project(for: entry) {
+                        Button("All Releases") { model.open(.project(project.id)) }
+                            .buttonStyle(.link)
+                    }
+                }
+                HStack {
+                    Text("\(entry.name) \(release.version)")
+                    Spacer()
+                    if let published = release.published {
+                        Text(Format.date(published))
+                    }
+                }
+                .foregroundStyle(.secondary)
+                if let summary = model.notesSummary(release) {
+                    Text(summary)
+                        .lineSpacing(3)
+                        .lineLimit(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: 680, alignment: .leading)
+                        .catalogContent("notes.\(release.id)")
+                }
+                if let url = release.notesURL {
+                    Link("Release Notes", destination: url)
+                }
             }
         }
     }
 }
 
-private struct SystemRequirements: View {
+/// What the sandbox lets the Port do, a card each, as the App Store shows App Privacy.
+private struct StorePermissions: View {
+    let entry: CatalogEntry
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Permissions", subtitle: subtitle)
+            HStack(alignment: .top, spacing: 14) {
+                ForEach(Permission.allCases, id: \.self) { permission in
+                    let allowed = entry.permissions[permission]
+                    card(
+                        symbol: symbol(permission), title: permission.name,
+                        detail: allowed ? "Allowed" : "Not allowed", isOn: allowed)
+                }
+                if !entry.codeSigning.exceptions.isEmpty {
+                    card(
+                        symbol: "signature", title: "Code-signing exceptions",
+                        detail: entry.codeSigning.exceptions.joined(separator: ", "), isOn: true)
+                        .help("Mirrored from upstream by the Catalog")
+                }
+            }
+        }
+    }
+
+    /// On iPhone and iPad, iOS gives every app the network.
+    private var subtitle: String {
+        let set = "Runs in its own sandbox. Set by the Catalog; you can change them after installing."
+        return entry.ios == nil ? set : set + " Network is always on on iPhone and iPad."
+    }
+
+    private func symbol(_ permission: Permission) -> String {
+        switch permission {
+        case .controllers: "gamecontroller"
+        case .network: "network"
+        case .files: "folder"
+        }
+    }
+
+    private func card(symbol: String, title: String, detail: String, isOn: Bool) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: symbol)
+                .font(.system(size: 26, weight: .regular))
+                .foregroundStyle(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+                .frame(height: 32)
+            Text(title).fontWeight(.semibold)
+            Text(detail)
+                .font(.callout)
+                .foregroundStyle(isOn ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18)
+        .padding(.horizontal, 12)
+        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+/// Equal columns filled row by row, each row as tall as its tallest item.
+private struct FlowGrid: Layout {
+    var columns: Int
+    var spacing: CGFloat
+    var rowSpacing: CGFloat
+
+    private func width(_ total: CGFloat) -> CGFloat {
+        (total - spacing * CGFloat(columns - 1)) / CGFloat(columns)
+    }
+
+    private func rows(_ subviews: Subviews, width: CGFloat) -> [CGFloat] {
+        stride(from: 0, to: subviews.count, by: columns).map { start in
+            subviews[start..<min(start + columns, subviews.count)]
+                .map { $0.sizeThatFits(ProposedViewSize(width: width, height: nil)).height }.max() ?? 0
+        }
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let total = proposal.width ?? 900
+        let heights = rows(subviews, width: width(total))
+        return CGSize(width: total, height: heights.reduce(0, +) + rowSpacing * CGFloat(max(0, heights.count - 1)))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let column = width(bounds.width)
+        let heights = rows(subviews, width: column)
+        var y = bounds.minY
+        for (row, height) in heights.enumerated() {
+            for index in row * columns..<min((row + 1) * columns, subviews.count) {
+                let x = bounds.minX + CGFloat(index - row * columns) * (column + spacing)
+                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: column, height: height))
+            }
+            y += height + rowSpacing
+        }
+    }
+}
+
+/// The App Store's Information: a grid of labelled facts, each under a hairline.
+private struct Information: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "System Requirements")
-            GroupedSection {
-                row("macOS", "26 or later")
-                row("Processor", "Apple silicon")
-                row("Storage", storage)
-                row("Input", entry.permissions.controllers ? "Keyboard, or a controller" : "Keyboard")
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Information")
+            // Not lazy, so every fact is there to find before it's scrolled to.
+            FlowGrid(columns: 3, spacing: 28, rowSpacing: 16) {
+                item("Developer") { Text(entry.developer) }
+                if let project = model.survey.lineup.project(for: entry) {
+                    item("Project") {
+                        Button(project.name) { model.open(.project(project.id)) }.buttonStyle(.link)
+                    }
+                }
+                item("Kind") { Text(entry.kind.name) }
+                if let platform = model.survey.platform(for: entry) {
+                    item("Platform") {
+                        Button(platform.name) { model.open(.platform(platform.id)) }
+                            .buttonStyle(.link)
+                            .help("Show \(platform.name) Ports in the Catalog")
+                    }
+                }
+                item("Storage") { Text(storage) }
+                item("Compatibility") { Text("macOS 26 or later on Apple silicon") }
+                item("Input") { Text(entry.permissions.controllers ? "Keyboard, or a controller" : "Keyboard") }
+                if entry.ios != nil {
+                    item("iPhone and iPad") { Text(devices) }
+                        .testContainer("store.requirements.devices")
+                }
+                if let first = entry.firstRelease {
+                    item("First Release") { Text(Format.date(first)) }
+                }
+                if let catalog = model.catalogName(for: entry) {
+                    item("Catalog") {
+                        Text(catalog)
+                            .help("Listed by a Catalog you added in Settings, which Frontport doesn’t review")
+                            .accessibilityIdentifier("store.catalog")
+                    }
+                }
+                item("Code") {
+                    Link(entry.source.shortDisplay, destination: entry.source)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                if let website = entry.website {
+                    item("Website") { Link(website.shortDisplay, destination: website) }
+                }
             }
         }
+    }
+
+    /// Its latest iOS Release, which Frontport installs from this Mac, with Xcode.
+    private var devices: String {
+        let installed = "Installed from this Mac, with Xcode"
+        guard let release = model.survey.latestIOSRelease(for: entry.id) else { return installed }
+        return "\(release.version) · \(installed)"
     }
 
     private var storage: String {
@@ -518,49 +698,16 @@ private struct SystemRequirements: View {
         return "\(Format.bytes(size)) download\(assets)"
     }
 
-    private func row(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
+    private func item(_ label: String, @ViewBuilder value: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Divider()
             Text(label)
+                .font(.callout)
                 .foregroundStyle(.secondary)
-                .frame(width: 110, alignment: .leading)
-            Text(value)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 6)
+            value()
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 9)
-    }
-}
-
-private struct StorePermissions: View {
-    let entry: CatalogEntry
-
-    var body: some View {
-        GroupedSection("Permissions", footer: "Set by the Catalog. You can change them after installing.") {
-            HStack(spacing: 10) {
-                Image(systemName: "checkmark.shield")
-                    .font(.title3)
-                    .foregroundStyle(.tint)
-                Text("Runs in its own sandbox").fontWeight(.semibold)
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            ForEach(Permission.allCases, id: \.self) { permission in
-                GroupedRow(permission.name) {
-                    Text(entry.permissions[permission] ? "Allowed" : "Not allowed")
-                        .foregroundStyle(entry.permissions[permission] ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
-                }
-            }
-            if !entry.codeSigning.exceptions.isEmpty {
-                GroupedRow("Code-signing exceptions") {
-                    Text(entry.codeSigning.exceptions.joined(separator: ", "))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.trailing)
-                }
-                .help("Mirrored from upstream by the Catalog")
-            }
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

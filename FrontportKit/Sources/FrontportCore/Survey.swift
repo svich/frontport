@@ -2,8 +2,9 @@ import Foundation
 import Observation
 import os
 
-/// What Frontport last found in the Catalog, the Library, ROMs and Releases: taken at launch, every 6 hours and after
-/// each Activity. The Lineup, Matching and offers every screen shows are read here.
+/// What Frontport last found in the Catalog, the Library, ROMs and Releases, and in the records of Installations on
+/// Devices: taken at launch, every 6 hours and after each Activity. The Lineup, Matching and offers every screen shows
+/// are read here. Whether a Device is reachable now isn't: `devicectl` is read apart, so a slow one never holds this up.
 ///
 /// Reads land as they finish, so between them a screen may see a new Catalog with the Library read before it; each
 /// read brings unlisted entries, offers and the Lineup up to date with everything read so far.
@@ -15,27 +16,41 @@ public final class Survey {
         public var library: any LibraryManaging
         public var roms: any ROMStoring
         public var releases: any ReleaseDiscovering
+        /// Installations on Devices; without it, the Survey reads only this Mac's.
+        public var devices: (any DeviceRecords)?
 
         public init(
             catalog: any CatalogProviding, library: any LibraryManaging, roms: any ROMStoring,
-            releases: any ReleaseDiscovering
+            releases: any ReleaseDiscovering, devices: (any DeviceRecords)? = nil
         ) {
             self.catalog = catalog
             self.library = library
             self.roms = roms
             self.releases = releases
+            self.devices = devices
         }
     }
 
-    /// The Catalogs read as one, without the Ports installed from another Catalog than the one now listing them.
+    /// The Catalogs read as one, without the Ports installed, here or on a Device, from another Catalog than the one now
+    /// listing them.
     public private(set) var catalog: CatalogDocument?
     public private(set) var installations: [PortID: Installation] = [:]
-    /// Stand-in entries, from their install records, for Installations the Catalog doesn't list.
+    /// Installations on Devices, by Port, each Port's by Device.
+    public private(set) var deviceInstallations: [PortID: [DeviceInstallation]] = [:]
+    /// The Devices remembered in their records, by name, reachable now or not.
+    public private(set) var devices: [Device] = []
+    /// Stand-in entries, from their install records, for Installations the Catalog doesn't list, here or on a Device.
     public private(set) var unlisted: [PortID: CatalogEntry] = [:]
     /// Where every Port's Requirements stand, from ROMs and the Library Ports' Data.
     public private(set) var matching = Matching.empty
-    /// The newest Release of every Catalog Port on its default (or installed) Channel, newest first.
+    /// The newest Release of every Catalog Port on its default (or installed) Channel, newest first. Never an iOS one.
     public private(set) var releases: [Release] = []
+    /// The newest iOS Release of every Catalog Port with an iOS version, on that version's default Channel, kept apart
+    /// from `releases`, which the Lineup and the Releases screen show. Looked up only with a `devices` source.
+    public private(set) var iosReleases: [PortID: Release] = [:]
+    /// The newest iOS Release on each other Channel an Installation on a Device follows, by Port then Channel, so it's
+    /// offered its Updates once the iOS version's default Channel is another.
+    public private(set) var followedIOSReleases: [PortID: [Channel: Release]] = [:]
     /// What each installed Port is offered from the newest Release on its Channel: an Update, or a Fallback.
     public private(set) var offers: [PortID: Move.Offer] = [:]
     /// What every Catalog screen shows, from the Catalog, the Library and the known Releases.
@@ -63,20 +78,25 @@ public final class Survey {
         self.sources = sources
         self.activities = activities
         self.paths = paths
-        activities.onChange = { [weak self] _ in self?.updateLineup() }
+        activities.onChange { [weak self] _ in self?.updateLineup() }
     }
 
     /// A fixed Survey, for previews: `load()` and the other reads do nothing, and `refresh()` only sets `lastChecked`.
     public init(
         preview catalog: CatalogDocument, installations: [Installation], matching: Matching, releases: [Release],
-        updates: [PortID: Release], lastChecked: Date?, activities: Activities, paths: AppPaths
+        updates: [PortID: Release], lastChecked: Date?, activities: Activities, paths: AppPaths,
+        deviceInstallations: [DeviceInstallation] = [], devices: [Device] = [], iosReleases: [PortID: Release] = [:]
     ) {
         sources = nil
         self.activities = activities
         self.paths = paths
         self.installations = Dictionary(uniqueKeysWithValues: installations.map { ($0.port, $0) })
+        self.deviceInstallations = Dictionary(grouping: deviceInstallations, by: \.port)
+        self.devices = devices
+        self.iosReleases = iosReleases
         read = catalog
         self.catalog = catalog.excludingPorts(installedFromOtherCatalogs: self.installations)
+            .excludingPorts(installedOnDevicesFromOtherCatalogs: self.deviceInstallations)
         self.matching = matching
         self.releases = releases
         offers = updates.mapValues { .update($0) }
@@ -131,16 +151,28 @@ public final class Survey {
         }
         await readLibrary()
         if await discoverReleases(catalog.ports) || reached { lastChecked = .now }
+        await discoverIOSReleases(catalog.ports)
         return true
     }
 
-    /// Reads what a change of this kind to the Port may have touched: the Library and Matching, and the Port's newest
-    /// Release when the change was to its Release or Channel.
+    /// Reads what a change of this kind to the Port may have touched: the Library, the records of Installations on
+    /// Devices and Matching, and the Port's newest Release, or iOS Release for a change on a Device, when the change was
+    /// to its Release or Channel.
     public func changed(_ port: PortID, by kind: Activity.Kind) async {
         await readLibrary()
         if kind.changesRelease, let entry = entry(port) {
-            await discoverReleases([entry])
+            if kind.isForDevices {
+                await discoverIOSReleases([entry])
+            } else {
+                _ = await discoverReleases([entry])
+            }
         }
+    }
+
+    /// Reads the records of Installations on Devices again: after a Device was remembered or forgotten.
+    public func devicesChanged() async {
+        land(await readDevices())
+        updateDerived()
     }
 
     /// Reads Matching again: after ROMs were added or removed, or a Port quit, so its Data may have changed.
@@ -158,13 +190,31 @@ public final class Survey {
 
     /// The Catalog's entry, or for an Installation the Catalog doesn't list, a stand-in from its install record.
     public func entry(_ port: PortID) -> CatalogEntry? { catalog?.entry(port) ?? unlisted[port] }
-    /// False for an Installation the Catalog doesn't list (or before it loads): it has no store page and no updates.
+    /// False for an Installation the Catalog doesn't list, here or on a Device (or before it loads): it has no store page
+    /// and no updates.
     public func isListed(_ port: PortID) -> Bool { catalog?.entry(port) != nil }
     /// Whether Frontport knows the Port's entry, the Catalog's or the one its install record kept, and so its
     /// Requirements and code-signing exceptions: what re-signing it (Permissions, Rollback) and applying ROMs need.
     /// False only for a record from before Frontport kept the entry, whose Port the Catalog no longer lists.
     public func knowsEntry(_ port: PortID) -> Bool { isListed(port) || installations[port]?.entry != nil }
     public func installation(_ port: PortID) -> Installation? { installations[port] }
+    /// The Port's Installations on Devices, by Device.
+    public func deviceInstallations(of port: PortID) -> [DeviceInstallation] { deviceInstallations[port] ?? [] }
+    /// Every Installation on Devices, or only those on `device`, by Port, then Device.
+    public func deviceInstallations(on device: DeviceID? = nil) -> [DeviceInstallation] {
+        deviceInstallations.values.flatMap(\.self).filter { device == nil || $0.device == device }
+            .sorted { ($0.port, $0.device) < ($1.port, $1.device) }
+    }
+    public func deviceInstallation(_ port: PortID, on device: DeviceID) -> DeviceInstallation? {
+        deviceInstallations[port]?.first { $0.device == device }
+    }
+    /// The newest known iOS Release of a Port with an iOS version, on that version's default Channel.
+    public func latestIOSRelease(for port: PortID) -> Release? { iosReleases[port] }
+    /// The newest known iOS Release on `channel`, such as the one an Installation on a Device follows.
+    public func latestIOSRelease(for port: PortID, channel: Channel) -> Release? {
+        channel == entry(port).flatMap({ IOSVersion($0) })?.defaultChannel
+            ? iosReleases[port] : followedIOSReleases[port]?[channel]
+    }
     public func game(for entry: CatalogEntry) -> Game? { catalog?.game(for: entry) }
     public func platform(for entry: CatalogEntry) -> Platform? { catalog?.platform(for: entry) }
     /// Every ROM in ROMs, newest first.
@@ -190,11 +240,27 @@ public final class Survey {
         updates[port] ?? releases.first { $0.port == port }
     }
 
-    /// Installed Ports plus first installs in progress, by name: the sidebar's Ports and the Library screen.
-    /// Installations the Catalog doesn't list stay, so they can still be played, uninstalled or have their Data
-    /// deleted.
+    /// Installed Ports plus first installs in progress, by name: the sidebar's Ports and the Library screen. A Port on a
+    /// Device only is one of them. Installations the Catalog doesn't list stay, so they can still be played, uninstalled
+    /// or have their Data deleted.
     public var libraryPorts: [CatalogEntry] {
         lineup.library.compactMap { entry($0) }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    /// Ports installed on this Mac plus first installs in progress here, by name: the sidebar's This Mac.
+    public var macPorts: [CatalogEntry] { byName(Set(installations.keys), installing: nil) }
+
+    /// Ports installed on the Device plus first installs in progress there, by name: its section in the sidebar.
+    public func ports(on device: DeviceID) -> [CatalogEntry] {
+        byName(Set(deviceInstallations(on: device).map(\.port)), installing: device)
+    }
+
+    /// `installed` plus the Ports being installed for the first time on `device`, or on this Mac for nil, by name.
+    private func byName(_ installed: Set<PortID>, installing device: DeviceID?) -> [CatalogEntry] {
+        let first: Activity.Kind = device.map { .device(.install, $0) } ?? .install
+        let installing = activities.underWay.filter { $0.value.kind == first }.keys
+        return installed.union(installing).compactMap { entry($0) }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
@@ -203,9 +269,26 @@ public final class Survey {
     private func readLibrary() async {
         guard let sources else { return }
         let list = await sources.library.installations()
+        let onDevices = await readDevices()
+        // Set together, with no wait between them and the derived state, so no screen sees one without the other.
         installations = Dictionary(uniqueKeysWithValues: list.map { ($0.port, $0) })
+        land(onDevices)
         updateDerived()
         await readMatching()
+    }
+
+    /// The records of Installations on Devices and the Devices remembered, with a `devices` source; nil without one.
+    private func readDevices() async -> (installations: [DeviceInstallation], devices: [Device])? {
+        guard let devices = sources?.devices else { return nil }
+        return (await devices.installations(), await devices.devices())
+    }
+
+    /// Sets what `readDevices` read, only where it changed.
+    private func land(_ read: (installations: [DeviceInstallation], devices: [Device])?) {
+        guard let read else { return }
+        let byPort = Dictionary(grouping: read.installations, by: \.port)
+        if byPort != deviceInstallations { deviceInstallations = byPort }
+        if read.devices != devices { devices = read.devices }
     }
 
     /// Reads where every Port's Requirements stand, from ROMs and the installed Ports' Data, so a Seeding that failed
@@ -257,11 +340,63 @@ public final class Survey {
         return succeeded
     }
 
+    /// Looks up the newest iOS Release of each entry with an iOS version, on that version's default Channel and on each
+    /// other one of its Channels an Installation on a Device follows, with a `devices` source. Entries whose lookup
+    /// failed keep what was known.
+    private func discoverIOSReleases(_ entries: [CatalogEntry]) async {
+        guard let sources, sources.devices != nil else { return }
+        // With none left, what was known still goes for the Ports whose iOS version the Catalog dropped.
+        let wanted = entries.compactMap { IOSVersion($0) }.flatMap { version in
+            let followed = Set((deviceInstallations[version.id] ?? []).map(\.channel))
+                .filter { $0 != version.defaultChannel && version.channels.contains($0) }
+            return ([version.defaultChannel] + followed.sorted { $0.rawValue < $1.rawValue }).map { (version.view, $0) }
+        }
+        let found = await withTaskGroup(of: (PortID, Channel, Result<Release?, any Error>).self) { group in
+            for (view, channel) in wanted {
+                group.addTask {
+                    do {
+                        return (view.id, channel, .success(try await sources.releases.latest(for: view, channel: channel)))
+                    } catch {
+                        return (view.id, channel, .failure(error))
+                    }
+                }
+            }
+            var results: [(PortID, Channel, Result<Release?, any Error>)] = []
+            for await result in group { results.append(result) }
+            return results
+        }
+        var releases = iosReleases
+        var followed = followedIOSReleases
+        for (port, channel, result) in found {
+            switch result {
+            case .success(let release) where channel == catalog?.entry(port).flatMap({ IOSVersion($0) })?.defaultChannel:
+                releases[port] = release
+            case .success(let release):
+                followed[port, default: [:]][channel] = release
+            case .failure(let error):
+                log.error("iOS Release discovery for \(port, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        releases = releases.filter { catalog?.entry($0.key)?.ios != nil }
+        if releases != iosReleases { iosReleases = releases }
+        // Only the Channels other than the default that an Installation still follows.
+        var kept: [PortID: [Channel: Release]] = [:]
+        for (port, byChannel) in followed {
+            guard let version = catalog?.entry(port).flatMap({ IOSVersion($0) }) else { continue }
+            let channels = byChannel.filter { channel, _ in
+                channel != version.defaultChannel && deviceInstallations[port]?.contains { $0.channel == channel } == true
+            }
+            if !channels.isEmpty { kept[port] = channels }
+        }
+        if kept != followedIOSReleases { followedIOSReleases = kept }
+    }
+
     // MARK: Derived
 
     /// Brings unlisted entries, offers and the Lineup up to date with what was read.
     private func updateDerived() {
         let listed = read?.excludingPorts(installedFromOtherCatalogs: installations)
+            .excludingPorts(installedOnDevicesFromOtherCatalogs: deviceInstallations)
         if listed != catalog { catalog = listed }
         updateUnlisted()
         var offers: [PortID: Move.Offer] = [:]
@@ -278,13 +413,18 @@ public final class Survey {
         for (port, installation) in installations where catalog?.entry(port) == nil {
             result[port] = .unlisted(installation, paths: paths)
         }
+        // A Port only Devices have: the entry its latest change there kept.
+        for (port, onDevices) in deviceInstallations where catalog?.entry(port) == nil && result[port] == nil {
+            result[port] = onDevices.max { $0.installedAt < $1.installedAt }?.entry
+        }
         unlisted = result
     }
 
     private func updateLineup() {
-        let installing = activities.underWay.filter { $0.value.kind == .install }.keys
+        let installing = activities.underWay.filter { $0.value.kind.isFirstInstall }.keys
+        let library = Set(installations.keys).union(installing).union(deviceInstallations.keys)
         lineup = Lineup(
-            catalog: catalog, library: Set(installations.keys).union(installing), releases: releases, updates: updates,
+            catalog: catalog, library: library, releases: releases, updates: updates,
             installed: installations.values.map(\.release))
     }
 }

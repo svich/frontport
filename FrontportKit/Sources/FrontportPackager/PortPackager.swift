@@ -27,7 +27,7 @@ public struct PortPackager: PortPackaging {
         if let assets { try FileOperations.refuseEscapingLinks(in: assets) }
         // Upstream may ship read-only files, such as UZDoom's libraries, which this changes and signs in place.
         try FileOperations.makeWritable(app)
-        try setBundleIdentifier(entry.bundleId, in: app)
+        try Self.setBundleIdentifier(entry.bundleId, plist: "Contents/Info.plist", in: app)
         for path in ["Contents/_CodeSignature", "Contents/embedded.provisionprofile"] + entry.strip {
             try remove(try Self.location(path, in: app))
         }
@@ -109,8 +109,9 @@ public struct PortPackager: PortPackaging {
         return .sideband
     }
 
-    private func setBundleIdentifier(_ bundleId: String, in app: URL) throws {
-        let url = try Self.location("Contents/Info.plist", in: app)
+    /// Sets `CFBundleIdentifier` in the plist at `plist`, a path relative to the app, keeping its format.
+    static func setBundleIdentifier(_ bundleId: String, plist: String, in app: URL) throws {
+        let url = try location(plist, in: app)
         var format = PropertyListSerialization.PropertyListFormat.xml
         guard let data = try? Data(contentsOf: url),
             var info = try? PropertyListSerialization.propertyList(from: data, format: &format) as? [String: Any]
@@ -215,7 +216,7 @@ public struct PortPackager: PortPackaging {
 
     /// Refuses an app that is a link, isn't a folder, or holds a link leading out of it, since Frontport runs
     /// unsandboxed and would follow it. The only links out it lets through are those `allowing` names, exactly.
-    private static func checkContained(_ app: URL, allowing links: [String: String]) throws {
+    static func checkContained(_ app: URL, allowing links: [String: String]) throws {
         guard FileOperations.isDirectory(app) else {
             throw FrontportError.signingFailed("\(app.lastPathComponent) isn’t an app folder.")
         }
@@ -223,7 +224,7 @@ public struct PortPackager: PortPackaging {
     }
 
     /// A path relative to the bundle, refused when it, or a symlinked folder on the way, leads out of it.
-    private static func location(_ path: String, in app: URL) throws -> URL {
+    static func location(_ path: String, in app: URL) throws -> URL {
         let components = path.split(separator: "/")
         let url = app.appending(path: path)
         let root = FileOperations.canonicalPath(app)

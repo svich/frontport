@@ -92,6 +92,27 @@ struct PortActionButton: View {
     private func identifier(_ action: String) -> String { "action.\(action).\(port.rawValue)" }
 }
 
+/// Install on iPhone or iPad…, beside the Mac's action for a Port with an iOS version, whether or not it's on this Mac:
+/// downloads the iOS version, then asks which Devices to install it on. Named for the Devices Frontport knows, and
+/// disabled with why on hover. While it shows, Frontport reads the Devices every 10 seconds, so one plugged in counts.
+struct InstallOnDevicesButton: View {
+    @Environment(AppModel.self) private var model
+    let port: PortID
+    /// Its accessibility identifier.
+    var identifier: String
+
+    var body: some View {
+        if let status = model.deviceInstallStatus(of: port), status.availability != .unavailable {
+            Button(model.installOnDevicesTitle(status)) { model.installOnDevices(port) }
+                .buttonStyle(.glass)
+                .disabled(!status.isAllowed)
+                .help(model.installOnDevicesHelp(status, for: port) ?? "")
+                .accessibilityIdentifier(identifier)
+                .task(id: port) { await model.deviceUpkeep.watch() }
+        }
+    }
+}
+
 extension ButtonStyle where Self == AddROMButtonStyle {
     static var addROM: AddROMButtonStyle { AddROMButtonStyle() }
 }
@@ -156,49 +177,5 @@ struct PlayButton: View {
         }
         .buttonStyle(.glassProminent)
         .accessibilityIdentifier("action.play.\(port.rawValue)")
-    }
-}
-
-/// The colored status line under a Port's name in the Library.
-struct PortStatusLine: View {
-    @Environment(AppModel.self) private var model
-    let port: PortID
-
-    var body: some View {
-        let installed = model.survey.installation(port)?.release.version
-        switch model.status(of: port).state {
-        case .working(let activity):
-            Text(model.activityText(activity, for: port)).foregroundStyle(.secondary)
-        case .running:
-            HStack(spacing: 5) {
-                Circle().fill(.green).frame(width: 7, height: 7)
-                Text(["Running", installed].compactMap { $0 }.joined(separator: " · "))
-            }
-            .foregroundStyle(.green)
-        case .needsROM(let requirements):
-            Text("Needs \(article(requirements.first?.label ?? "")) \(requirements.first?.label ?? "") ROM")
-                .foregroundStyle(.orange)
-        case .unseeded(let requirements):
-            Text("\(requirements.first?.label ?? "Its") ROM isn’t Seeded")
-                .foregroundStyle(.orange)
-        case .updateAvailable(let release):
-            Text("\(installed ?? "") · \(release.version) available").foregroundStyle(.tint)
-        case .blocked(let block):
-            Text(block.severity == .stop ? "\(block.release) disabled by the Catalog" : "\(block.release) is Blocked")
-                .foregroundStyle(block.severity == .stop ? .red : .orange)
-                .help(block.reason)
-        case .unsupported:
-            Text("Unsupported").foregroundStyle(.secondary)
-        case .needsBuildROM(let requirements):
-            Text("Needs \(article(requirements.first?.label ?? "")) \(requirements.first?.label ?? "") ROM")
-                .foregroundStyle(.orange)
-        case .available, .ready:
-            Text(installed ?? "").foregroundStyle(.secondary)
-        }
-    }
-
-    private func article(_ word: String) -> String {
-        guard let first = word.lowercased().first else { return "a" }
-        return "aeiou".contains(first) ? "an" : "a"
     }
 }

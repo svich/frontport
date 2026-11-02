@@ -37,6 +37,26 @@ public enum FrontportError: Error, Hashable, Sendable {
     // Packager
     case signingFailed(String)
 
+    // Devices
+    /// Full Xcode isn't installed; the Command Line Tools can't install on a Device.
+    case xcodeMissing
+    /// Xcode is installed without its iOS platform.
+    case noIOSPlatform
+    /// No Apple Development certificate of an Apple Team has its key in the keychain.
+    case noAppleTeam
+    /// The Device couldn't do what was asked; `detail` is `devicectl`'s own words, or for a refusal from its reading, what
+    /// to do.
+    case deviceUnavailable(DeviceProblem, detail: String)
+    /// No Provisioning Profile lets the Port's app run on the Device.
+    case provisioningFailed(String)
+    /// The Port has no iOS version, or its app isn't one for an iPhone or iPad.
+    case notForDevice(String)
+    /// The Port's iOS version can't go on this Device, such as one that needs a newer iOS than it has.
+    case cantInstallOnDevice(String)
+    /// The Port on the Device is signed with this Apple Team, not the one chosen: another's bundle ID is an app of its
+    /// own, so Renewing or updating with it would be an install of its own.
+    case otherAppleTeam(AppleTeamID)
+
     // Library and Launcher
     case notInstalled(PortID)
     case alreadyInstalled(PortID)
@@ -73,6 +93,24 @@ extension FrontportError: LocalizedError {
         case .toolchainMissing(let detail): "Building from source needs developer tools. \(detail)"
         case .buildFailed(let port, let status, _): "Building \(port) failed (exit status \(status))."
         case .signingFailed(let detail): "The Port couldn’t be signed. \(detail)"
+        case .xcodeMissing: "Installing on iPhone and iPad needs Xcode. Install it from the App Store, then try again."
+        case .noIOSPlatform: "Xcode’s iOS platform isn’t installed. Add it in Xcode › Settings › Components, then try again."
+        case .noAppleTeam:
+            "No Apple Team is set up on this Mac. Add your Apple Account in Xcode › Settings › Accounts, then try again."
+        case .deviceUnavailable(let problem, let detail):
+            switch problem {
+            case .away: "The Device isn’t reachable. Connect it to this Mac or to the same Wi-Fi network, then try again."
+            case .locked: "Unlock the Device, then try again."
+            case .developerModeOff: detail
+            case .notInstalled: "The Port isn’t installed on the Device."
+            case .failed: "The Device couldn’t do that. \(detail)"
+            }
+        case .provisioningFailed(let detail): "No Provisioning Profile lets the Port run on the Device. \(detail)"
+        case .notForDevice(let detail): "This isn’t an app for iPhone or iPad. \(detail)"
+        case .cantInstallOnDevice(let detail): "Frontport can’t install this Port on the Device. \(detail)"
+        case .otherAppleTeam(let team):
+            "It’s signed with Apple Team \(team) there. Another Apple Team would install it as an app of its own, with Data "
+                + "of its own. Choose \(team) in Frontport › Settings › Devices, then try again."
         case .notInstalled(let port): "\(port) isn’t installed."
         case .alreadyInstalled(let port): "\(port) is already installed."
         case .running(let port): "Quit \(port) first."

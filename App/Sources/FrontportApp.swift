@@ -103,6 +103,9 @@ struct ContentView: View {
         .sheet(item: $viewState.intakeReport) { report in
             IntakeSheet(report: report)
         }
+        .sheet(item: $model.devicePicker, onDismiss: model.devicePickerClosed) { picker in
+            DevicePickerSheet(picker: picker)
+        }
         .onOpenURL { url in
             guard url.scheme?.lowercased() == "frontport" else { return }
             viewState.catalogLink = .init(url: url)
@@ -169,10 +172,16 @@ struct DetailView: View {
         } else {
             switch model.selection {
             case .catalog, nil: CatalogView()
-            case .library: LibraryView()
             case .releases: ReleasesView()
             case .roms: ROMsView()
-            case .port(let id): PortPageView(port: id)
+            case .port(let id):
+                // Drawn as the page it opens to, for a selection made without opening it.
+                if case .portOnDevice(let port, let device) = model.page(for: id) {
+                    DevicePortPage(port: port, device: device)
+                } else {
+                    PortPageView(port: id)
+                }
+            case .portOnDevice(let port, let device): DevicePortPage(port: port, device: device)
             case .platform(let id): PlatformPageView(platform: id)
             case .genre(let id): GenrePageView(genre: id)
             case .game(let id): GamePageView(game: id)

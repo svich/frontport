@@ -244,8 +244,110 @@ extension CatalogDocument {
             for exception in duplicates(port.codeSigning.exceptions) {
                 problems.append("\(name) lists code-signing exception \(exception) twice.")
             }
+            // A Release offers the first asset the glob matches, and an .ipa is the iOS version's, which the Mac can't run.
+            if case .githubRelease(let source) = port.releases, Self.glob(source.asset, mayEndWith: ".ipa") {
+                problems.append("\(name) has an asset glob that could match an .ipa: \(source.asset).")
+            }
+            if let ios = port.ios { problems += iosProblems(ios, of: port, name: name) }
         }
         return problems
+    }
+
+    /// Code-signing exceptions a Port needs for JIT, which iOS gives no app Frontport signs.
+    static let jitExceptions: Set = ["allow-jit", "allow-unsigned-executable-memory"]
+
+    /// Mistakes in a Port's `ios`, by the rules Seeding, the Builder and the Packager go by for a Device.
+    private func iosProblems(_ ios: IOSSpec, of port: CatalogEntry, name: String) -> [String] {
+        var problems: [String] = []
+        if !port.isInstallable { problems.append("\(name) is Unsupported, so it may not have ios.") }
+        for exception in port.codeSigning.exceptions where Self.jitExceptions.contains(exception) {
+            problems.append("\(name) needs \(exception), which iOS doesn’t allow, so it may not have ios.")
+        }
+        if ios.releases.channels.isEmpty { problems.append("\(name) offers no iOS Channel.") }
+        if case .git(let source) = ios.releases {
+            if (try? CatalogStore.checkedRelativePath(source.recipe)) == nil {
+                problems.append("\(name) has an iOS Recipe path outside the Catalog: \(source.recipe).")
+            }
+            if !Self.isHex(source.recipeSHA256, length: 64) {
+                problems.append("\(name) has a malformed iOS recipeSHA256.")
+            }
+        }
+        // One per Requirement, read by the rule Seeding goes by, from the app's container rather than Data.
+        if ios.seedPaths.count != port.requirements.count {
+            problems.append("\(name) has \(ios.seedPaths.count) iOS seedPaths for \(port.requirements.count) Requirements.")
+        }
+        for (requirement, seedPath) in zip(port.requirements, ios.seedPaths) {
+            guard let seedPath else { continue }
+            let label = "\(name) Requirement \(requirement.label)"
+            guard requirement.stage == .runtime else {
+                problems.append("\(label) is Build Stage but has an iOS seedPath.")
+                continue
+            }
+            var onDevice = requirement
+            onDevice.seedPath = seedPath
+            do {
+                _ = try onDevice.seedTarget()
+            } catch {
+                switch error {
+                case .outsideData: problems.append("\(label) has an iOS seedPath outside its container: \(seedPath).")
+                case .extrasNeedAFolder: problems.append("\(label) has extras, so its iOS seedPath must be a folder.")
+                }
+            }
+        }
+        // The Packager clones the Build Assets into the flat app, where nothing may replace its code or signature.
+        if let assets = ios.buildAssets {
+            let built: Bool = if case .git = ios.releases { true } else { false }
+            if !built || port.requirements(for: .build).isEmpty {
+                problems.append("\(name) has iOS buildAssets but no iOS Recipe and Build-Stage Requirement to make them.")
+            }
+            if !PortLinks.isClearOfDeviceCode(assets.path) {
+                problems.append("\(name) has an iOS buildAssets path that isn’t plainly inside the app, clear of its code: \(assets.path).")
+            }
+        }
+        // An iOS app is flat, and the Packager replaces its signature and Provisioning Profile itself.
+        for path in ios.strip
+        where !PortLinks.isPlainRelative(path) || path.split(separator: "/").first?.lowercased() == "contents"
+            || ["Info.plist", "_CodeSignature", "embedded.mobileprovision"].contains(where: { PortLinks.overlaps(path, $0) })
+        {
+            problems.append("\(name) strips an iOS path that isn’t plainly inside the app or that its signature rests on: \(path).")
+        }
+        return problems
+    }
+
+    /// True when some name ending in `suffix` could match the fnmatch(3) glob `pattern`, compared without case. A
+    /// bracket expression is taken to match any character.
+    static func glob(_ pattern: String, mayEndWith suffix: String) -> Bool {
+        enum Token { case character(Character), any, anyRun }
+        var tokens: [Token] = []
+        var rest = Substring(pattern)
+        while let first = rest.popFirst() {
+            switch first {
+            case "*": tokens.append(.anyRun)
+            case "?": tokens.append(.any)
+            case "\\": tokens.append(rest.popFirst().map(Token.character) ?? .character("\\"))
+            case "[":
+                // "]" right after "[" or "[!" is a member, not the end.
+                var members = rest
+                if members.first == "!" { members.removeFirst() }
+                if members.first == "]" { members.removeFirst() }
+                guard let end = members.firstIndex(of: "]") else {
+                    tokens.append(.character("["))
+                    continue
+                }
+                rest = rest[rest.index(after: end)...]
+                tokens.append(.any)
+            default: tokens.append(.character(first))
+            }
+        }
+        // From the end: the suffix's characters against the glob's last tokens, until a "*" could take the rest.
+        for (token, character) in zip(tokens.reversed(), suffix.lowercased().reversed()) {
+            switch token {
+            case .anyRun: return true
+            case .any: continue
+            case .character(let c): if c.lowercased() != String(character) { return false }
+            }
+        }
+        return tokens.count >= suffix.count
     }
 
     private static func isHex(_ string: String, length: Int) -> Bool {

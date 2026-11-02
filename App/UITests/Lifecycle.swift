@@ -31,8 +31,7 @@ struct Lifecycle {
     let session: Session
     var files: PortFiles { PortFiles(port: port.id) }
 
-    /// Install from the store page; the Port shows in the sidebar and the Library, and a relaunch opens on the
-    /// Library.
+    /// Install from the store page; the Port shows in the sidebar, and still does after a relaunch.
     func install() throws {
         session.waitForCatalog()
         session.openStorePage(port.id, searching: port.query)
@@ -43,14 +42,8 @@ struct Lifecycle {
             "The store page offers neither Play nor Add ROM…")
         session.wait(for: "sidebar.port.\(port.id)")
 
-        session.click("sidebar.library")
-        session.wait(for: "screen.library")
-        session.wait(for: "library.tile.\(port.id)")
-        try session.assertGlossaryWording("The Library")
-
         session.relaunch()
-        session.wait(for: "screen.library")
-        session.wait(for: "library.tile.\(port.id)")
+        session.wait(for: "sidebar.port.\(port.id)")
     }
 
     /// The toolbar picker switches between Overview, Snapshots and Runs.
@@ -90,7 +83,7 @@ struct Lifecycle {
         XCTAssertEqual(PortFiles.entitlements(of: app)["com.apple.security.app-sandbox"] as? Bool, true)
     }
 
-    /// Needed lists the Port's ROM; an unknown file is rejected with its hash; the accepted one is added and
+    /// Needed lists the Port's ROM; an unknown file isn't added, and shows its hash; the accepted one is added and
     /// Seeded. Both go through Add ROMs… from `file`, which the app adds instead of showing the open panel.
     func roms(rejected: SyntheticROM, accepted: SyntheticROM, file: URL) throws {
         session.click("sidebar.roms")
@@ -102,7 +95,8 @@ struct Lifecycle {
 
         try rejected.write(to: file)
         session.click("roms.add")
-        session.wait(for: "intake.rejected")
+        session.wait(for: "intake.unknown")
+        XCTAssertFalse(session.element("intake.added").exists)
         XCTAssertEqual(session.text(of: session.wait(for: "intake.sha1")), "SHA-1 \(rejected.sha1)")
         try session.assertGlossaryWording("The intake sheet")
         session.click("intake.done")

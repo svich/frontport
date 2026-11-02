@@ -81,6 +81,29 @@ public enum PortLinks {
         }
     }
 
+    /// Where nested code and what a signature rests on live in an iOS app, which is flat: relative to the bundle.
+    static let deviceCodeLocations = [
+        "Frameworks", "PlugIns", "Extensions", "Watch", "SC_Info", "_CodeSignature", "embedded.mobileprovision",
+        "Info.plist", "CodeResources", "PkgInfo",
+    ]
+
+    /// Bundles and libraries nested in an iOS app, each signed as code of its own.
+    static let deviceCodeSuffixes = [".app", ".appex", ".framework", ".bundle", ".xpc", ".dylib"]
+
+    /// True when plain `path` (`isPlainRelative`) inside an iOS app is at, above or inside none of its code
+    /// locations or signature files, and names or lies inside no nested bundle or library, so what the Packager
+    /// clones there can't replace code or what its signature rests on. The main executable's name isn't known before
+    /// packaging, so the Packager checks that one. Compared without case, as the volume may; any other path is never
+    /// clear.
+    public static func isClearOfDeviceCode(_ path: String) -> Bool {
+        guard isPlainRelative(path) else { return false }
+        let components = path.lowercased().split(separator: "/")
+        if components.contains(where: { component in deviceCodeSuffixes.contains { component.hasSuffix($0) } }) {
+            return false
+        }
+        return !deviceCodeLocations.contains { overlaps(path, $0) }
+    }
+
     /// True when one path is the other or inside it, so links at both would collide. Compared without case, as the
     /// volume may.
     public static func overlaps(_ a: String, _ b: String) -> Bool {

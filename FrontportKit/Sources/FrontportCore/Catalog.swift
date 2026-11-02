@@ -475,6 +475,12 @@ public enum ReleaseSource: Codable, Hashable, Sendable {
         }
     }
 
+    /// The SHA-256 of a `git` source's Recipe, which is part of what it builds; nil for a prebuilt one.
+    public var recipeSHA256: String? {
+        if case .git(let source) = self { return source.recipeSHA256 }
+        return nil
+    }
+
     /// Channels offered, default first.
     public var channels: [Channel] {
         switch self {
@@ -515,6 +521,44 @@ public struct Redirect: Codable, Hashable, Sendable {
     public init(path: String, to: String) {
         self.path = path
         self.to = to
+    }
+}
+
+/// A Port's iOS version, which Frontport installs on Devices: its own Releases, and where its ROMs and Build Assets
+/// go there. `IOSVersion` is the entry as that version.
+public struct IOSSpec: Codable, Hashable, Sendable {
+    /// Shaped like the entry's own: a prebuilt `.ipa` or a zip holding one, or a pinned ref and an iOS Recipe.
+    public var releases: ReleaseSource
+    /// One per Requirement, in the same order, relative to the app's container on the Device, read as a
+    /// `Requirement.seedPath` is: nil for a Build-Stage Requirement or one the iOS version doesn't use.
+    public var seedPaths: [String?]
+    /// Present when the iOS Recipe makes Build Assets, at a path relative to the app's bundle, which is flat.
+    public var buildAssets: BuildAssetsSpec?
+    /// Paths inside the app, relative to its bundle, removed before signing.
+    public var strip: [String]
+    /// iOS Releases the Catalog forbids, by their own version: the Mac's and the iOS version's may share one tag.
+    public var blocked: [Block]
+
+    public init(
+        releases: ReleaseSource, seedPaths: [String?] = [], buildAssets: BuildAssetsSpec? = nil, strip: [String] = [],
+        blocked: [Block] = []
+    ) {
+        self.releases = releases
+        self.seedPaths = seedPaths
+        self.buildAssets = buildAssets
+        self.strip = strip
+        self.blocked = blocked
+    }
+
+    enum CodingKeys: String, CodingKey { case releases, seedPaths, buildAssets, strip, blocked }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        releases = try c.decode(ReleaseSource.self, forKey: .releases)
+        seedPaths = try c.decodeIfPresent([String?].self, forKey: .seedPaths) ?? []
+        buildAssets = try c.decodeIfPresent(BuildAssetsSpec.self, forKey: .buildAssets)
+        strip = try c.decodeIfPresent([String].self, forKey: .strip) ?? []
+        blocked = try c.decodeIfPresent([Block].self, forKey: .blocked) ?? []
     }
 }
 
@@ -618,6 +662,8 @@ public struct CatalogEntry: Codable, Hashable, Sendable, Identifiable {
     /// The added Catalog that lists it, nil for Frontport's own. Set when Frontport reads the Catalogs as one, and kept
     /// in an Installation's entry, so the Port stays with the Catalog it was installed from.
     public var catalog: URL?
+    /// Present when the Port's Project makes an iOS version, which Frontport installs on Devices.
+    public var ios: IOSSpec?
 
     public init(
         id: PortID, name: String, kind: Kind, game: GameID, developer: String, summary: String,
@@ -625,7 +671,8 @@ public struct CatalogEntry: Codable, Hashable, Sendable, Identifiable {
         requirements: [Requirement] = [], permissions: Permissions = .default, artwork: Artwork = Artwork(),
         codeSigning: CodeSigning = CodeSigning(), launch: LaunchSpec = LaunchSpec(), strip: [String] = [],
         buildAssets: BuildAssetsSpec? = nil, redirects: [Redirect] = [], blocked: [Block] = [], screenshots: [URL] = [],
-        unsupported: String? = nil, tags: [String] = [], firstRelease: Date? = nil, catalog: URL? = nil
+        unsupported: String? = nil, tags: [String] = [], firstRelease: Date? = nil, catalog: URL? = nil,
+        ios: IOSSpec? = nil
     ) {
         self.id = id
         self.name = name
@@ -652,12 +699,13 @@ public struct CatalogEntry: Codable, Hashable, Sendable, Identifiable {
         self.tags = tags
         self.firstRelease = firstRelease
         self.catalog = catalog
+        self.ios = ios
     }
 
     enum CodingKeys: String, CodingKey {
         case id, name, kind, game, developer, summary, description, website, source, bundleId, releases
         case requirements, permissions, artwork, codeSigning, launch, strip, buildAssets, redirects, blocked, screenshots
-        case unsupported, tags, firstRelease, catalog
+        case unsupported, tags, firstRelease, catalog, ios
     }
 
     public init(from decoder: any Decoder) throws {
@@ -687,6 +735,7 @@ public struct CatalogEntry: Codable, Hashable, Sendable, Identifiable {
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
         firstRelease = try c.decodeIfPresent(Date.self, forKey: .firstRelease)
         catalog = try c.decodeIfPresent(URL.self, forKey: .catalog)
+        ios = try c.decodeIfPresent(IOSSpec.self, forKey: .ios)
     }
 }
 
@@ -752,7 +801,8 @@ public struct CatalogDocument: Codable, Hashable, Sendable {
     /// 4: each Platform's `medium`, and a `KnownROM`'s `type` for an update or DLC.
     public static let supportedVersion = 4
 
-    /// Schema version. Frontport rejects a document newer than `supportedVersion`.
+    /// Schema version. Frontport and `frontport-catalog` accept only `supportedVersion` exactly; a key an older build
+    /// doesn't know, such as an entry's `ios`, is ignored, so adding one needs no new version.
     public var version: Int
     public var issued: Date
     /// What Settings calls an added Catalog, such as "Switch Ports". Frontport's own has none.
@@ -793,15 +843,21 @@ public struct CatalogDocument: Codable, Hashable, Sendable {
 
     public func entry(_ id: PortID) -> CatalogEntry? { ports.first { $0.id == id } }
 
-    /// Every Recipe the document pins, in the order their `recipeSHA256` fields appear in it: installers' first, as
-    /// `roms` comes before `ports`.
+    /// Every Recipe the document pins: installers' first, as `roms` comes before `ports`, then each Port's own and its
+    /// iOS version's, owned by "<id> (iOS)".
     public var pinnedRecipes: [PinnedRecipe] {
         let unpacks = roms.compactMap { rom in
             rom.unpack.map { PinnedRecipe(owner: rom.sha1, path: $0.recipe, sha256: $0.recipeSHA256) }
         }
-        let builds = ports.compactMap { entry -> PinnedRecipe? in
-            guard case .git(let source) = entry.releases else { return nil }
-            return PinnedRecipe(owner: entry.id.rawValue, path: source.recipe, sha256: source.recipeSHA256)
+        let builds = ports.flatMap { entry -> [PinnedRecipe] in
+            var pinned: [PinnedRecipe] = []
+            if case .git(let source) = entry.releases {
+                pinned.append(PinnedRecipe(owner: entry.id.rawValue, path: source.recipe, sha256: source.recipeSHA256))
+            }
+            if case .git(let source) = entry.ios?.releases {
+                pinned.append(PinnedRecipe(owner: "\(entry.id) (iOS)", path: source.recipe, sha256: source.recipeSHA256))
+            }
+            return pinned
         }
         return unpacks + builds
     }

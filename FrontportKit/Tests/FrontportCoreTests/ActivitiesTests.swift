@@ -53,7 +53,7 @@ import Testing
     /// Activities whose starts and ends `log` hears of, as "shows <kind>" and "clear".
     static func activities(_ log: Log) -> Activities {
         let activities = Activities()
-        activities.onChange = { [weak activities] port in
+        activities.onChange { [weak activities] port in
             log.record(activities?[port].map { "shows \($0.kind)" } ?? "clear")
         }
         return activities

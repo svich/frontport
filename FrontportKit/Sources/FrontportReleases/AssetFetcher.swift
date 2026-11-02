@@ -23,11 +23,13 @@ public actor AssetFetcher: AssetFetching {
         return URLSession(configuration: configuration)
     }()
 
-    /// Downloads (or reuses a cached copy whose digest matches), verifies, unpacks into a fresh temporary
-    /// folder, moves the single top-level .app into `directory` (replacing an app of the same name) and
-    /// strips quarantine from it. Returns the app's new location. An app holding a link that leads out of it is
+    /// Downloads into `Downloads/<downloads>/` (or reuses a cached copy whose digest matches), verifies, unpacks into
+    /// a fresh temporary folder, moves the single top-level .app into `directory` (replacing an app of the same name)
+    /// and strips quarantine from it. Returns the app's new location. An app holding a link that leads out of it is
     /// refused, since everything after runs unsandboxed and would follow it.
-    public func fetch(_ release: Release, into directory: URL, progress: @escaping ProgressHandler) async throws -> URL {
+    public func fetch(
+        _ release: Release, into directory: URL, downloads: PortID, progress: @escaping ProgressHandler
+    ) async throws -> URL {
         guard let asset = release.asset else {
             throw FrontportError.assetNotFound(release.port, pattern: release.tag)
         }
@@ -38,7 +40,7 @@ public actor AssetFetcher: AssetFetching {
             throw FrontportError.extractionFailed("“\(asset.name)” isn’t a usable file name.")
         }
 
-        let archive = try await download(asset, for: release.port, expected: expected, progress: progress)
+        let archive = try await download(asset, into: downloads, expected: expected, progress: progress)
 
         try FileOperations.createDirectory(directory)
         // On the destination's volume, so the final move is a rename.
@@ -74,12 +76,12 @@ public actor AssetFetcher: AssetFetching {
         return destination
     }
 
-    /// The verified archive in `Downloads/<port>/`.
+    /// The verified archive in `Downloads/<downloads>/`.
     private func download(
-        _ asset: ReleaseAsset, for port: PortID, expected: String, progress: @escaping ProgressHandler
+        _ asset: ReleaseAsset, into downloads: PortID, expected: String, progress: @escaping ProgressHandler
     ) async throws -> URL {
-        let file = paths.download(asset, for: port)
-        let folder = file.deletingLastPathComponent()
+        let folder = paths.downloads(for: downloads)
+        let file = folder.appending(path: asset.name)
         try FileOperations.createDirectory(folder)
 
         if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {

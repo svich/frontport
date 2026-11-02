@@ -188,11 +188,12 @@ extension AppModel {
     }
 
     /// What an activity is doing, by kind, naming the Project with its version: "Installing Ship of Harkinian 9.3.1…",
-    /// "Updating to Ship of Harkinian 9.3.1…", "Building Starship 2.0.0 from source…".
+    /// "Updating to Ship of Harkinian 9.3.1…", "Building Starship 2.0.0 from source…", "Installing Fallout CE 1.1.0 on
+    /// Test iPhone…", "Downloading Ghostship for iPhone and iPad…".
     func activityText(_ activity: Activity, for port: PortID) -> String {
         let name = survey.entry(port)?.name
         let version = survey.latestRelease(for: port).map { [name, $0.version].compactMap { $0 }.joined(separator: " ") }
-        if activity.isBuilding {
+        if activity.isBuilding, !activity.kind.isForDevices {
             return ["Building", version, "from source…"].compactMap { $0 }.joined(separator: " ")
         }
         switch activity.kind {
@@ -210,6 +211,27 @@ extension AppModel {
         case .uninstall: return "Uninstalling…"
         case .deleteData: return "Deleting Data…"
         case .removeBuildFolder: return "Removing build folder…"
+        case .device(let change, let device): return deviceActivityText(change, on: deviceName(device), for: port)
+        case .prepareForDevices:
+            let verb = isBuiltForDevices(port) ? "Building" : "Downloading"
+            return [verb, name, "for iPhone and iPad…"].compactMap { $0 }.joined(separator: " ")
+        }
+    }
+
+    /// True when the Port's iOS version is built on this Mac from its iOS Recipe, rather than downloaded.
+    private func isBuiltForDevices(_ port: PortID) -> Bool {
+        survey.entry(port).flatMap { IOSVersion($0) }?.isSourceBuilt ?? false
+    }
+
+    private func deviceActivityText(_ change: DeviceChange, on device: String, for port: PortID) -> String {
+        let name = survey.entry(port)?.name
+        let version = survey.latestIOSRelease(for: port).map { [name, $0.version].compactMap { $0 }.joined(separator: " ") }
+        switch change {
+        case .install: return ["Installing", version, "on \(device)…"].compactMap { $0 }.joined(separator: " ")
+        case .update: return "Updating on \(device)…"
+        case .renew: return "Renewing on \(device)…"
+        case .seed: return "Seeding ROMs on \(device)…"
+        case .uninstall: return "Uninstalling from \(device)…"
         }
     }
 
@@ -230,7 +252,7 @@ extension AppModel {
         case .running:
             return "Quit \(name) to \(Self.purpose(of: action))"
         case .activity(let kind):
-            return Self.waiting(for: kind)
+            return waiting(for: kind, of: port)
         case .previousBlocked:
             return "\(status.previous?.version ?? "The previous Release") is Blocked too"
         case .unknownEntry:
@@ -252,7 +274,8 @@ extension AppModel {
         }
     }
 
-    private static func waiting(for kind: Activity.Kind) -> String {
+    /// Why an action waits for the Port's change under way: "Wait until it’s installed on Test iPhone".
+    func waiting(for kind: Activity.Kind, of port: PortID) -> String {
         switch kind {
         case .install: "Wait until it’s installed"
         case .update: "Wait until it’s updated"
@@ -264,6 +287,15 @@ extension AppModel {
         case .uninstall: "Wait until it’s uninstalled"
         case .deleteData: "Wait until its Data is deleted"
         case .removeBuildFolder: "Wait until its build folder is removed"
+        case .device(let change, let device):
+            switch change {
+            case .install: "Wait until it’s installed on \(deviceName(device))"
+            case .update: "Wait until it’s updated on \(deviceName(device))"
+            case .renew: "Wait until it’s Renewed on \(deviceName(device))"
+            case .seed: "Wait until its ROMs are Seeded on \(deviceName(device))"
+            case .uninstall: "Wait until it’s uninstalled from \(deviceName(device))"
+            }
+        case .prepareForDevices: "Wait until it’s \(isBuiltForDevices(port) ? "built" : "downloaded") for iPhone and iPad"
         }
     }
 

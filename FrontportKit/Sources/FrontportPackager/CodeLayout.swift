@@ -4,6 +4,15 @@ import Foundation
 
 /// The code inside an app that is signed before the app itself.
 struct CodeLayout: Sendable {
+    /// How the app is laid out.
+    enum Layout: Hashable, Sendable {
+        /// A Mac app: its code under `Contents/`, in the code locations.
+        case mac
+        /// An iPhone and iPad app: flat, with its main executable and `Info.plist` at the top, frameworks in
+        /// `Frameworks/`, and no program but its own executable that Frontport signs.
+        case flat
+    }
+
     struct Item: Hashable, Sendable {
         enum Kind: Hashable, Sendable {
             /// A loose Mach-O file.
@@ -29,8 +38,12 @@ struct CodeLayout: Sendable {
     var nested: [Item]
     /// True when a library (dylib, framework or loadable bundle) is anywhere in the app.
     var hasLibraries: Bool
+    /// In a flat app, by path, code iOS wouldn't run from it or Frontport doesn't sign: programs other than the main
+    /// executable, app extensions, nested apps and XPC services (each listed, not what's inside), and `Watch/`. Always
+    /// empty for a Mac app.
+    var refused: [URL] = []
 
-    init(app: URL) throws {
+    init(app: URL, layout: Layout = .mac) throws {
         let app = app.resolvingSymlinksInPath()
         guard let paths = FileManager.default.enumerator(atPath: app.path(percentEncoded: false)) else {
             throw FrontportError.signingFailed("Couldn’t read \(app.lastPathComponent)")
@@ -50,6 +63,12 @@ struct CodeLayout: Sendable {
             default:
                 break
             }
+        }
+
+        hasLibraries = files.values.contains(.library)
+        if layout == .flat {
+            (nested, refused) = Self.flat(app: app, files: files, directories: directories)
+            return
         }
 
         let nestedApps = directories.filter { $0.hasSuffix(".app") }
@@ -80,21 +99,65 @@ struct CodeLayout: Sendable {
             items[relative] = Item(url: app.appending(path: relative), kind: .file, isExecutable: type == .executable)
         }
 
-        nested = items.sorted { a, b in
+        nested = Self.deepestFirst(items)
+    }
+
+    /// A flat app's: each framework as a bundle and every other library, anywhere, as a file. Code inside what's
+    /// refused isn't listed, since the app is refused anyway.
+    private static func flat(
+        app: URL, files: [String: MachO.FileType], directories: [String]
+    ) -> (nested: [Item], refused: [URL]) {
+        let refusedBundles = directories.filter { directory in
+            directory.split(separator: "/").first == "Watch"
+                || ["app", "appex", "xpc"].contains((directory as NSString).pathExtension)
+        }
+        func inside(_ relative: String, _ folders: [String]) -> Bool {
+            folders.contains { relative.hasPrefix($0 + "/") }
+        }
+        let outermost = refusedBundles.filter { !inside($0, refusedBundles) }
+
+        var items: [String: Item] = [:]
+        var bundleExecutables: Set<String> = []
+        if let main = mainExecutable(of: app, relativeTo: app, layout: .flat) { bundleExecutables.insert(main) }
+        for directory in directories
+        where (directory as NSString).pathExtension == "framework" && !inside(directory, outermost) {
+            guard let executable = mainExecutable(of: app.appending(path: directory), relativeTo: app, layout: .flat),
+                files[executable] == .library
+            else { continue }
+            bundleExecutables.insert(executable)
+            items[directory] = Item(
+                url: app.appending(path: directory, directoryHint: .isDirectory), kind: .bundle, isExecutable: false)
+        }
+        var refused = outermost
+        for (relative, type) in files where !bundleExecutables.contains(relative) && !inside(relative, outermost) {
+            switch type {
+            case .library: items[relative] = Item(url: app.appending(path: relative), kind: .file, isExecutable: false)
+            case .executable: refused.append(relative)
+            case .other: break
+            }
+        }
+        return (deepestFirst(items), refused.sorted().map { app.appending(path: $0) })
+    }
+
+    private static func deepestFirst(_ items: [String: Item]) -> [Item] {
+        items.sorted { a, b in
             let depthA = a.key.split(separator: "/").count
             let depthB = b.key.split(separator: "/").count
             return depthA != depthB ? depthA > depthB : a.key < b.key
         }.map(\.value)
-        hasLibraries = files.values.contains(.library)
     }
 
-    /// The bundle's main executable as a path relative to `base` with symlinks resolved, when it exists.
-    static func mainExecutable(of bundle: URL, relativeTo base: URL) -> String? {
-        let candidates: [(plist: String, executableFolder: String)] = [
+    /// The bundle's main executable as a path relative to `base` with symlinks resolved, when it exists. In a flat
+    /// layout every bundle is shallow, with its `Info.plist` at the top.
+    static func mainExecutable(of bundle: URL, relativeTo base: URL, layout: Layout = .mac) -> String? {
+        let candidates: [(plist: String, executableFolder: String)] = switch layout {
+        case .mac: [
             ("Contents/Info.plist", "Contents/MacOS"),
             ("Resources/Info.plist", ""),  // versioned framework, through Versions/Current
             ("Info.plist", ""),  // shallow bundle
         ]
+        case .flat: [("Info.plist", "")]
+        }
         for candidate in candidates {
             let plist = bundle.appending(path: candidate.plist)
             guard let data = try? Data(contentsOf: plist),

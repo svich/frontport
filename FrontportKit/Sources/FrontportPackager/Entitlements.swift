@@ -9,10 +9,11 @@ public enum PortEntitlements {
     public static let homeRelativeReadOnly = "com.apple.security.temporary-exception.files.home-relative-path.read-only"
     public static let absoluteReadOnly = "com.apple.security.temporary-exception.files.absolute-path.read-only"
 
-    /// An entitlement's value: on or off, or the paths a file exception names.
+    /// An entitlement's value: on or off, the paths a file exception names, or an identifier, as a Device's are.
     public enum Value: Hashable, Sendable, ExpressibleByBooleanLiteral {
         case flag(Bool)
         case paths([String])
+        case string(String)
 
         public init(booleanLiteral value: Bool) { self = .flag(value) }
 
@@ -20,6 +21,7 @@ public enum PortEntitlements {
             switch self {
             case .flag(let on): on
             case .paths(let paths): paths
+            case .string(let string): string
             }
         }
     }
@@ -65,5 +67,22 @@ public enum PortEntitlements {
 
     static func plist(_ entitlements: [String: Value]) throws -> Data {
         try PropertyListSerialization.data(fromPropertyList: entitlements.mapValues(\.plist), format: .xml, options: 0)
+    }
+}
+
+/// The entitlements Frontport signs a Port's app for Devices with: the ones every development Provisioning Profile
+/// grants, and nothing more, even when the profile grants more. iOS is the sandbox, so there's nothing else to give.
+public enum DeviceEntitlements {
+    public static let applicationIdentifier = "application-identifier"
+    public static let teamIdentifier = "com.apple.developer.team-identifier"
+    public static let getTaskAllow = "get-task-allow"
+
+    /// The app's, for `bundleId` signed by `team`.
+    public static func app(team: AppleTeamID, bundleId: String) -> [String: PortEntitlements.Value] {
+        [
+            applicationIdentifier: .string("\(team.rawValue).\(bundleId)"),
+            teamIdentifier: .string(team.rawValue),
+            getTaskAllow: true,
+        ]
     }
 }
