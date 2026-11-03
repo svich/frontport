@@ -1,7 +1,7 @@
 import FrontportCore
 import SwiftUI
 
-/// New Ports, every Port by its first Release, and Updates, picked in the toolbar.
+/// New Ports, every Port by its first Release, and Updates, picked atop the page.
 struct ReleasesView: View {
     @Environment(AppModel.self) private var model
     @Environment(ViewState.self) private var viewState
@@ -9,7 +9,16 @@ struct ReleasesView: View {
     var body: some View {
         @Bindable var viewState = viewState
         ScrollView {
-            Group {
+            VStack(alignment: .leading, spacing: 20) {
+                PageBar {
+                    SectionPicker(selection: $viewState.releasesTab, title: \.title, identifier: "releases.tab")
+                } trailing: {
+                    Button("Check for Updates", systemImage: "arrow.clockwise") {
+                        Task { await model.refresh() }
+                    }
+                    .buttonStyle(.glass)
+                    .help("Check for new Releases")
+                }
                 switch viewState.releasesTab {
                 case .newPorts: NewPortsTab()
                 case .updates: UpdatesTab()
@@ -22,27 +31,6 @@ struct ReleasesView: View {
         .testContainer("screen.releases")
         .navigationTitle("Releases")
         .navigationSubtitle(subtitle)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Picker("Section", selection: $viewState.releasesTab) {
-                    ForEach(ViewState.ReleasesTab.allCases, id: \.self) { tab in
-                        Text(tab.title)
-                            .accessibilityIdentifier("releases.tab.\(tab.rawValue)")
-                            .tag(tab)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .fixedSize()
-                .accessibilityIdentifier("releases.tabs")
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button("Check for Updates", systemImage: "arrow.clockwise") {
-                    Task { await model.refresh() }
-                }
-                .help("Check for new Releases")
-            }
-        }
     }
 
     private var subtitle: String {
@@ -64,7 +52,7 @@ private struct NewPortsTab: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 30) {
+        LazyVStack(alignment: .leading, spacing: 30) {
             ForEach(model.survey.lineup.years) { group in
                 VStack(alignment: .leading, spacing: 12) {
                     Text(group.label.uppercased())
@@ -88,7 +76,8 @@ private struct UpdatesTab: View {
 
     var body: some View {
         let updates = model.survey.lineup.projectUpdates
-        VStack(alignment: .leading, spacing: 30) {
+        // Lazy, so opening Releases builds only the months in view.
+        LazyVStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 12) {
                 SectionHeader(title: "Updates")
                 if updates.isEmpty {
@@ -98,20 +87,19 @@ private struct UpdatesTab: View {
                     ForEach(updates) { UpdateCard(update: $0) }
                 }
             }
-            VStack(alignment: .leading, spacing: 14) {
-                SectionHeader(title: "Recent Releases", subtitle: "Every other Project in the Catalog, newest first")
-                ForEach(model.survey.lineup.months()) { group in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(group.label.uppercased())
-                            .font(.callout.weight(.semibold))
-                            .tracking(0.5)
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 4)
-                            .accessibilityIdentifier("releases.group")
-                        GroupedSection {
-                            ForEach(group.releases) { release in
-                                ReleaseRow(release: release, showsYear: group.isEarlier)
-                            }
+            .padding(.bottom, 16)
+            SectionHeader(title: "Recent Releases", subtitle: "Every other Project in the Catalog, newest first")
+            ForEach(model.survey.lineup.months()) { group in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(group.label.uppercased())
+                        .font(.callout.weight(.semibold))
+                        .tracking(0.5)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 4)
+                        .accessibilityIdentifier("releases.group")
+                    GroupedSection {
+                        ForEach(group.releases) { release in
+                            ReleaseRow(release: release, showsYear: group.isEarlier)
                         }
                     }
                 }

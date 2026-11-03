@@ -92,6 +92,7 @@ public struct Lineup: Sendable {
     private let projectsByID: [String: Project]
     /// Every known Release of a Catalog Port: the newest on its Channel, its update, and the installed one.
     private let known: [Release]
+    private let dailyPicks = DailyPicks()
 
     /// - Parameters:
     ///   - library: installed Ports and first installs under way.
@@ -222,8 +223,11 @@ public struct Lineup: Sendable {
     public func portOfTheDay(on date: Date = .now) -> CatalogEntry? {
         let local = calendar.dateComponents([.year, .month, .day], from: date)
         let stamp = [local.year, local.month, local.day].map { String($0 ?? 0) }.joined(separator: "-")
-        return toInstall
-            .max { Hashing.sha256(Data("\(stamp)/\($0.id)".utf8)) < Hashing.sha256(Data("\(stamp)/\($1.id)".utf8)) }
+        // Every screen that shows the Catalog asks, so each day's pick is hashed once.
+        return dailyPicks.pick(for: stamp) {
+            toInstall.map { (entry: $0, score: Hashing.sha256(Data("\(stamp)/\($0.id)".utf8))) }
+                .max { $0.score < $1.score }?.entry
+        }
     }
 
     /// The 3 Ports to install whose first Release is newest, leaving out the Port of the Day, which the Catalog's hero
@@ -293,5 +297,20 @@ public struct Lineup: Sendable {
                 ? (a.firstRelease ?? .distantPast) > (b.firstRelease ?? .distantPast)
                 : byName(a, b)
         }
+    }
+}
+
+/// The Port of the Day picked for each day asked about, so asking again costs nothing.
+private final class DailyPicks: @unchecked Sendable {
+    private let lock = NSLock()
+    private var picks: [String: CatalogEntry?] = [:]
+
+    func pick(for day: String, _ make: () -> CatalogEntry?) -> CatalogEntry? {
+        lock.lock()
+        defer { lock.unlock() }
+        if let pick = picks[day] { return pick }
+        let pick = make()
+        picks[day] = pick
+        return pick
     }
 }

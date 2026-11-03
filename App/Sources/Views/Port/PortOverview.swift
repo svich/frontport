@@ -1,16 +1,14 @@
 import FrontportCore
 import SwiftUI
 
-/// The Port page's Overview on this Mac: header art, Play, the update, its Installation, ROMs, Permissions and Storage.
-/// Each Device the Port is on has a page of its own (`DevicePortPage`).
+/// The Port page's Overview on this Mac, under its header art: Play, the update, its Installation, ROMs, Permissions
+/// and Storage. Each Device the Port is on has a page of its own (`DevicePortPage`).
 struct PortOverview: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            PortHeader(entry: entry)
-            ActionRow(entry: entry)
             if let activity = model.activities[entry.id] {
                 PortActivityCard(entry: entry, activity: activity)
             } else if model.isDownloadingFromSteam(for: entry.id), let download = model.steamDownload {
@@ -68,33 +66,26 @@ struct PortHeader: View {
     }
 }
 
-/// Play (or Stop, Add ROM…, Cancel), the installed Release and when it was last played, and the store page. Installing
-/// on iPhone or iPad is the More menu's and the store page's.
-private struct ActionRow: View {
+/// The installed Release and when it was last played, beside the Port's action under its hero.
+struct ReleaseLine: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
 
     var body: some View {
-        HStack(spacing: 18) {
-            PortActionButton(port: entry.id, controlSize: .extraLarge, playsWhenUpdatable: true)
-            VStack(alignment: .leading, spacing: 1) {
-                if let installation = model.survey.installation(entry.id) {
-                    Text(installation.release.version)
-                        .fontWeight(.semibold)
-                        .monospacedDigit()
-                    if let played = model.playedText(for: entry.id) {
-                        Text(played).font(.callout).foregroundStyle(.secondary)
-                    } else {
-                        Text("Not played yet").font(.callout).foregroundStyle(.secondary)
-                    }
-                } else if let release = model.survey.latestRelease(for: entry.id) {
-                    Text(release.version).fontWeight(.semibold).monospacedDigit()
-                    Text("Not installed yet").font(.callout).foregroundStyle(.secondary)
-                }
+        VStack(alignment: .leading, spacing: 1) {
+            if let installation = model.survey.installation(entry.id) {
+                Text(installation.release.version)
+                    .fontWeight(.semibold)
+                    .monospacedDigit()
+                Text(model.playedText(for: entry.id) ?? "Not played yet")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else if let release = model.survey.latestRelease(for: entry.id) {
+                Text(release.version).fontWeight(.semibold).monospacedDigit()
+                Text("Not installed yet").font(.callout).foregroundStyle(.secondary)
             }
-            Spacer()
-            StorePageButton(entry: entry)
         }
+        .lineLimit(1)
     }
 }
 

@@ -183,21 +183,25 @@ private struct ScreenshotShelf: View {
 
 private struct Screenshot: View {
     let url: URL
+    @Environment(AppModel.self) private var model
+    @State private var loaded: (url: URL, image: NSImage?)?
 
     var body: some View {
+        let loaded = loaded?.url == url ? loaded : ScreenshotCache.shared.cached(url).map { (url, $0) }
         Rectangle()
             .fill(.black)
             .overlay {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image): image.resizable().scaledToFill()
-                    case .failure: Image(systemName: "photo").foregroundStyle(.secondary)
-                    case .empty: ProgressView().controlSize(.small)
-                    @unknown default: EmptyView()
-                    }
+                switch loaded?.image {
+                case let image?: Image(nsImage: image).resizable().scaledToFill()
+                case nil where loaded != nil: Image(systemName: "photo").foregroundStyle(.secondary)
+                case nil: ProgressView().controlSize(.small)
                 }
             }
             .clipped()
+            .task(id: url) {
+                let image = await ScreenshotCache.shared.image(at: url, cache: model.paths.imageCache)
+                if !Task.isCancelled { self.loaded = (url, image) }
+            }
     }
 }
 
@@ -604,22 +608,35 @@ private struct FlowGrid: Layout {
         (total - spacing * CGFloat(columns - 1)) / CGFloat(columns)
     }
 
-    private func rows(_ subviews: Subviews, width: CGFloat) -> [CGFloat] {
-        stride(from: 0, to: subviews.count, by: columns).map { start in
+    /// The row heights last measured, and the column width they're for: a lazy stack asks again and again.
+    struct Cache {
+        var width: CGFloat?
+        var heights: [CGFloat] = []
+    }
+
+    func makeCache(subviews: Subviews) -> Cache { Cache() }
+
+    func updateCache(_ cache: inout Cache, subviews: Subviews) { cache = Cache() }
+
+    private func rows(_ subviews: Subviews, width: CGFloat, cache: inout Cache) -> [CGFloat] {
+        if cache.width == width { return cache.heights }
+        let heights = stride(from: 0, to: subviews.count, by: columns).map { start in
             subviews[start..<min(start + columns, subviews.count)]
                 .map { $0.sizeThatFits(ProposedViewSize(width: width, height: nil)).height }.max() ?? 0
         }
+        cache = Cache(width: width, heights: heights)
+        return heights
     }
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) -> CGSize {
         let total = proposal.width ?? 900
-        let heights = rows(subviews, width: width(total))
+        let heights = rows(subviews, width: width(total), cache: &cache)
         return CGSize(width: total, height: heights.reduce(0, +) + rowSpacing * CGFloat(max(0, heights.count - 1)))
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) {
         let column = width(bounds.width)
-        let heights = rows(subviews, width: column)
+        let heights = rows(subviews, width: column, cache: &cache)
         var y = bounds.minY
         for (row, height) in heights.enumerated() {
             for index in row * columns..<min((row + 1) * columns, subviews.count) {

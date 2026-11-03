@@ -603,6 +603,17 @@ public enum ArtworkKind: String, Codable, Hashable, Sendable, CaseIterable {
     case logo
     /// Sidebar.
     case icon
+
+    /// The most pixels across Frontport keeps and decodes of this kind: twice the largest it's shown at, for Retina.
+    /// The store page's 140-point icon, the Catalog's cards, the hero across the Port page and its 440-point logo.
+    public var maxPixels: Int {
+        switch self {
+        case .icon: 320
+        case .grid: 1000
+        case .hero: 2560
+        case .logo: 1000
+        }
+    }
 }
 
 /// Pinned SteamGridDB game ids for an entry.

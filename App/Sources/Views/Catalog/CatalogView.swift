@@ -8,20 +8,20 @@ struct CatalogView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 32) {
-                if model.survey.lineup.toInstall.isEmpty {
+            // Lazy, so opening the Catalog builds only the sections in view.
+            LazyVStack(alignment: .leading, spacing: 32) {
+                if !model.isLoaded {
+                    CatalogSkeleton()
+                } else if model.survey.lineup.toInstall.isEmpty {
                     ContentUnavailableView(
                         "Everything’s Installed", systemImage: "checkmark.circle",
                         description: Text("Every Port you can install is in your Library."))
                 } else if let entry = model.survey.lineup.portOfTheDay() {
                     PortOfTheDay(entry: entry)
                 }
-                NewPortsSection()
-                PlatformSection()
-                GenreSection()
-                ProjectSection()
-                AllGamesSection()
-                Credits()
+                if model.isLoaded {
+                    sections
+                }
             }
             .padding(.horizontal, 24)
             .padding(.top, 12)
@@ -29,9 +29,54 @@ struct CatalogView: View {
         }
         .testContainer("screen.catalog")
         .navigationTitle("Catalog")
-        .navigationSubtitle(
-            Format.count(model.survey.lineup.games.count, "Game") + " · "
-                + Format.count(model.survey.lineup.toInstall.count, "Port") + " to install")
+        .navigationSubtitle(subtitle)
+    }
+
+    @ViewBuilder private var sections: some View {
+        NewPortsSection()
+        PlatformSection()
+        GenreSection()
+        ProjectSection()
+        AllGamesSection()
+        Credits()
+    }
+
+    private var subtitle: String {
+        guard model.isLoaded else { return "" }
+        return Format.count(model.survey.lineup.games.count, "Game") + " · "
+            + Format.count(model.survey.lineup.toInstall.count, "Port") + " to install"
+    }
+}
+
+/// The Catalog's shape while Frontport reads it at launch: the Port of the Day, a row of cards and the tiles.
+private struct CatalogSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 32) {
+            Skeleton()
+                .aspectRatio(1920 / 620, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            VStack(alignment: .leading, spacing: 14) {
+                Skeleton().frame(width: 140, height: 22).clipShape(Capsule())
+                HStack(spacing: 20) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        Skeleton()
+                            .aspectRatio(92 / 43, contentMode: .fit)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                }
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                Skeleton().frame(width: 110, height: 22).clipShape(Capsule())
+                LazyVGrid(columns: tileColumns, spacing: 14) {
+                    ForEach(0..<6, id: \.self) { _ in
+                        Skeleton()
+                            .frame(height: 64)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+            }
+        }
+        .accessibilityLabel("Loading the Catalog")
     }
 }
 

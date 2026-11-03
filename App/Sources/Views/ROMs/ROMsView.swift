@@ -9,6 +9,18 @@ struct ROMsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
+            PageBar {
+                Button {
+                    viewState.isImportingROMs = true
+                } label: {
+                    Label("Add ROMs…", systemImage: "plus")
+                        .labelStyle(.titleAndIcon)
+                }
+                .buttonStyle(.glassProminent)
+                .disabled(viewState.isAddingROMs)
+                .help("Add ROM files to Frontport")
+                .accessibilityIdentifier("roms.add")
+            }
             let needed = model.neededGames
             if !needed.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
@@ -44,20 +56,6 @@ struct ROMsView: View {
         .testContainer("screen.roms")
         .navigationTitle("ROMs")
         .navigationSubtitle(subtitle)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    viewState.isImportingROMs = true
-                } label: {
-                    Label("Add ROMs…", systemImage: "plus")
-                        .labelStyle(.titleAndIcon)
-                }
-                .buttonStyle(.glassProminent)
-                .disabled(viewState.isAddingROMs)
-                .help("Add ROM files to Frontport")
-                .accessibilityIdentifier("roms.add")
-            }
-        }
         .confirmationDialog(
             removing.map { "Remove \(name(of: $0))?" } ?? "",
             isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),

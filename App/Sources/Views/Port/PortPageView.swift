@@ -1,7 +1,8 @@
 import FrontportCore
 import SwiftUI
 
-/// An installed Port's page: Overview, Snapshots and Runs, picked in the toolbar.
+/// An installed Port's page: its hero, then a row of its action and Release, Overview, Snapshots and Runs, and its
+/// store page and More menu.
 struct PortPageView: View {
     @Environment(AppModel.self) private var model
     @Environment(ViewState.self) private var viewState
@@ -14,6 +15,17 @@ struct PortPageView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         BlockedBanner(entry: entry)
+                        // On every tab, with the tabs under it, so changing tab leaves the top of the page as it is.
+                        PortHeader(entry: entry)
+                        PageBar(controlSize: .extraLarge) {
+                            PortActionButton(port: port, controlSize: .extraLarge, playsWhenUpdatable: true)
+                            ReleaseLine(entry: entry)
+                        } center: {
+                            SectionPicker(selection: $viewState.portTab, title: \.title, identifier: "port.tab")
+                        } trailing: {
+                            StorePageButton(entry: entry)
+                            PortMenu(port: port)
+                        }
                         switch viewState.portTab {
                         case .overview: PortOverview(entry: entry)
                         case .snapshots: SnapshotsList(entry: entry)
@@ -36,25 +48,6 @@ struct PortPageView: View {
                 Button("Back", systemImage: "chevron.left") { model.back() }
                     .disabled(!model.canGoBack)
                     .help("Back")
-            }
-            ToolbarItem(placement: .principal) {
-                Picker("Section", selection: $viewState.portTab) {
-                    ForEach(ViewState.PortTab.allCases, id: \.self) { tab in
-                        Text(tab.title)
-                            .accessibilityIdentifier("port.tab.\(tab.rawValue)")
-                            .tag(tab)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .fixedSize()
-                .accessibilityIdentifier("port.tabs")
-            }
-            ToolbarItemGroup(placement: .primaryAction) {
-                if viewState.portTab != .overview {
-                    PortActionButton(port: port, playsWhenUpdatable: true)
-                }
-                PortMenu(port: port)
             }
         }
         .task(id: port) { await model.loadHistory(for: port) }
@@ -90,8 +83,11 @@ private struct PortMenu: View {
             Button("Show Logs in Finder") { model.openLogs(for: port) }
         } label: {
             Label("More", systemImage: "ellipsis")
+                .labelStyle(.iconOnly)
         }
         .menuIndicator(.hidden)
+        .buttonStyle(.glass)
+        .fixedSize()
         .help("More")
         .accessibilityIdentifier("port.more")
     }

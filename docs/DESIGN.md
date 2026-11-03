@@ -95,6 +95,7 @@ A Move, also a value in `FrontportCore`, is the one rule for an Installation goi
 ├── Snapshots/<port>/     last 3 Snapshots of the Port's Data
 ├── Logs/<port>/          last 5 run logs, each with its Run record, and the last build's build.log
 ├── Artwork/<id>/         cached SteamGridDB artwork per SteamGridDB game ID
+├── Cache/                the Catalog's screenshots, scaled to the store page's size; safe to delete
 ├── Devices/<udid>/       one Device (proposed)
 │   ├── device.json       its name, model and when Frontport last reached it
 │   └── <port>/           the Port's Installation there: its signed app, kept for Renew, and install.json
@@ -237,11 +238,11 @@ An Unsupported Port carries `"unsupported": "<reason>"`. It's listed in the Cata
   - **No donate buttons:** none of the Ports checked accepts donations.
   - **Catalog fields:** this adds a description, screenshot URLs and the website to each entry. Screenshots come from each project, with its permission, not from SteamGridDB.
 - **Project page:** what the Project is, its details, its Games as cards, and its Releases, newest first, marking the latest and the one each Library Port has. When a Release updates Library Ports, a banner offers Update for all of them.
-- **Releases:** New Ports and Updates in a toolbar picker.
+- **Releases:** New Ports and Updates in a picker atop the page, beside Check for Updates.
   - **New Ports:** every Catalog Port by the year of its first Release, newest first.
   - **Updates:** one card per Project with an update, listing each Library Port it updates with Update for all of them, then every other Catalog Release, once per Project and version, grouped by month. Each shows a short summary of its upstream release notes and links to them.
-- **ROMs:** what installed Ports still need (ROMs to add, or to Seed), what's been added, and Add ROMs….
-- **Port page:** Overview, Snapshots and Runs in a toolbar picker, with a link to its store page. It's about the user's copy on this Mac: Play, the update, ROMs and whether they're Seeded, Permissions and Storage. Each Device the Port is on has a page of its own (see [Devices](#devices)), so neither's actions are taken for the other's; opening a Port only on Devices opens its first Device's page. Installing somewhere new, on this Mac or on iPhone or iPad, is in each page's More menu and on the store page.
+- **ROMs:** Add ROMs… atop the page, then what installed Ports still need (ROMs to add, or to Seed) and what's been added.
+- **Port page:** the hero, then one row under it on every tab: the Port's action and installed Release on the left, Overview, Snapshots and Runs in the center, and its store page and More menu on the right. It's about the user's copy on this Mac: Play, the update, ROMs and whether they're Seeded, Permissions and Storage. Each Device the Port is on has a page of its own (see [Devices](#devices)), so neither's actions are taken for the other's; opening a Port only on Devices opens its first Device's page. Installing somewhere new, on this Mac or on iPhone or iPad, is in each page's More menu and on the store page.
   - **Installation:** when it was installed, its Channel, and the Catalog that lists it when the user added that Catalog, or that none does. What the Port is, its Developer, Platform and source, is on the store page.
   - **Storage:** a row per folder the Port has on disk, with its size, what it holds and Open, which opens it in Finder: Data with Delete Data…, Snapshots, the Installation (its app, Build Assets and previous Release) with Uninstall…, and, for a source-built Port, the build folder with Remove…. A file cloned elsewhere, such as a game a Recipe extracted into the Build Assets, frees nothing when the folder goes, so the build folder's row also says how much removing it frees: what APFS reports no other file shares (`ATTR_CMNEXT_PRIVATESIZE`). The store page of a Port that isn't installed shows the same section while anything is left over.
 
@@ -249,8 +250,9 @@ An Unsupported Port carries `"unsupported": "<reason>"`. It's listed in the Cata
 
 Covers come from [SteamGridDB](https://www.steamgriddb.com):
 - **Lookup:** each Catalog entry pins a SteamGridDB game ID, so Frontport never guesses by name. It uses the Port's own entry when there is one (most Ports have one), and otherwise the Game's.
-- **Where each kind goes:** a landscape grid on Catalog cards, the hero and logo on the Port page header, and the icon in the sidebar. Game cards and the Game page show the Game's own grid, from its `steamgriddb` id, and Project tiles and update cards show the Games' icons.
+- **Where each kind goes:** a landscape grid on Catalog cards, the hero and logo atop the Port page, and the icon in the sidebar. Game cards and the Game page show the Game's own grid, from its `steamgriddb` id, and Project tiles and update cards show the Games' icons.
 - **Caching:** Frontport caches artwork in `Artwork/` with the asset ID and author for the credit, and re-fetches artwork older than 7 days during update checks. An empty answer is cached too.
+- **Size:** each image is scaled when it's fetched to twice the largest size Frontport shows it at (`ArtworkKind.maxPixels`), as HEIC, or PNG when it has transparency: a 3840-pixel PNG hero becomes a few hundred KB that decodes several times faster. Artwork cached before scaling is scaled once at launch. The app keeps decoded artwork in memory and decodes what the Catalog, the sidebar and the Library's Port pages show right after launch, so screens show it at once; while artwork the Catalog names is loading, its frame shows a skeleton.
 - **API key:** the user's own SteamGridDB key, entered in Settings and kept in the Keychain, or else the key a release build ships with ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Without either, Frontport never calls the API and shows only cached artwork or the fallback. While Frontport is signed ad-hoc, the Keychain item is tied to each build, so a rebuild asks for Keychain access again.
 - **Requests:** each sends `User-Agent: Frontport`, so SteamGridDB can tell Frontport's traffic apart. Only API requests carry the key, never image downloads.
 - **Fallback:** without artwork, a flat color with the Game's name. The color comes from a hash of the Game ID, so it's stable.

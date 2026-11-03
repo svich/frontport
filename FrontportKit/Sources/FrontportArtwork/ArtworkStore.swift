@@ -101,6 +101,23 @@ public actor ArtworkStore: ArtworkProviding {
         userKey = .some(value)
     }
 
+    public func compact() async {
+        let folders = (try? FileManager.default.contentsOfDirectory(atPath: paths.artwork.path(percentEncoded: false))) ?? []
+        for id in folders.compactMap(Int.init).sorted() {
+            for kind in ArtworkKind.allCases {
+                guard let record = record(kind, id: id), let file = file(for: record) else { continue }
+                let scaled = await Task.detached(priority: .utility) {
+                    ArtworkScaling.scaled(contentsOf: file, kind: kind)
+                }.value
+                // A fetch may have replaced the file meanwhile.
+                guard let scaled, self.record(kind, id: id) == record else { continue }
+                var compacted = record
+                compacted.file = "\(kind.rawValue).\(scaled.fileExtension)"
+                try? save(compacted, data: scaled.data)
+            }
+        }
+    }
+
     // MARK: Credits
 
     /// The record behind the file `artwork(_:for:)` returns, for crediting its author.
@@ -200,12 +217,13 @@ public actor ArtworkStore: ArtworkProviding {
                 try save(refreshed, data: nil)
                 return refreshed
             }
-            let (data, mime) = try await api.download(image)
-            let name = "\(kind.rawValue).\(SteamGridDB.fileExtension(mime: mime ?? image.mime, url: image.url))"
+            let (original, mime) = try await api.download(image)
+            let scaled = await Task.detached(priority: .utility) { ArtworkScaling.scaled(original, kind: kind) }.value
+            let fileExtension = scaled?.fileExtension ?? SteamGridDB.fileExtension(mime: mime ?? image.mime, url: image.url)
             let record = ArtworkRecord(
-                kind: kind, steamgriddb: id, assetID: image.id, file: name, author: image.author?.name,
-                source: image.url, fetched: now())
-            try save(record, data: data)
+                kind: kind, steamgriddb: id, assetID: image.id, file: "\(kind.rawValue).\(fileExtension)",
+                author: image.author?.name, source: image.url, fetched: now())
+            try save(record, data: scaled?.data ?? original)
             return record
         } catch {
             return nil

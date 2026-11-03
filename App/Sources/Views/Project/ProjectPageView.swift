@@ -11,7 +11,8 @@ struct ProjectPageView: View {
         Group {
             if let project = model.survey.lineup.project(project) {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 26) {
+                    // Lazy, so opening the page builds only what's in view.
+                    LazyVStack(alignment: .leading, spacing: 26) {
                         HStack(spacing: 6) {
                             Button("Catalog") { model.open(.catalog) }
                                 .buttonStyle(.plain)

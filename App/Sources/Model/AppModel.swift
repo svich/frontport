@@ -115,6 +115,8 @@ final class AppModel {
     private(set) var snapshots: [PortID: [Snapshot]] = [:]
     /// Newest first; loaded by `loadHistory(for:)`.
     private(set) var runs: [PortID: [Run]] = [:]
+    /// Whether `load()` has read the Catalog, the Library and ROMs once; until then screens show skeletons.
+    private(set) var isLoaded = false
     /// Whose SteamGridDB key artwork is fetched with; nil when there is none.
     private(set) var steamGridDBKey: APIKeySource?
     /// The Catalogs the user added, for Settings and the store page.
@@ -169,6 +171,7 @@ final class AppModel {
         snapshots = preview.snapshots
         runs = preview.runs
         addedCatalogs = preview.addedCatalogs
+        isLoaded = true
         selection = .catalog
     }
 
@@ -280,6 +283,10 @@ final class AppModel {
         Task { await services.devices?.removeLeftovers() }
         await load()
         if selection == nil { selection = .catalog }
+        Task {
+            await services.artwork.compact()
+            await ArtworkCache.shared.prefetch(self)
+        }
         Task { await deviceUpkeep.refreshIfNeeded() }
         updateChecks = Task { [weak self] in
             while !Task.isCancelled {
@@ -297,6 +304,7 @@ final class AppModel {
     func load() async {
         guard let services else { return }
         await survey.load()
+        isLoaded = true
         launched = await services.launcher.running()
         refreshOpened()
         steamGridDBKey = await services.artwork.apiKeySource()
@@ -315,6 +323,9 @@ final class AppModel {
         await refreshSteamOffers()
         guard let catalog = survey.catalog else { return }
         await services.artwork.refresh(catalog.ports)
+        // What failed to load before may load now; decoding it needn't hold up the next refresh.
+        ArtworkCache.shared.forgetMissing()
+        Task { await ArtworkCache.shared.prefetch(self) }
     }
 
     // MARK: Changing Ports
@@ -737,6 +748,7 @@ final class AppModel {
             present(error)
         }
         steamGridDBKey = await services.artwork.apiKeySource()
+        ArtworkCache.shared.forgetMissing()
         artworkGeneration += 1
     }
 

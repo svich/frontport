@@ -2,9 +2,10 @@ import AppKit
 import FrontportCore
 import ImageIO
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// SteamGridDB artwork for a Port or a Game. It decodes off the main thread and is cached in memory;
-/// without artwork it shows a flat color from the Game with the Game's name.
+/// SteamGridDB artwork for a Port or a Game. It decodes off the main thread and is cached in memory; while artwork the
+/// Catalog names loads it shows a skeleton, and without artwork a flat color from the Game with the Game's name.
 ///
 /// It fills the frame it's given, so set the shape with `.aspectRatio` or `.frame` and clip it.
 struct ArtworkImage: View {
@@ -18,7 +19,8 @@ struct ArtworkImage: View {
     let subject: Subject
     /// Whether the fallback names the Game. Off where the name sits right next to it.
     var showsName: Bool
-    @State private var image: NSImage?
+    /// What the last load found, and whose it is; a nil image when there's no artwork to show.
+    @State private var loaded: (key: ArtworkCache.Key, image: NSImage?)?
 
     init(_ kind: ArtworkKind, port: PortID, showsName: Bool = true) {
         self.init(kind, subject: .port(port), showsName: showsName)
@@ -32,10 +34,14 @@ struct ArtworkImage: View {
         self.kind = kind
         self.subject = subject
         self.showsName = showsName
-        _image = State(initialValue: ArtworkCache.shared.cached(kind, subject))
     }
 
+    private var key: ArtworkCache.Key { ArtworkCache.Key(kind: kind, subject: subject) }
+
     var body: some View {
+        let key = key
+        // The view may be reused for another subject: show only this one's image, straight from memory when it's there.
+        let image = loaded?.key == key ? loaded?.image : ArtworkCache.shared.cached(key)
         Rectangle()
             .fill(.clear)
             .overlay {
@@ -45,33 +51,34 @@ struct ArtworkImage: View {
                         .interpolation(.high)
                         .aspectRatio(contentMode: kind == .logo ? .fit : .fill)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: kind == .logo ? .bottomLeading : .center)
+                } else if isPinned, loaded?.key != key, !ArtworkCache.shared.isMissing(key) {
+                    // The Catalog names SteamGridDB art for it, still loading: its shape, not a stand-in that then
+                    // changes. A logo has no shape of its own.
+                    if kind != .logo { Skeleton() }
                 } else {
                     fallback
                 }
             }
             .clipped()
             .accessibilityHidden(true)
-            .task(id: TaskID(kind: kind, subject: subject, generation: model.artworkGeneration)) {
-                // The view may be reused for another subject: start from what's known about this one.
-                let cached = ArtworkCache.shared.cached(kind, subject)
-                if image !== cached { image = cached }
-                let url: URL? =
-                    switch subject {
-                    case .port(let id): await model.artwork(kind, for: id)
-                    case .game(let id): await model.artwork(kind, for: id)
-                    }
-                guard let url, !Task.isCancelled else { return }
-                if let loaded = await ArtworkCache.shared.image(at: url, kind: kind, subject: subject),
-                    !Task.isCancelled
-                {
-                    image = loaded
-                }
+            .task(id: TaskID(key: key, generation: model.artworkGeneration)) {
+                let image = await ArtworkCache.shared.load(key, model: model)
+                if !Task.isCancelled { loaded = (key, image) }
             }
     }
 
+    /// Whether the Catalog names SteamGridDB art for the Port or Game, so there's likely some to wait for.
+    private var isPinned: Bool {
+        switch subject {
+        case .port(let id):
+            guard let artwork = model.survey.entry(id)?.artwork else { return false }
+            return artwork.steamgriddb != nil || artwork.fallback != nil
+        case .game(let id): return model.survey.catalog?.game(id)?.steamgriddb != nil
+        }
+    }
+
     private struct TaskID: Hashable {
-        var kind: ArtworkKind
-        var subject: Subject
+        var key: ArtworkCache.Key
         var generation: Int
     }
 
@@ -89,6 +96,17 @@ struct ArtworkImage: View {
             ArtworkFallback(
                 kind: kind, game: id, gameName: game?.displayName ?? id.rawValue, portName: nil, showsName: showsName)
         }
+    }
+}
+
+/// A placeholder in the frame of something still loading, gently pulsing.
+struct Skeleton: View {
+    var body: some View {
+        Rectangle()
+            .fill(.quaternary)
+            .phaseAnimator([0.55, 1]) { content, phase in
+                content.opacity(phase)
+            } animation: { _ in .easeInOut(duration: 0.8) }
     }
 }
 
@@ -187,50 +205,115 @@ struct ArtworkFallback: View {
     }
 }
 
-/// Decoded artwork kept for the session, keyed by Port or Game and kind.
+/// Decoded artwork, keyed by Port or Game and kind, kept in memory up to a budget. The Artwork store keeps it on disk
+/// already scaled to the size it's shown at.
 @MainActor
 final class ArtworkCache {
     static let shared = ArtworkCache()
 
-    private struct Entry {
-        var url: URL
-        var stamp: Date?
-        var image: NSImage
+    struct Key: Hashable {
+        var kind: ArtworkKind
+        var subject: ArtworkImage.Subject
     }
 
-    private var entries: [String: Entry] = [:]
+    /// The file an image was decoded from, and when it last changed.
+    private struct Source {
+        var url: URL
+        var stamp: Date?
+    }
 
-    private static func key(_ kind: ArtworkKind, _ subject: ArtworkImage.Subject) -> String {
-        switch subject {
-        case .port(let id): "port/\(id)/\(kind.rawValue)"
-        case .game(let id): "game/\(id)/\(kind.rawValue)"
+    private let images: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.totalCostLimit = 256 * 1024 * 1024
+        return cache
+    }()
+    private var sources: [Key: Source] = [:]
+    /// Looked up and found to have no artwork, so views show their stand-in at once. Forgotten after each refresh and
+    /// a new SteamGridDB key, since a failed fetch looks the same.
+    private var missing: Set<Key> = []
+    /// Loads under way, by key and `AppModel.artworkGeneration`, so one started before a new key isn't shared after.
+    private var loading: [LoadKey: Task<NSImage?, Never>] = [:]
+    private var isPrefetching = false
+
+    private struct LoadKey: Hashable {
+        var key: Key
+        var generation: Int
+    }
+
+    private static func name(_ key: Key) -> NSString {
+        switch key.subject {
+        case .port(let id): "port/\(id)/\(key.kind.rawValue)" as NSString
+        case .game(let id): "game/\(id)/\(key.kind.rawValue)" as NSString
         }
     }
 
-    func cached(_ kind: ArtworkKind, _ subject: ArtworkImage.Subject) -> NSImage? {
-        entries[Self.key(kind, subject)]?.image
+    func cached(_ key: Key) -> NSImage? {
+        images.object(forKey: Self.name(key))
     }
 
-    /// Decodes the file unless the same file, unchanged, is already cached.
-    func image(at url: URL, kind: ArtworkKind, subject: ArtworkImage.Subject) async -> NSImage? {
-        let key = Self.key(kind, subject)
-        let cached = entries[key].flatMap { $0.url == url ? $0.stamp : nil }
-        let maxPixels = Self.maxPixels(kind)
-        let loaded = await Task.detached(priority: .utility) {
-            DecodedArtwork.load(url, unlessStamped: cached, maxPixels: maxPixels)
-        }.value
-        guard let loaded else { return entries[key]?.image }
-        let image = NSImage(cgImage: loaded.image, size: .zero)
-        entries[key] = Entry(url: url, stamp: loaded.stamp, image: image)
+    func isMissing(_ key: Key) -> Bool { missing.contains(key) }
+
+    func forgetMissing() { missing = [] }
+
+    /// The image for `key`, decoded unless the same file, unchanged, already is. Callers asking together share one load.
+    func load(_ key: Key, model: AppModel, priority: TaskPriority = .userInitiated) async -> NSImage? {
+        let id = LoadKey(key: key, generation: model.artworkGeneration)
+        if let running = loading[id] { return await running.value }
+        let task = Task(priority: priority) { await self.decode(key, model: model, priority: priority) }
+        loading[id] = task
+        let image = await task.value
+        loading[id] = nil
         return image
     }
 
-    private static func maxPixels(_ kind: ArtworkKind) -> Int {
-        switch kind {
-        case .icon: 192
-        case .grid: 1100
-        case .hero: 2400
-        case .logo: 1200
+    private func decode(_ key: Key, model: AppModel, priority: TaskPriority) async -> NSImage? {
+        // A second look, for a file replaced between finding it and reading it, as when the store scales it.
+        for _ in 0..<2 {
+            let url: URL? =
+                switch key.subject {
+                case .port(let id): await model.artwork(key.kind, for: id)
+                case .game(let id): await model.artwork(key.kind, for: id)
+                }
+            guard let url else {
+                if cached(key) == nil { missing.insert(key) }
+                return cached(key)
+            }
+            missing.remove(key)
+            let current = cached(key) != nil ? sources[key].flatMap { $0.url == url ? $0.stamp : nil } : nil
+            let maxPixels = key.kind.maxPixels
+            let decoded = await Task.detached(priority: priority) {
+                DecodedArtwork.load(url, unlessStamped: current, maxPixels: maxPixels)
+            }.value
+            guard let decoded else {
+                if let cached = cached(key) { return cached }
+                continue
+            }
+            let image = NSImage(cgImage: decoded.image, size: .zero)
+            images.setObject(image, forKey: Self.name(key), cost: decoded.image.bytesPerRow * decoded.image.height)
+            sources[key] = Source(url: url, stamp: decoded.stamp)
+            return image
+        }
+        return nil
+    }
+
+    /// Decodes, one at a time in the background, what shows first: the sidebar's icons, the heroes and logos of the
+    /// Library's Port pages, and the Catalog's Port of the Day and New Ports. Each is for a Port a screen shows, so
+    /// nothing is fetched for one no screen asks about, and it stays well within the memory budget.
+    func prefetch(_ model: AppModel) async {
+        guard !isPrefetching else { return }
+        isPrefetching = true
+        defer { isPrefetching = false }
+        var keys: [Key] = []
+        for entry in model.survey.libraryPorts {
+            keys += [.icon, .hero, .logo].map { Key(kind: $0, subject: .port(entry.id)) }
+        }
+        if let entry = model.survey.lineup.portOfTheDay() {
+            keys += [.hero, .logo].map { Key(kind: $0, subject: .port(entry.id)) }
+        }
+        keys += model.survey.lineup.newPorts().map { Key(kind: .grid, subject: .port($0.id)) }
+        for key in keys where cached(key) == nil {
+            guard !Task.isCancelled else { return }
+            _ = await load(key, model: model, priority: .utility)
         }
     }
 }
@@ -242,16 +325,110 @@ private struct DecodedArtwork: @unchecked Sendable {
 
     /// Nil when the file is missing, unreadable, or unchanged since `unlessStamped`.
     static func load(_ url: URL, unlessStamped previous: Date?, maxPixels: Int) -> DecodedArtwork? {
-        let stamp = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        let stamp = modified(url)
         if let previous, previous == stamp { return nil }
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        guard let image = ScaledImage.decode(url, maxPixels: maxPixels) else { return nil }
+        return DecodedArtwork(stamp: stamp, image: image)
+    }
+
+    private static func modified(_ url: URL) -> Date? {
+        (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+    }
+}
+
+/// Decoding an image at no more than the size it's shown at, and keeping such a copy on disk.
+enum ScaledImage {
+    static func decode(_ url: URL, maxPixels: Int) -> CGImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary)
+        else { return nil }
+        return decode(source, maxPixels: maxPixels)
+    }
+
+    static func decode(_ data: Data, maxPixels: Int) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary)
+        else { return nil }
+        return decode(source, maxPixels: maxPixels)
+    }
+
+    private static func decode(_ source: CGImageSource, maxPixels: Int) -> CGImage? {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceShouldCacheImmediately: true,
             kCGImageSourceThumbnailMaxPixelSize: maxPixels,
         ]
-        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
-        return DecodedArtwork(stamp: stamp, image: image)
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+    }
+
+    /// Writes HEIC, or PNG for an image with transparency, beside `url` with that extension; the other one goes.
+    static func write(_ image: CGImage, to url: URL) {
+        let hasAlpha = ![.none, .noneSkipFirst, .noneSkipLast].contains(image.alphaInfo)
+        let (type, ext, other): (UTType, String, String) = hasAlpha ? (.png, "png", "heic") : (.heic, "heic", "png")
+        try? FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let file = url.appendingPathExtension(ext)
+        let temporary = url.appendingPathExtension("\(UUID().uuidString).\(ext)")
+        guard let destination = CGImageDestinationCreateWithURL(temporary as CFURL, type.identifier as CFString, 1, nil)
+        else { return }
+        CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: 0.8] as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else {
+            try? FileManager.default.removeItem(at: temporary)
+            return
+        }
+        _ = try? FileManager.default.replaceItemAt(file, withItemAt: temporary)
+        try? FileManager.default.removeItem(at: url.appendingPathExtension(other))
+    }
+}
+
+/// Screenshots from the Catalog, downloaded once and kept in `AppPaths.imageCache` at the size the store page shows
+/// them.
+@MainActor
+final class ScreenshotCache {
+    static let shared = ScreenshotCache()
+
+    private let images: NSCache<NSURL, NSImage> = {
+        let cache = NSCache<NSURL, NSImage>()
+        cache.totalCostLimit = 64 * 1024 * 1024
+        return cache
+    }()
+    private var loading: [URL: Task<NSImage?, Never>] = [:]
+    /// Twice the store page's 480-point screenshots.
+    private nonisolated static let maxPixels = 960
+
+    func cached(_ url: URL) -> NSImage? { images.object(forKey: url as NSURL) }
+
+    /// Nil when it can't be downloaded or decoded.
+    func image(at url: URL, cache: URL) async -> NSImage? {
+        if let image = cached(url) { return image }
+        if let running = loading[url] { return await running.value }
+        let task = Task(priority: .userInitiated) { () -> NSImage? in
+            let file = cache.appending(path: "screenshots/\(Hashing.sha256(Data(url.absoluteString.utf8)))")
+            let decoded = await Task.detached(priority: .userInitiated) { () -> CGImageBox? in
+                for kept in ["heic", "png"].map({ file.appendingPathExtension($0) }) {
+                    if let image = ScaledImage.decode(kept, maxPixels: Self.maxPixels) { return CGImageBox(image: image) }
+                }
+                guard url.scheme == "https", let (data, response) = try? await URLSession.shared.data(from: url),
+                    (response as? HTTPURLResponse)?.statusCode == 200,
+                    let image = ScaledImage.decode(data, maxPixels: Self.maxPixels)
+                else { return nil }
+                ScaledImage.write(image, to: file)
+                // It can all be downloaded again, so Time Machine needn't keep it.
+                var root = cache
+                var values = URLResourceValues()
+                values.isExcludedFromBackup = true
+                try? root.setResourceValues(values)
+                return CGImageBox(image: image)
+            }.value
+            return decoded.map { NSImage(cgImage: $0.image, size: .zero) }
+        }
+        loading[url] = task
+        let image = await task.value
+        loading[url] = nil
+        if let image { images.setObject(image, forKey: url as NSURL, cost: Int(image.size.width * image.size.height) * 4) }
+        return image
+    }
+
+    private struct CGImageBox: @unchecked Sendable {
+        var image: CGImage
     }
 }

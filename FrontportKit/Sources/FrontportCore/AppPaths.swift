@@ -112,6 +112,8 @@ public struct AppPaths: Hashable, Sendable {
     public var artwork: URL { dir("Artwork") }
     /// `Artwork/<steamgriddb id>/`, holding one file per `ArtworkKind`.
     public func artwork(steamgriddb id: Int) -> URL { artwork.appending(path: String(id), directoryHint: .isDirectory) }
+    /// `Cache/`: the Catalog's screenshots, scaled down to the size the store page shows them at. Safe to delete.
+    public var imageCache: URL { dir("Cache") }
 
     // MARK: Library
 

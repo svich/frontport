@@ -41,7 +41,12 @@ struct DevicePortPage: View {
                     await model.deviceUpkeep.readSeeding(of: port)
                 }
             } else {
-                ContentUnavailableView("Not on \(model.deviceName(device))", systemImage: "iphone.slash")
+                ContentUnavailableView {
+                    Label("Not on \(model.deviceName(device))", systemImage: "iphone.slash")
+                } actions: {
+                    // Installing it there, or elsewhere, is still in its menu.
+                    DeviceMenu(port: port, device: device)
+                }
             }
         }
         .navigationTitle(model.survey.entry(port)?.name ?? port.rawValue)
@@ -51,9 +56,6 @@ struct DevicePortPage: View {
                 Button("Back", systemImage: "chevron.left") { model.back() }
                     .disabled(!model.canGoBack)
                     .help("Back")
-            }
-            ToolbarItem(placement: .primaryAction) {
-                DeviceMenu(port: port, device: device)
             }
         }
     }
@@ -74,7 +76,8 @@ struct DevicePortPage: View {
     }
 }
 
-/// What the Device needs first and anything else it needs but Seed, which Device it is, and the store page.
+/// What the Device needs first and anything else it needs but Seed, which Device it is, the store page and the More
+/// menu, in the page rather than the toolbar, as on the Port page.
 private struct DeviceActionRow: View {
     @Environment(AppModel.self) private var model
     let entry: CatalogEntry
@@ -93,7 +96,9 @@ private struct DeviceActionRow: View {
             Text("On \(status.reading.device.name)").foregroundStyle(.secondary)
             Spacer()
             StorePageButton(entry: entry)
+            DeviceMenu(port: entry.id, device: status.reading.device.id)
         }
+        .controlSize(.extraLarge)
     }
 }
 
@@ -264,8 +269,11 @@ private struct DeviceMenu: View {
             }
         } label: {
             Label("More", systemImage: "ellipsis")
+                .labelStyle(.iconOnly)
         }
         .menuIndicator(.hidden)
+        .buttonStyle(.glass)
+        .fixedSize()
         .help("More")
         .accessibilityIdentifier("port.more")
     }

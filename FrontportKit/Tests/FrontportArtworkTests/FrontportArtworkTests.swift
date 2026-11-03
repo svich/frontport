@@ -1,5 +1,6 @@
 import Foundation
 import FrontportCore
+import ImageIO
 import Synchronization
 import Testing
 @testable import FrontportArtwork
@@ -238,5 +239,65 @@ struct ArtworkFixture {
         #expect(SteamGridDB.fileExtension(mime: "image/jpeg", url: url) == "jpg")
         #expect(SteamGridDB.fileExtension(mime: "image/png", url: url) == "png")
         #expect(SteamGridDB.fileExtension(mime: nil, url: url) == "webp")
+    }
+
+    @Test func scalesLargeArtworkDownToTheSizeItsShownAt() async throws {
+        let fixture = try ArtworkFixture()
+        fixture.serve("heroes", game: ArtworkFixture.portID, [(30, 3840, 1240)])
+        fixture.server.set("file/30.png", body: try PNG.make(width: 3840, height: 1240, opaque: true), contentType: "image/png")
+        fixture.serve("logos", game: ArtworkFixture.portID, [(31, 3000, 400)])
+        fixture.server.set("file/31.png", body: try PNG.make(width: 3000, height: 400, opaque: false), contentType: "image/png")
+
+        let hero = try #require(await fixture.store.artwork(.hero, for: fixture.entry))
+        #expect(hero.lastPathComponent == "hero.heic")
+        #expect(try PNG.size(of: hero) == (ArtworkKind.hero.maxPixels, 827))
+        // A logo keeps its transparency.
+        let logo = try #require(await fixture.store.artwork(.logo, for: fixture.entry))
+        #expect(logo.lastPathComponent == "logo.png")
+        #expect(try PNG.size(of: logo).width == ArtworkKind.logo.maxPixels)
+    }
+
+    @Test func compactScalesArtworkCachedAsItCame() async throws {
+        let fixture = try ArtworkFixture(key: nil)
+        let folder = fixture.paths.artwork(steamgriddb: ArtworkFixture.portID)
+        try FileOperations.createDirectory(folder)
+        try PNG.make(width: 3840, height: 1240, opaque: true).write(to: folder.appending(path: "hero.png"))
+        try JSON.write(
+            ArtworkRecord(kind: .hero, steamgriddb: ArtworkFixture.portID, assetID: 30, file: "hero.png", fetched: fixture.clock.now()),
+            to: folder.appending(path: "hero.json"))
+
+        await fixture.store.compact()
+        let hero = try #require(await fixture.store.artwork(.hero, for: fixture.entry))
+        #expect(hero.lastPathComponent == "hero.heic")
+        #expect(try PNG.size(of: hero).width == ArtworkKind.hero.maxPixels)
+        #expect(!FileManager.default.fileExists(atPath: folder.appending(path: "hero.png").path(percentEncoded: false)))
+        // Already scaled, it's left as it is.
+        let stamp = try hero.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        await fixture.store.compact()
+        #expect(try hero.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate == stamp)
+    }
+}
+
+/// Real images, for the tests that scale them.
+enum PNG {
+    static func make(width: Int, height: Int, opaque: Bool) throws -> Data {
+        let context = try #require(CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: (opaque ? CGImageAlphaInfo.noneSkipLast : .premultipliedLast).rawValue))
+        context.setFillColor(red: 0.2, green: 0.4, blue: 0.3, alpha: opaque ? 1 : 0.5)
+        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        let image = try #require(context.makeImage())
+        let data = NSMutableData()
+        let destination = try #require(CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil))
+        CGImageDestinationAddImage(destination, image, nil)
+        #expect(CGImageDestinationFinalize(destination))
+        return data as Data
+    }
+
+    static func size(of url: URL) throws -> (width: Int, height: Int) {
+        let source = try #require(CGImageSourceCreateWithURL(url as CFURL, nil))
+        let properties = try #require(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
+        return (properties[kCGImagePropertyPixelWidth] as? Int ?? 0, properties[kCGImagePropertyPixelHeight] as? Int ?? 0)
     }
 }

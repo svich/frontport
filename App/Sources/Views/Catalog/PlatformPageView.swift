@@ -51,7 +51,8 @@ struct GamesPage<Art: View, MoreCredits: View>: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 32) {
+            // Lazy, so opening the page builds only what's in view.
+            LazyVStack(alignment: .leading, spacing: 32) {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 6) {
                         Button("Catalog") { model.open(.catalog) }

@@ -12,7 +12,8 @@ struct GamePageView: View {
             if let game = model.survey.catalog?.game(game) {
                 let ports = model.survey.lineup.ports(of: game.id)
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 26) {
+                    // Lazy, so opening the page builds only what's in view.
+                    LazyVStack(alignment: .leading, spacing: 26) {
                         HStack(spacing: 6) {
                             crumb("Catalog", .catalog)
                             if let platform = model.survey.catalog?.platform(game.platform) {

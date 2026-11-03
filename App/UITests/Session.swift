@@ -232,7 +232,7 @@ final class Session {
         wait(for: "store.status", file: file, line: line)
     }
 
-    /// Picks a section of the Port page in the toolbar picker: by the segment's identifier, else by its title.
+    /// Picks a section of the Port page in the picker under its hero: by the segment's identifier, else by its title.
     func selectTab(_ title: String, file: StaticString = #filePath, line: UInt = #line) {
         var segment = element("port.tab.\(title.lowercased())")
         if !segment.waitForExistence(timeout: 5) {

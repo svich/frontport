@@ -310,6 +310,13 @@ public protocol ArtworkProviding: Sendable {
 
     /// Stores the user's SteamGridDB API key in the Keychain; nil removes it.
     func setAPIKey(_ key: String?) async throws
+
+    /// Scales artwork cached before Frontport scaled it when fetching down to `ArtworkKind.maxPixels`.
+    func compact() async
+}
+
+extension ArtworkProviding {
+    public func compact() async {}
 }
 
 /// Whose SteamGridDB API key Frontport fetches artwork with.
