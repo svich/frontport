@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-04T18:00:00Z",
+  "issued": "2026-11-04T20:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -48,7 +48,8 @@
     { "id": "half-life-blue-shift", "name": "Half-Life: Blue Shift", "shortName": "Blue Shift", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1417, "base": "half-life" },
     { "id": "supaplex", "name": "Supaplex", "platform": "dos", "genres": ["puzzle"], "steamgriddb": 26988 },
     { "id": "outrun", "name": "OutRun", "platform": "arcade", "genres": ["racing"], "steamgriddb": 35252 },
-    { "id": "tomb-raider", "name": "Tomb Raider", "platform": "dos", "genres": ["adventure"], "steamgriddb": 2385 }
+    { "id": "tomb-raider", "name": "Tomb Raider", "platform": "dos", "genres": ["adventure"], "steamgriddb": 2385 },
+    { "id": "star-control-2", "name": "Star Control II", "platform": "dos", "genres": ["adventure"], "steamgriddb": 34524 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -1278,6 +1279,32 @@
       "screenshots": [],
       "tags": ["widescreen", "60fps"],
       "firstRelease": "2016-11-26T10:19:22Z"
+    },
+    {
+      "id": "uqm",
+      "name": "The Ur-Quan Masters",
+      "kind": "sourceport",
+      "game": "star-control-2",
+      "developer": "The UQM Team",
+      "summary": "Star Control II, from the source code of its 3DO version, with its voices and soundtrack.",
+      "description": "The Ur-Quan Masters is the open-source port of Star Control II, built from the source code Toys for Bob released in 2002 for the game’s 3DO version. It plays the whole adventure across the galaxy and its ship-to-ship battles, and Super Melee for two players on one Mac, scaled up to a larger window or full screen with smoothing filters, with keyboard and game controller support. Frontport builds it from source, with SDL inside the app. The game’s content is freeware and comes with the app, with the 3DO version’s full voice acting and soundtrack, so it needs no ROM.\n\nThe Ur-Quan Masters keeps its settings, saved games and Super Melee teams in the Port’s Data.",
+      "source": "https://sourceforge.net/p/sc2/uqm/",
+      "website": "https://sc2.sourceforge.net/",
+      "bundleId": "dev.frontport.port.uqm",
+      "releases": {
+        "type": "git",
+        "repo": "0xDEC0DE/sc2-uqm",
+        "refs": { "stable": "199e3748cc41b688a65601e3b7b2a74bdb2c917c" },
+        "recipe": "recipes/uqm.sh",
+        "recipeSHA256": "282df6b1fc91978370a56f87cf856c0808ea72d68b015d4dce468a0d202b1c0b"
+      },
+      "requirements": [],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 34524 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["multiplayer"],
+      "firstRelease": "2002-11-27T15:02:40Z"
     }
   ]
 }
