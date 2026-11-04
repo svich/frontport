@@ -51,6 +51,7 @@ struct GenreBadge: View {
         case "racing": "flag.checkered"
         case "shooter": "scope"
         case "puzzle": "puzzlepiece.fill"
+        case "simulation": "tram.fill"
         default: "gamecontroller.fill"
         }
     }
@@ -62,6 +63,7 @@ struct GenreBadge: View {
         case "racing": .red
         case "shooter": .indigo
         case "puzzle": .teal
+        case "simulation": .brown
         default: .gray
         }
     }

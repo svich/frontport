@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-04T20:00:00Z",
+  "issued": "2026-11-04T21:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -15,7 +15,8 @@
     { "id": "racing", "name": "Racing" },
     { "id": "shooter", "name": "Shooter" },
     { "id": "rpg", "name": "Role-playing" },
-    { "id": "puzzle", "name": "Puzzle" }
+    { "id": "puzzle", "name": "Puzzle" },
+    { "id": "simulation", "name": "Simulation" }
   ],
   "games": [
     { "id": "majoras-mask", "name": "The Legend of Zelda: Majora’s Mask", "shortName": "Majora’s Mask", "platform": "n64", "genres": ["adventure"], "steamgriddb": 34302 },
@@ -49,7 +50,8 @@
     { "id": "supaplex", "name": "Supaplex", "platform": "dos", "genres": ["puzzle"], "steamgriddb": 26988 },
     { "id": "outrun", "name": "OutRun", "platform": "arcade", "genres": ["racing"], "steamgriddb": 35252 },
     { "id": "tomb-raider", "name": "Tomb Raider", "platform": "dos", "genres": ["adventure"], "steamgriddb": 2385 },
-    { "id": "star-control-2", "name": "Star Control II", "platform": "dos", "genres": ["adventure"], "steamgriddb": 34524 }
+    { "id": "star-control-2", "name": "Star Control II", "platform": "dos", "genres": ["adventure"], "steamgriddb": 34524 },
+    { "id": "transport-tycoon-deluxe", "name": "Transport Tycoon Deluxe", "platform": "dos", "genres": ["simulation"], "steamgriddb": 5254728 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -1305,6 +1307,32 @@
       "screenshots": [],
       "tags": ["multiplayer"],
       "firstRelease": "2002-11-27T15:02:40Z"
+    },
+    {
+      "id": "openttd",
+      "name": "OpenTTD",
+      "kind": "recreation",
+      "game": "transport-tycoon-deluxe",
+      "developer": "The OpenTTD team",
+      "summary": "Transport Tycoon Deluxe, remade and expanded, with free graphics, sounds and music included.",
+      "description": "OpenTTD is the open-source remake of Transport Tycoon Deluxe, begun from the reverse-engineered original and developed for over twenty years. Build road, rail, sea and air networks, carry passengers and cargo between growing towns and industries, and compete with AI companies or play online with others. It adds much larger maps, signals and timetables, a scenario editor, and thousands of free vehicle sets, maps and scripts from its online content service. Frontport builds it from source. OpenGFX, OpenSFX and OpenMSX, free replacements for the original game’s graphics, sounds and music, come with the app, so it needs no ROM.\n\nOpenTTD keeps its settings, saved games, screenshots and downloaded content in the Port’s Data.",
+      "source": "https://github.com/OpenTTD/OpenTTD",
+      "website": "https://www.openttd.org/",
+      "bundleId": "dev.frontport.port.openttd",
+      "releases": {
+        "type": "git",
+        "repo": "OpenTTD/OpenTTD",
+        "refs": { "stable": "15.3" },
+        "recipe": "recipes/openttd.sh",
+        "recipeSHA256": "30d7df1ce08b8dbec01e8535caaeb0e2ae1f61f5a580afe30097867189c3e9ae"
+      },
+      "requirements": [],
+      "permissions": { "network": true, "controllers": false, "files": false },
+      "artwork": { "steamgriddb": 5248226, "fallback": 5254728 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["multiplayer"],
+      "firstRelease": "2004-03-06T23:00:00Z"
     }
   ]
 }
