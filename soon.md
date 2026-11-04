@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware).
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball.
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -27,7 +27,6 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 | Hexen II | uHexen2 | Steam |
 | Descent 1 and 2 | DXX-Rebirth | Steam |
 | Descent 3 | Descent3 | Steam |
-| Doom 3 | dhewm3 | Steam |
 | Jedi Outcast, Jedi Academy | OpenJK | Steam |
 | Return to Castle Wolfenstein | iortcw | Steam |
 | Unreal, Unreal Tournament | OldUnreal 469 | not sold (delisted) |
@@ -37,7 +36,6 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 
 | Game | Project | Files |
 |---|---|---|
-| Fallout 2 | fallout2-ce | Steam |
 | Diablo, Hellfire | DevilutionX | GOG |
 | Baldur's Gate, Icewind Dale, Planescape: Torment | GemRB | Enhanced Editions only, which GemRB doesn't target |
 | Morrowind | OpenMW | Steam |
@@ -87,7 +85,6 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 | Duke Nukem II | RigelEngine | not sold |
 | One Must Fall 2097 | OpenOMF | freeware |
 | Abuse | abuse | freeware |
-| Supaplex | OpenSupaplex | freeware |
 
 ## PlayStation
 
