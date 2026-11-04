@@ -30,6 +30,7 @@ enum RecipeRun {
         "sm": "578f90b3cc49557bb70060ad033bb90b8cf8ac50", "render96ex": "f6e9e1b54f43b2caeffcf71644c6165f2652948c",
         "cannonball": "27493ebf62be3498dff93ed6a45e8e2db819bae1",
         "perfect-dark": "a4b58e6dd14d5842d588e9841efa8bceb8b86fc3",
+        "openlara": "3b268ca4bf986c380f44a26ffd9218bf6d376249",
     ]
 
     static var repository: URL {

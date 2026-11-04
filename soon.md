@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball.
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -92,7 +92,6 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 |---|---|---|
 | Wipeout | wipeout-rewrite | not sold (PS1 NTSC disc, plus menu models from the PC version) |
 | The Legend of Dragoon | Severed Chains | not sold (PS1 discs) |
-| Tomb Raider | OpenLara (reads PC, PS1 and Saturn data) | Steam |
 
 ## Adventure
 

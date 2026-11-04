@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-01T18:00:00Z",
+  "issued": "2026-11-04T18:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -47,7 +47,8 @@
     { "id": "half-life-opposing-force", "name": "Half-Life: Opposing Force", "shortName": "Opposing Force", "platform": "windows", "genres": ["shooter"], "steamgriddb": 12929, "base": "half-life" },
     { "id": "half-life-blue-shift", "name": "Half-Life: Blue Shift", "shortName": "Blue Shift", "platform": "windows", "genres": ["shooter"], "steamgriddb": 1417, "base": "half-life" },
     { "id": "supaplex", "name": "Supaplex", "platform": "dos", "genres": ["puzzle"], "steamgriddb": 26988 },
-    { "id": "outrun", "name": "OutRun", "platform": "arcade", "genres": ["racing"], "steamgriddb": 35252 }
+    { "id": "outrun", "name": "OutRun", "platform": "arcade", "genres": ["racing"], "steamgriddb": 35252 },
+    { "id": "tomb-raider", "name": "Tomb Raider", "platform": "dos", "genres": ["adventure"], "steamgriddb": 2385 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -130,7 +131,9 @@
       "configs": ["config.cfg", "mapcycle.txt", "motd.txt", "server.cfg", "user.scr"], "steam": { "app": 50, "folder": "gearbox", "depots": [{ "depot": 51, "manifest": "789184054796507140" }] } },
     { "sha1": "5e8ed11383fb58342ee21e7e8228a75e5266d99b", "game": "half-life-blue-shift", "name": "Steam (build 5424832): the bshift folder", "format": "folder",
       "configs": ["config.cfg", "server.cfg", "user.scr"], "steam": { "app": 130, "folder": "bshift", "depots": [{ "depot": 130, "manifest": "2832280714065945284" }] } },
-    { "sha1": "6ecb1589c502c6a4ba6b40a057aac3079e41d10a", "game": "outrun", "name": "Revision B (MAME’s outrun set)", "format": "folder" }
+    { "sha1": "6ecb1589c502c6a4ba6b40a057aac3079e41d10a", "game": "outrun", "name": "Revision B (MAME’s outrun set)", "format": "folder" },
+    { "sha1": "01d0106268876e380b672afda1ee3a05d5f4734f", "game": "tomb-raider", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 1 folder", "format": "folder",
+      "steam": { "app": 2478970, "folder": "1", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } }
   ],
   "ports": [
     {
@@ -1242,6 +1245,39 @@
       "screenshots": [],
       "tags": ["widescreen", "60fps"],
       "firstRelease": "2021-03-15T19:58:04Z"
+    },
+    {
+      "id": "openlara",
+      "name": "OpenLara",
+      "kind": "recreation",
+      "game": "tomb-raider",
+      "developer": "XProger",
+      "summary": "Tomb Raider on a new engine, with widescreen, smooth frame rates and modern controls.",
+      "description": "OpenLara is a new engine for the classic Tomb Raider games, written from scratch and playing the original levels, with widescreen, frame rates beyond the original’s 30 fps, a free camera, and keyboard and game controller support. Frontport builds it from source and makes it play from the Port’s Data instead of the folder the app sits in, and reads game controllers through macOS, so any it supports works.\n\nThe game comes as Steam’s Tomb Raider I-III Remastered, which holds the original Tomb Raider in its folder 1: Frontport finds it in your Steam library once Steam has installed it, or downloads it with Steam. Frontport keeps a copy of that folder in the Port’s Data, where OpenLara also keeps its settings and saves, and plays its music and the PlayStation videos from it.",
+      "source": "https://github.com/XProger/OpenLara",
+      "website": "http://xproger.info/projects/OpenLara/",
+      "bundleId": "dev.frontport.port.openlara",
+      "releases": {
+        "type": "git",
+        "repo": "XProger/OpenLara",
+        "refs": { "stable": "3b268ca4bf986c380f44a26ffd9218bf6d376249" },
+        "recipe": "recipes/openlara.sh",
+        "recipeSHA256": "7cf1266afe13be4c876f0c74911b21eb9ec408727ecf6ea0812a443feedaaebe"
+      },
+      "requirements": [
+        {
+          "label": "Tomb Raider",
+          "stage": "runtime",
+          "oneOf": ["01d0106268876e380b672afda1ee3a05d5f4734f"],
+          "seedPath": "Library/Application Support/OpenLara"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2385 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["widescreen", "60fps"],
+      "firstRelease": "2016-11-26T10:19:22Z"
     }
   ]
 }
