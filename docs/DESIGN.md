@@ -616,6 +616,7 @@ The full Catalog, with sources, is in [`catalog/README.md`](../catalog/README.md
 | b3x (Burnout 3: Takedown) | none; Android APK only | none | Source build of `d320ade`: the disc's `default.xbe` lifted to C during the build, compiled with Vulkan through MoltenVK, patched for the sandbox (RAM file, save folders, main-thread window, GameController pads). The disc's files are the Build Assets |
 | vkQuake (Quake) | 1.37.0, 2026-10-12 | none: Windows and Linux builds only | Source build of `1.37.0` with Meson against static SDL3 and Vorbis, Vulkan through MoltenVK, patched to play from `Library/Application Support/vkQuake`, where the `id1` folder is Seeded, and to start with triple-buffered vsync |
 | Yamagi Quake II (Quake II) | 8.70, 2026-05-14 | none: Windows builds only | Source build of `QUAKE2_8_70` with CMake against SDL3 and OpenAL Soft, both bundled, patched to play from `Library/Application Support/YamagiQ2`, where the `baseq2` folder is Seeded, and to start in a fullscreen window at the display's resolution |
+| VCMI (Heroes of Might and Magic III) | 1.7.5, 2026-08-15 | Apple silicon and Intel DMGs | Prebuilt Apple silicon DMG, unpatched: its launcher starts the game and map editor as child processes, in its sandbox. The `Data`, `Maps` and `Mp3` folders are Seeded into `Library/Application Support/vcmi` |
 
 ## How Steam compares
 

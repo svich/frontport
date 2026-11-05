@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo).
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -51,7 +51,6 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 | Warcraft II | Wargus | GOG |
 | Master of Orion | 1oom | Steam (Master of Orion 1), or GOG |
 | Heroes of Might and Magic II | fheroes2 | GOG |
-| Heroes of Might and Magic III | VCMI | Steam (HD Edition, without expansions), or GOG |
 | X-COM: UFO Defense, Terror from the Deep | OpenXcom | Steam |
 | Jagged Alliance 2 | JA2 Stracciatella | Steam |
 | Caesar III | Julius, Augustus | Steam |

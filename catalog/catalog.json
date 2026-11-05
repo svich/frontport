@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-05T05:00:00Z",
+  "issued": "2026-11-06T05:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -17,7 +17,8 @@
     { "id": "shooter", "name": "Shooter" },
     { "id": "rpg", "name": "Role-playing" },
     { "id": "puzzle", "name": "Puzzle" },
-    { "id": "simulation", "name": "Simulation" }
+    { "id": "simulation", "name": "Simulation" },
+    { "id": "strategy", "name": "Strategy" }
   ],
   "games": [
     { "id": "majoras-mask", "name": "The Legend of Zelda: Majora’s Mask", "shortName": "Majora’s Mask", "platform": "n64", "genres": ["adventure"], "steamgriddb": 34302 },
@@ -55,7 +56,8 @@
     { "id": "transport-tycoon-deluxe", "name": "Transport Tycoon Deluxe", "platform": "dos", "genres": ["simulation"], "steamgriddb": 5254728 },
     { "id": "burnout-3", "name": "Burnout 3: Takedown", "shortName": "Burnout 3", "platform": "xbox", "genres": ["racing"], "steamgriddb": 37348 },
     { "id": "quake", "name": "Quake", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2514 },
-    { "id": "quake-ii", "name": "Quake II", "platform": "windows", "genres": ["shooter"], "steamgriddb": 2534 }
+    { "id": "quake-ii", "name": "Quake II", "platform": "windows", "genres": ["shooter"], "steamgriddb": 2534 },
+    { "id": "heroes-3", "name": "Heroes of Might and Magic III", "shortName": "Heroes III", "platform": "windows", "genres": ["strategy"], "steamgriddb": 5247456 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -147,7 +149,8 @@
       "configs": ["config.cfg", "server.cfg", "user.scr"], "steam": { "app": 130, "folder": "bshift", "depots": [{ "depot": 130, "manifest": "2832280714065945284" }] } },
     { "sha1": "6ecb1589c502c6a4ba6b40a057aac3079e41d10a", "game": "outrun", "name": "Revision B (MAME’s outrun set)", "format": "folder" },
     { "sha1": "01d0106268876e380b672afda1ee3a05d5f4734f", "game": "tomb-raider", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 1 folder", "format": "folder",
-      "steam": { "app": 2478970, "folder": "1", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } }
+      "steam": { "app": 2478970, "folder": "1", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
+    { "sha1": "111407d9b711469a67f311c289140bb3c60939a5", "game": "heroes-3", "name": "Complete, Russian (Buka): the Data, Maps and Mp3 folders", "format": "folder" }
   ],
   "ports": [
     {
@@ -1441,6 +1444,38 @@
       "screenshots": [],
       "tags": ["mods", "60fps", "widescreen"],
       "firstRelease": "2009-06-14T16:00:34Z"
+    },
+    {
+      "id": "vcmi",
+      "name": "VCMI",
+      "kind": "recreation",
+      "game": "heroes-3",
+      "developer": "VCMI team",
+      "summary": "Heroes of Might and Magic III on a new open-source engine, with mods, online play and a map editor.",
+      "description": "VCMI is an open-source engine for Heroes of Might and Magic III, written anew to play the original game’s files. It runs the Shadow of Death campaigns and maps at any resolution, with smoother animations, an improved interface and AI, and online multiplayer through its lobby. Its launcher installs mods from VCMI’s repository, among them Horn of the Abyss and Wake of Gods, and opens its map editor.\n\nThe game comes as the Data, Maps and Mp3 folders of Heroes III Complete or Shadow of Death, together in one folder. Frontport keeps a copy of them in the Port’s Data, where VCMI also keeps its settings, mods and saves.",
+      "website": "https://vcmi.eu/",
+      "source": "https://github.com/vcmi/vcmi",
+      "bundleId": "dev.frontport.port.vcmi",
+      "releases": {
+        "type": "github-release",
+        "repo": "vcmi/vcmi",
+        "asset": "VCMI-macOS-arm.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Heroes III",
+          "stage": "runtime",
+          "oneOf": ["111407d9b711469a67f311c289140bb3c60939a5"],
+          "seedPath": "Library/Application Support/vcmi"
+        }
+      ],
+      "permissions": { "network": true, "controllers": true, "files": false },
+      "artwork": { "steamgriddb": 5444610, "fallback": 5247456 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["mods", "multiplayer", "online", "widescreen"],
+      "firstRelease": "2014-07-01T18:04:25Z"
     }
   ]
 }
