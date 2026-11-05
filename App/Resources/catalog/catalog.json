@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-05T01:00:00Z",
+  "issued": "2026-11-05T05:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -54,7 +54,8 @@
     { "id": "star-control-2", "name": "Star Control II", "platform": "dos", "genres": ["adventure"], "steamgriddb": 34524 },
     { "id": "transport-tycoon-deluxe", "name": "Transport Tycoon Deluxe", "platform": "dos", "genres": ["simulation"], "steamgriddb": 5254728 },
     { "id": "burnout-3", "name": "Burnout 3: Takedown", "shortName": "Burnout 3", "platform": "xbox", "genres": ["racing"], "steamgriddb": 37348 },
-    { "id": "quake", "name": "Quake", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2514 }
+    { "id": "quake", "name": "Quake", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2514 },
+    { "id": "quake-ii", "name": "Quake II", "platform": "windows", "genres": ["shooter"], "steamgriddb": 2534 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -76,6 +77,10 @@
     { "sha1": "27d833c7bdaba05b34e8a6f6ef21acbc0c99a3fa", "game": "burnout-3", "name": "NTSC (US)", "format": "iso" },
     { "sha1": "f6f499ec1f3bf9bf19b2c01700b0eeacea52047a", "game": "quake", "name": "Shareware 1.06: the id1 folder", "format": "folder" },
     { "sha1": "d2e31b9e39843b8bce3936e3bc1cc687a566d8de", "game": "quake", "name": "Shareware 1.06: the id1 folder, lowercase pak0.pak", "format": "folder" },
+    { "sha1": "d8c5e9e9919fb1368c26c46c4ccf97a19d7b5703", "game": "quake-ii", "name": "Demo 3.14: the baseq2 folder", "format": "folder" },
+    { "sha1": "bd0b854c7fdddd590b1a8959b58a661e90307189", "game": "quake-ii", "name": "Demo 3.14: the baseq2 folder, pak0.pak and players only", "format": "folder" },
+    { "sha1": "65e1338b07e68f2a606546c87506fc67cce2b7e2", "game": "quake-ii", "name": "Steam: the original game’s baseq2 folder", "format": "folder",
+      "steam": { "app": 2320, "folder": "baseq2", "depots": [{ "depot": 2321, "manifest": "197921167251316881" }] } },
     { "sha1": "9b07b02ab3c275a6a7570c3f73cc20d63a0e3833", "game": "doom", "name": "The Ultimate Doom 1.9", "format": "wad", "steam": { "app": 2280, "file": "base/DOOM.WAD", "depots": [{ "depot": 2281, "manifest": "557527948370603647" }] } },
     { "sha1": "87651324502044f9a6eed403e48853aa16c93e49", "game": "doom", "name": "2024 re-release (KEX)", "format": "wad", "steam": { "app": 2280, "file": "rerelease/doom.wad", "depots": [{ "depot": 2281, "manifest": "557527948370603647" }] } },
     { "sha1": "08ab2507e1d525c4c06b6df4f6d5862568a6b009", "game": "doom", "name": "Unity port (2019)", "format": "wad" },
@@ -1403,6 +1408,39 @@
       "screenshots": [],
       "tags": ["mods", "60fps", "widescreen"],
       "firstRelease": "2016-07-31T20:10:02Z"
+    },
+    {
+      "id": "yquake2",
+      "name": "Yamagi Quake II",
+      "kind": "sourceport",
+      "game": "quake-ii",
+      "developer": "Yamagi",
+      "summary": "Quake II as it shipped, fixed and sharpened, native on Apple silicon.",
+      "description": "Yamagi Quake II is the Quake II engine built up from the source code id Software released in 2001, kept true to the original game while fixing its bugs. It renders with OpenGL 3.2, OpenGL 1.4 or the original software renderer, runs at any frame rate and resolution without changing the game’s physics, and plays sound through OpenAL with the underwater effects. Frontport builds it from source, natively for Apple silicon.\n\nThe game comes as the baseq2 folder of Quake II: the original game’s, from Steam’s Quake II, or the demo’s, with its first levels. Frontport keeps a copy of it in the Port’s Data, where Yamagi Quake II also writes config.cfg, its saves and screenshots.",
+      "website": "https://www.yamagi.org/quake2/",
+      "source": "https://github.com/yquake2/yquake2",
+      "bundleId": "dev.frontport.port.yquake2",
+      "releases": {
+        "type": "git",
+        "repo": "yquake2/yquake2",
+        "refs": { "stable": "QUAKE2_8_70" },
+        "recipe": "recipes/yquake2.sh",
+        "recipeSHA256": "3d7b31b253fc196951a1c7af8497f73d12f4c458309bd5bdd30b35852d12892c"
+      },
+      "requirements": [
+        {
+          "label": "Quake II",
+          "stage": "runtime",
+          "oneOf": ["65e1338b07e68f2a606546c87506fc67cce2b7e2", "d8c5e9e9919fb1368c26c46c4ccf97a19d7b5703", "bd0b854c7fdddd590b1a8959b58a661e90307189"],
+          "seedPath": "Library/Application Support/YamagiQ2/baseq2"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2534 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen"],
+      "firstRelease": "2009-06-14T16:00:34Z"
     }
   ]
 }

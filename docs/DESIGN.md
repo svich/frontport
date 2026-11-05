@@ -615,6 +615,7 @@ The full Catalog, with sources, is in [`catalog/README.md`](../catalog/README.md
 | OpenTTD (Transport Tycoon Deluxe) | 15.3, 2026-04-04 | universal DMG, signed and notarized, without base sets | Source build of `15.3` with upstream's CMake against static liblzma and libpng, patched to give each thread its own iconv handle, as macOS's iconv aborts on two at once. OpenGFX, OpenSFX and OpenMSX come with the app, so no ROM |
 | b3x (Burnout 3: Takedown) | none; Android APK only | none | Source build of `d320ade`: the disc's `default.xbe` lifted to C during the build, compiled with Vulkan through MoltenVK, patched for the sandbox (RAM file, save folders, main-thread window, GameController pads). The disc's files are the Build Assets |
 | vkQuake (Quake) | 1.37.0, 2026-10-12 | none: Windows and Linux builds only | Source build of `1.37.0` with Meson against static SDL3 and Vorbis, Vulkan through MoltenVK, patched to play from `Library/Application Support/vkQuake`, where the `id1` folder is Seeded, and to start with triple-buffered vsync |
+| Yamagi Quake II (Quake II) | 8.70, 2026-05-14 | none: Windows builds only | Source build of `QUAKE2_8_70` with CMake against SDL3 and OpenAL Soft, both bundled, patched to play from `Library/Application Support/YamagiQ2`, where the `baseq2` folder is Seeded, and to start in a fullscreen window at the display's resolution |
 
 ## How Steam compares
 

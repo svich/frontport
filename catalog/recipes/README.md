@@ -104,6 +104,11 @@ The Builder turns output lines into progress:
   which the sandbox puts in the container; Build Assets read from `Contents/Resources`) are applied in
   fetch, and fail loudly when the text they replace has changed. A folder a Port writes beside its
   executable needs no patch: the entry's `redirects` lead it into the container, as OpenGOAL's `data/log`.
+- **Fullscreen window by default.** Where a Port can, it starts in a fullscreen window at the desktop
+  resolution, not in exclusive fullscreen: on macOS that switches the display mode, which gains nothing
+  (a window covering the display is already shown without compositing) and letterboxes the picture,
+  often off-center. Patch the default where upstream's differs, so a player's saved setting still wins,
+  as `yquake2.sh` does.
 - **Tools:** bash, git, curl, cmake, ninja, make, clang, python3 (from the developer tools), perl, patch,
   shasum, plutil, sips, iconutil. sips and iconutil need LaunchServices and fail in the build step, but a
   small tool calling ImageIO works there, compiled with clang in the build step.
@@ -176,6 +181,7 @@ FRONTPORT_NETWORK_TESTS=1 FRONTPORT_RECIPE=fallout-ce-ios swift test --filter De
 | `openttd.sh` | [OpenTTD/OpenTTD](https://github.com/OpenTTD/OpenTTD) (its Release is a signed universal DMG without the base sets), built with upstream's CMake against xz 5.8.4 and libpng 1.6.59 | `15.3` | none: OpenGFX 8.0, OpenSFX 1.0.3 and OpenMSX 0.4.2 ship in the app |
 | `b3x.sh` | [aribrilliantsyah/Burnout3-Recompiled-Mobile](https://github.com/aribrilliantsyah/Burnout3-Recompiled-Mobile) with its vendored xboxrecomp, the XBE lifted with Python 3.14.9 (python-build-standalone) and capstone 5.0.9, built against SDL2 2.32.10, glslang 16.6.0 and MoltenVK 1.4.2 | `d320adecbd0a1db2045f11ea265ac9321260e215` | the disc's files in `Contents/Resources/game` |
 | `vkquake.sh` | [Novum/vkQuake](https://github.com/Novum/vkQuake) (no Mac Release), built with Meson 1.10.2 and pkgconf 3.0.10 against SDL3 3.4.20, libogg 1.3.6, libvorbis 1.3.7, glslang 16.6.0, Vulkan-Headers 1.4.363 and MoltenVK 1.4.2 | `1.37.0` | none: the game's `id1` folder is a Runtime-Stage ROM |
+| `yquake2.sh` | [yquake2/yquake2](https://github.com/yquake2/yquake2) (no Mac Release), built with its CMake against SDL3 3.4.20 and OpenAL Soft 1.25.2 | `QUAKE2_8_70` | none: the game's `baseq2` folder is a Runtime-Stage ROM |
 | `perfect-dark.sh` | [fgsfdsfgs/perfect_dark](https://github.com/fgsfdsfgs/perfect_dark)'s `port` branch (only a rolling CI build, with SDL2.framework loose beside the executable), with SDL2 2.32.10 | `a4b58e6dd14d5842d588e9841efa8bceb8b86fc3` | `Contents/Resources/data/pd.ntsc-final.z64` (the ROM itself) |
 | `innoextract.sh` | [dscharrer/innoextract](https://github.com/dscharrer/innoextract), an unpack Recipe for Inno Setup installers such as GOG's | `6e9e34ed` (with Boost 1.88 and xz 5.8.4) | none: it unpacks, and GOG's `supportData` copies run after |
 | `iso.sh` | none: the bsdtar macOS ships, an unpack Recipe for a PC Game's CD image (ISO 9660) | none to pin | none: it unpacks the disc's files into one folder |
