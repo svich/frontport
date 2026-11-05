@@ -32,6 +32,7 @@ enum RecipeRun {
         "perfect-dark": "a4b58e6dd14d5842d588e9841efa8bceb8b86fc3",
         "openlara": "3b268ca4bf986c380f44a26ffd9218bf6d376249",
         "uqm": "199e3748cc41b688a65601e3b7b2a74bdb2c917c", "openttd": "15.3", "b3x": "d320adecbd0a1db2045f11ea265ac9321260e215",
+        "vkquake": "1.37.0",
     ]
 
     static var repository: URL {

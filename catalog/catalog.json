@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-04T22:00:00Z",
+  "issued": "2026-11-05T01:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -53,7 +53,8 @@
     { "id": "tomb-raider", "name": "Tomb Raider", "platform": "dos", "genres": ["adventure"], "steamgriddb": 2385 },
     { "id": "star-control-2", "name": "Star Control II", "platform": "dos", "genres": ["adventure"], "steamgriddb": 34524 },
     { "id": "transport-tycoon-deluxe", "name": "Transport Tycoon Deluxe", "platform": "dos", "genres": ["simulation"], "steamgriddb": 5254728 },
-    { "id": "burnout-3", "name": "Burnout 3: Takedown", "shortName": "Burnout 3", "platform": "xbox", "genres": ["racing"], "steamgriddb": 37348 }
+    { "id": "burnout-3", "name": "Burnout 3: Takedown", "shortName": "Burnout 3", "platform": "xbox", "genres": ["racing"], "steamgriddb": 37348 },
+    { "id": "quake", "name": "Quake", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2514 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -73,6 +74,8 @@
     { "sha1": "6fbe90e0b1317cdba8c19220939f9d4cc2328ea2", "game": "jak-ii", "name": "NTSC (US)", "format": "iso" },
     { "sha1": "f8b1ed096628be006db4d098e6fe02b463e54e4e", "game": "jak-3", "name": "PAL (Europe)", "format": "iso" },
     { "sha1": "27d833c7bdaba05b34e8a6f6ef21acbc0c99a3fa", "game": "burnout-3", "name": "NTSC (US)", "format": "iso" },
+    { "sha1": "f6f499ec1f3bf9bf19b2c01700b0eeacea52047a", "game": "quake", "name": "Shareware 1.06: the id1 folder", "format": "folder" },
+    { "sha1": "d2e31b9e39843b8bce3936e3bc1cc687a566d8de", "game": "quake", "name": "Shareware 1.06: the id1 folder, lowercase pak0.pak", "format": "folder" },
     { "sha1": "9b07b02ab3c275a6a7570c3f73cc20d63a0e3833", "game": "doom", "name": "The Ultimate Doom 1.9", "format": "wad", "steam": { "app": 2280, "file": "base/DOOM.WAD", "depots": [{ "depot": 2281, "manifest": "557527948370603647" }] } },
     { "sha1": "87651324502044f9a6eed403e48853aa16c93e49", "game": "doom", "name": "2024 re-release (KEX)", "format": "wad", "steam": { "app": 2280, "file": "rerelease/doom.wad", "depots": [{ "depot": 2281, "manifest": "557527948370603647" }] } },
     { "sha1": "08ab2507e1d525c4c06b6df4f6d5862568a6b009", "game": "doom", "name": "Unity port (2019)", "format": "wad" },
@@ -1367,6 +1370,39 @@
       "buildAssets": { "path": "Contents/Resources/game", "format": "1" },
       "screenshots": [],
       "tags": ["multiplayer"]
+    },
+    {
+      "id": "vkquake",
+      "name": "vkQuake",
+      "kind": "sourceport",
+      "game": "quake",
+      "developer": "Novum",
+      "summary": "Quake on Vulkan, fast and smooth at any frame rate, native on Apple silicon.",
+      "description": "vkQuake carries on QuakeSpasm, the Quake engine built up from the source code id Software released in 1999, with a Vulkan renderer that MoltenVK turns into Metal. It renders on several threads, runs at any frame rate without breaking the game’s physics, draws the underwater warp as the software renderer did, and plays the mods QuakeSpasm plays, such as Arcane Dimensions. Frontport builds it from source, natively for Apple silicon, with MoltenVK inside the app.\n\nThe game comes as the id1 folder of Quake: the shareware episode, from the shareware release’s install. Frontport keeps a copy of it in the Port’s Data, where vkQuake also writes vkQuake.cfg and its saves.",
+      "website": "https://github.com/Novum/vkQuake",
+      "source": "https://github.com/Novum/vkQuake",
+      "bundleId": "dev.frontport.port.vkquake",
+      "releases": {
+        "type": "git",
+        "repo": "Novum/vkQuake",
+        "refs": { "stable": "1.37.0" },
+        "recipe": "recipes/vkquake.sh",
+        "recipeSHA256": "6b0ea9a645e4504f40981b1b493fe838a7ca6716f351ad5e72b7c348fd60427a"
+      },
+      "requirements": [
+        {
+          "label": "Quake",
+          "stage": "runtime",
+          "oneOf": ["f6f499ec1f3bf9bf19b2c01700b0eeacea52047a", "d2e31b9e39843b8bce3936e3bc1cc687a566d8de"],
+          "seedPath": "Library/Application Support/vkQuake/id1"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2514 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["mods", "60fps", "widescreen"],
+      "firstRelease": "2016-07-31T20:10:02Z"
     }
   ]
 }
