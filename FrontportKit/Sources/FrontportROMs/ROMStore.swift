@@ -210,24 +210,25 @@ public actor ROMStore: ROMStoring {
         let library = self.steam
         let name = known.game.flatMap { catalog.game($0)?.name } ?? known.name
         var folders: [URL] = []
+        var states: [URL] = []
         // What Steam downloaded is Frontport's to remove, whatever happens: each depot's folder and the state Steam
-        // keeps beside it, `state_<app>_<depot>.patch`, then the app's folder once it's empty.
+        // keeps beside it, then the app's folder once it's empty.
         defer {
-            for folder in folders {
-                let app = folder.deletingLastPathComponent()
-                let state = "state_\(app.lastPathComponent.dropFirst("app_".count))_\(folder.lastPathComponent.dropFirst("depot_".count)).patch"
+            for (folder, state) in zip(folders, states) {
                 try? FileOperations.removeUntrusted(folder)
-                unlink(app.appending(path: state).path(percentEncoded: false))
-                rmdir(app.path(percentEncoded: false))
+                unlink(state.path(percentEncoded: false))
+                rmdir(folder.deletingLastPathComponent().path(percentEncoded: false))
             }
         }
         do {
             for (index, depot) in depots.enumerated() {
                 let share = 1 / Double(depots.count)
-                let folder = try await library.download(depot, of: depot.app ?? steam.app, name: name) { fraction in
+                let app = depot.app ?? steam.app
+                let folder = try await library.download(depot, of: app, name: name) { fraction in
                     progress((Double(index) + fraction) * share * 0.9)
                 }
                 folders.append(folder)
+                states.append(library.downloadState(app: app, depot: depot.depot))
             }
             let work = try workFolder()
             defer { try? FileOperations.removeUntrusted(work) }

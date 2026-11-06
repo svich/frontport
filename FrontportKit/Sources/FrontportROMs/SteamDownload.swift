@@ -11,6 +11,12 @@ extension SteamLibrary {
         root.appending(path: "Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_\(app)/depot_\(depot)", directoryHint: .isDirectory)
     }
 
+    /// The state `download_depot` keeps beside a depot's folder. While it's there, Steam takes the depot for downloaded
+    /// and says it's complete at once, leaving the folder empty.
+    func downloadState(app: Int, depot: Int) -> URL {
+        content(app: app, depot: depot).deletingLastPathComponent().appending(path: "state_\(app)_\(depot).patch")
+    }
+
     var consoleLog: URL { root.appending(path: "logs/console_log.txt") }
 
     /// How long Steam may take to start a download, signing in first if it wasn't running.
@@ -24,8 +30,9 @@ extension SteamLibrary {
     ) async throws -> URL {
         guard let commandLine = client() else { throw rejected("Steam isn’t installed. Install Steam, sign in, then try again.") }
         let folder = content(app: app, depot: depot.depot)
-        // Leftovers of an earlier download would be taken for this one's.
-        if FileOperations.exists(folder) { try FileOperations.removeUntrusted(folder) }
+        // Leftovers of an earlier download would be taken for this one's, and its state would stop Steam downloading.
+        try FileOperations.removeUntrusted(folder)
+        try FileOperations.removeUntrusted(downloadState(app: app, depot: depot.depot))
         var offset = (try? FileManager.default.attributesOfItem(atPath: consoleLog.path(percentEncoded: false))[.size] as? Int) ?? 0
         try commandLine(["+download_depot", "\(app)", "\(depot.depot)", depot.manifest])
 

@@ -8,7 +8,8 @@ import Testing
     static let depot = KnownROM.Steam.Depot(depot: 1, manifest: "2667117727132184734")
 
     /// A Steam folder with nothing installed whose command line acts as `download_depot` does: it logs the command,
-    /// then either fails with `failure` or downloads the depot and logs that it's complete.
+    /// then either fails with `failure` or downloads the depot and logs that it's complete. Like Steam, it downloads
+    /// nothing while the depot's state from an earlier download is there, and leaves the folder empty.
     func steam(in tmp: TemporaryDirectory, failure: String? = nil, calls: Calls = Calls()) throws -> SteamLibrary {
         let root = tmp.url.appending(path: "Steam", directoryHint: .isDirectory)
         try tmp.file("Steam/logs/console_log.txt", Data("[2026-10-31 14:00:00] Startup\n".utf8))
@@ -21,12 +22,16 @@ import Testing
                 lines.append("Depot download failed : \(failure)")
             } else {
                 let folder = root.appending(path: "Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_70/depot_1")
+                let state = folder.deletingLastPathComponent().appending(path: "state_70_1.patch")
                 lines.append("Downloading depot 1 (\(files.count) files, 1 MB) ... ")
-                for (path, data) in files {
-                    try FileManager.default.createDirectory(at: folder.appending(path: path).deletingLastPathComponent(), withIntermediateDirectories: true)
-                    try data.write(to: folder.appending(path: path))
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                if !FileManager.default.fileExists(atPath: state.path(percentEncoded: false)) {
+                    for (path, data) in files {
+                        try FileManager.default.createDirectory(at: folder.appending(path: path).deletingLastPathComponent(), withIntermediateDirectories: true)
+                        try data.write(to: folder.appending(path: path))
+                    }
                 }
-                try Data("state".utf8).write(to: folder.deletingLastPathComponent().appending(path: "state_70_1.patch"))
+                try Data("state".utf8).write(to: state)
                 try FileManager.default.createDirectory(at: root.appending(path: "depotcache"), withIntermediateDirectories: true)
                 try SteamTests.manifest(files, configs: ["valve/config.cfg"]).write(to: root.appending(path: "depotcache/1_2667117727132184734.manifest"))
                 lines.append("Depot download complete : \"\(root.path(percentEncoded: false))Steam.AppBundle/Steam/Contents/MacOS\\steamapps\\content\\app_70\\depot_1\" (manifest 2667117727132184734) ")
@@ -76,6 +81,20 @@ import Testing
         // What Steam downloaded is gone; the ROM is a copy.
         #expect(!FileManager.default.fileExists(atPath: tmp.url.appending(path: "Steam/Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_70").path(percentEncoded: false)))
         #expect(await store.steamDownloads(catalog: catalog()).isEmpty)
+    }
+
+    /// An earlier `download_depot`'s folder and state, left by the user or a download cut short, would have Steam skip
+    /// the depot and leave its folder empty.
+    @Test func anEarlierDownloadsLeftoversAreRemovedFirst() async throws {
+        let tmp = try TemporaryDirectory()
+        try tmp.file("Steam/Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_70/depot_1/valve/stale.txt", Data("old".utf8))
+        try tmp.file("Steam/Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_70/state_70_1.patch", Data("state".utf8))
+        let store = ROMStore(paths: tmp.paths, steam: try steam(in: tmp))
+
+        let results = await store.downloadFromSteam(SteamTests.valveIdentity, catalog: catalog()) { _ in }
+        guard case .added(let record) = results.first else { Issue.record("\(results)"); return }
+        #expect(record.sha1 == SteamTests.valveIdentity)
+        #expect(!FileManager.default.fileExists(atPath: tmp.url.appending(path: "Steam/Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_70").path(percentEncoded: false)))
     }
 
     @Test func steamsReasonForAFailedDownloadIsReported() async throws {
