@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-06T13:00:00Z",
+  "issued": "2026-11-06T14:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -58,7 +58,8 @@
     { "id": "quake", "name": "Quake", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2514 },
     { "id": "quake-ii", "name": "Quake II", "platform": "windows", "genres": ["shooter"], "steamgriddb": 2534 },
     { "id": "heroes-3", "name": "Heroes of Might and Magic III", "shortName": "Heroes III", "platform": "windows", "genres": ["strategy"], "steamgriddb": 5247456 },
-    { "id": "plants-vs-zombies", "name": "Plants vs. Zombies", "platform": "windows", "genres": ["strategy"], "steamgriddb": 7127 }
+    { "id": "plants-vs-zombies", "name": "Plants vs. Zombies", "platform": "windows", "genres": ["strategy"], "steamgriddb": 7127 },
+    { "id": "monkey-island", "name": "The Secret of Monkey Island", "shortName": "Monkey Island", "platform": "dos", "genres": ["adventure"], "steamgriddb": 37740 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -155,7 +156,9 @@
     { "sha1": "c01ed8d104bc94e0c84377e7e5842103da2a279e", "game": "plants-vs-zombies", "name": "Game of the Year Edition, Steam for macOS (build 11226): its app’s Resources folder", "format": "folder",
       "steam": { "app": 3590, "folder": "Plants vs. Zombies.app/Contents/Resources", "depots": [{ "depot": 3593, "manifest": "2896720143485326882" }] } },
     { "sha1": "04832d7e8c9f0daf898927d1fc9972a763f1c348", "game": "plants-vs-zombies", "name": "Game of the Year Edition, Steam for Windows (build 11226): its folder", "format": "folder",
-      "steam": { "app": 3590, "depots": [{ "depot": 3591, "manifest": "7598841597413163537" }] } }
+      "steam": { "app": 3590, "depots": [{ "depot": 3591, "manifest": "7598841597413163537" }] } },
+    { "sha1": "e76a1a9130b51ebb5f09e97c498d797b273b07f6", "game": "monkey-island", "name": "Special Edition, Steam (build 19295): its folder", "format": "folder",
+      "steam": { "app": 32360, "depots": [{ "depot": 32361, "manifest": "5976354238575002765" }] } }
   ],
   "ports": [
     {
@@ -1513,6 +1516,40 @@
       "screenshots": [],
       "tags": [],
       "firstRelease": "2026-02-11T07:44:34Z"
+    },
+    {
+      "id": "scummvm-monkey-island",
+      "name": "ScummVM",
+      "kind": "recreation",
+      "game": "monkey-island",
+      "developer": "ScummVM team",
+      "summary": "The Secret of Monkey Island on ScummVM’s reimplementation of LucasArts’ SCUMM engine.",
+      "description": "ScummVM reimplements the engines of classic adventure games, so they play natively from their original files. Its SCUMM engine plays LucasArts’ adventures, among them The Secret of Monkey Island as the Special Edition carries it: the classic 1990 game inside it. ScummVM can’t yet decode the Special Edition’s music, which is in Microsoft’s xWMA format, so the game plays without music. Frontport builds ScummVM from source with its SCUMM engine.\n\nThe game comes as Steam’s The Secret of Monkey Island: Special Edition: Frontport finds it in your Steam library once Steam has installed it, or downloads it with Steam. Frontport keeps a copy of it in the Port’s Data, and ScummVM starts the game from there; it keeps its settings and saves in the Port’s Data too.",
+      "website": "https://www.scummvm.org/",
+      "source": "https://github.com/scummvm/scummvm",
+      "bundleId": "dev.frontport.port.scummvm-monkey-island",
+      "releases": {
+        "type": "git",
+        "repo": "scummvm/scummvm",
+        "refs": { "stable": "v2026.4.0" },
+        "recipe": "recipes/scummvm.sh",
+        "recipeSHA256": "cc026a74442623df591a96be4329505b23d59f5019ecbc8b7c4032b61eb0651f"
+      },
+      "requirements": [
+        {
+          "label": "Monkey Island",
+          "stage": "runtime",
+          "oneOf": ["e76a1a9130b51ebb5f09e97c498d797b273b07f6"],
+          "seedPath": "Library/Application Support/ScummVM/Monkey Island"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 37740 },
+      "codeSigning": { "exceptions": [] },
+      "launch": { "arguments": ["--path=~/Library/Application Support/ScummVM/Monkey Island", "--auto-detect"] },
+      "screenshots": [],
+      "tags": ["shaders"],
+      "firstRelease": "2002-01-13T19:49:26Z"
     }
   ]
 }

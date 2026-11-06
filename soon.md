@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies).
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies), ScummVM (The Secret of Monkey Island, without music).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -92,4 +92,4 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 
 | Game | Project | Files |
 |---|---|---|
-| LucasArts, Sierra, Westwood, Myst, Grim Fandango, Little Big Adventure, Gobliiins and more | ScummVM | many on Steam, such as Fate of Atlantis, Loom, The Dig, Sam & Max, Full Throttle Remastered, Grim Fandango Remastered, Myst |
+| LucasArts, Sierra, Westwood, Myst, Grim Fandango (the original CD: ScummVM plays the Remastered with a broken UI), Little Big Adventure, Gobliiins and more | ScummVM | many on Steam, such as Fate of Atlantis, Loom, The Dig, Sam & Max, Full Throttle Remastered, Grim Fandango Remastered, Myst |
