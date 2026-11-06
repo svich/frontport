@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-06T14:00:00Z",
+  "issued": "2026-11-07T12:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -1134,7 +1134,17 @@
       "codeSigning": { "exceptions": [] },
       "screenshots": [],
       "tags": ["mods", "widescreen"],
-      "firstRelease": "2019-12-03T01:26:55Z"
+      "firstRelease": "2019-12-03T01:26:55Z",
+      "ios": {
+        "releases": {
+          "type": "git",
+          "repo": "FWGS/xash3d-fwgs",
+          "refs": { "stable": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc" },
+          "recipe": "recipes/xash3d-ios.sh",
+          "recipeSHA256": "1c663314a103079c8209d8fba42eb57b14b6488b164b59c51e0ac9d4011629a5"
+        },
+        "seedPaths": ["Documents/valve"]
+      }
     },
     {
       "id": "xash3d-opposing-force",
@@ -1173,7 +1183,17 @@
       "launch": { "arguments": ["-game", "gearbox"] },
       "screenshots": [],
       "tags": ["mods", "widescreen"],
-      "firstRelease": "2019-12-03T01:26:55Z"
+      "firstRelease": "2019-12-03T01:26:55Z",
+      "ios": {
+        "releases": {
+          "type": "git",
+          "repo": "FWGS/xash3d-fwgs",
+          "refs": { "stable": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc" },
+          "recipe": "recipes/xash3d-ios.sh",
+          "recipeSHA256": "1c663314a103079c8209d8fba42eb57b14b6488b164b59c51e0ac9d4011629a5"
+        },
+        "seedPaths": ["Documents/valve", "Documents/gearbox"]
+      }
     },
     {
       "id": "xash3d-blue-shift",
@@ -1212,7 +1232,17 @@
       "launch": { "arguments": ["-game", "bshift"] },
       "screenshots": [],
       "tags": ["mods", "widescreen"],
-      "firstRelease": "2019-12-03T01:26:55Z"
+      "firstRelease": "2019-12-03T01:26:55Z",
+      "ios": {
+        "releases": {
+          "type": "git",
+          "repo": "FWGS/xash3d-fwgs",
+          "refs": { "stable": "a7becfdf8d134eb2ae5cd083a45c816e6b4e42fc" },
+          "recipe": "recipes/xash3d-ios.sh",
+          "recipeSHA256": "1c663314a103079c8209d8fba42eb57b14b6488b164b59c51e0ac9d4011629a5"
+        },
+        "seedPaths": ["Documents/valve", "Documents/bshift"]
+      }
     },
     {
       "id": "opensupaplex",

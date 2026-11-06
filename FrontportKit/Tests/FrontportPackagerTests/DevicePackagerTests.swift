@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import FrontportCore
 import Testing
 @testable import FrontportPackager
@@ -252,6 +253,54 @@ import Testing
         #expect(info == DeviceAppInfo(
             bundleId: "dev.frontport.port.tiny.a1b2c3d4e5", executable: "Tiny", minimumOS: "15.0", sdk: "18.0",
             families: [1, 2]))
+    }
+
+    /// A wide, transparent Catalog icon becomes opaque squares at each size iPhone and iPad show, named in place of
+    /// the app's own, an asset catalog's included; a link the app had at one of those names isn't written through.
+    @Test func givesTheAppTheCatalogIcon() async throws {
+        let tmp = try TemporaryDirectory()
+        let app = try DeviceApp.make(in: tmp.url)
+        var info = try plist(app.appending(path: "Info.plist"))
+        info["CFBundleIconName"] = "AppIcon"
+        try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0).write(to: app.appending(path: "Info.plist"))
+        try FileManager.default.createSymbolicLink(
+            atPath: app.appending(path: "FrontportIcon60x60@2x.png").path(percentEncoded: false), withDestinationPath: "Frameworks/decoy.dylib")
+        let icon = tmp.url.appending(path: "icon.png")
+        try pngData(width: 64, height: 32).write(to: icon)
+
+        _ = try await DevicePackager(signer: RecordingDeviceSigner()).package(
+            app, version: deviceVersion(), signing: try deviceSigning(profile: tmp.url.appending(path: "p")), icon: icon)
+
+        #expect(try read(app.appending(path: "Frameworks/decoy.dylib")) == DeviceApp.decoyContents)
+        for (file, pixels) in [
+            ("FrontportIcon60x60@2x.png", 120), ("FrontportIcon60x60@3x.png", 180), ("FrontportIcon76x76@2x~ipad.png", 152),
+            ("FrontportIcon83.5x83.5@2x~ipad.png", 167),
+        ] {
+            let url = app.appending(path: file)
+            #expect(try url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == false)
+            let image = try #require(CGImageSourceCreateWithURL(url as CFURL, nil).flatMap { CGImageSourceCreateImageAtIndex($0, 0, nil) })
+            #expect(image.width == pixels && image.height == pixels)
+            #expect([.none, .noneSkipFirst, .noneSkipLast].contains(image.alphaInfo))
+        }
+        let written = try plist(app.appending(path: "Info.plist"))
+        #expect(written["CFBundleIconName"] == nil)
+        let phone = (written["CFBundleIcons"] as? [String: Any])?["CFBundlePrimaryIcon"] as? [String: Any]
+        let pad = (written["CFBundleIcons~ipad"] as? [String: Any])?["CFBundlePrimaryIcon"] as? [String: Any]
+        #expect(phone?["CFBundleIconFiles"] as? [String] == ["FrontportIcon60x60"])
+        #expect(pad?["CFBundleIconFiles"] as? [String] == ["FrontportIcon60x60", "FrontportIcon76x76", "FrontportIcon83.5x83.5"])
+    }
+
+    private func pngData(width: Int, height: Int) throws -> Data {
+        let context = try #require(CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        context.setFillColor(CGColor(srgbRed: 1, green: 0, blue: 0, alpha: 1))
+        context.fill(CGRect(x: width / 4, y: 0, width: width / 2, height: height))
+        let output = NSMutableData()
+        let destination = try #require(CGImageDestinationCreateWithData(output, "public.png" as CFString, 1, nil))
+        CGImageDestinationAddImage(destination, try #require(context.makeImage()), nil)
+        #expect(CGImageDestinationFinalize(destination))
+        return output as Data
     }
 
     /// As Fallout CE's upstream build is: the legacy command, the encryption command with cryptid 0, no families.

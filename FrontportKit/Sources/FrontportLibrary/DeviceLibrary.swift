@@ -20,6 +20,8 @@ public actor DeviceLibrary: DeviceLibraryManaging {
     let control: any DeviceControlling
     let provisioning: any Provisioning
     let roms: any ROMStoring
+    /// The Catalog icon each app gets on Devices; none keeps the app's own.
+    let artwork: (any ArtworkProviding)?
     /// Where what goes wrong after an operation has done its work is reported.
     static let log = Logger(subsystem: "dev.frontport.Frontport", category: "DeviceLibrary")
 
@@ -28,7 +30,7 @@ public actor DeviceLibrary: DeviceLibraryManaging {
     public init(
         paths: AppPaths, catalog: any CatalogProviding, releases: any ReleaseDiscovering, fetcher: any AssetFetching,
         builder: any RecipeBuilding, packager: any DevicePackaging, control: any DeviceControlling,
-        provisioning: any Provisioning, roms: any ROMStoring
+        provisioning: any Provisioning, roms: any ROMStoring, artwork: (any ArtworkProviding)? = nil
     ) {
         self.paths = paths
         self.catalog = catalog
@@ -39,6 +41,7 @@ public actor DeviceLibrary: DeviceLibraryManaging {
         self.control = control
         self.provisioning = provisioning
         self.roms = roms
+        self.artwork = artwork
     }
 
     // MARK: Reading
@@ -288,11 +291,12 @@ public actor DeviceLibrary: DeviceLibraryManaging {
         // What the Device can't run costs no Provisioning Profile.
         try Self.check(minimumOS: prepared.minimumOS, families: prepared.families, of: entry, on: device)
         let bundleId = port.deviceBundleID(team: team)
+        let icon = await artwork?.artwork(.icon, for: entry)
         return try await send(
             paths.devicePreparedApp(prepared), to: folder(port, on: device.id), over: current, as: bundleId, team: team,
             outlasting: nil, progress: progress
         ) { app, signing in
-            let info = try await packager.package(app, version: version, signing: signing)
+            let info = try await packager.package(app, version: version, signing: signing, icon: icon)
             try Self.check(minimumOS: info.minimumOS, families: info.families, of: entry, on: device)
         } record: { signing in
             DeviceInstallation(

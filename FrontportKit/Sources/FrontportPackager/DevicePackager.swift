@@ -21,7 +21,7 @@ public struct DevicePackager: DevicePackaging {
 
     /// The app is untrusted until it's signed: it's refused when anything in it leads outside it, and when it isn't
     /// for iPhone and iPad, before anything is changed.
-    public func package(_ app: URL, version: IOSVersion, signing: DeviceSigning) async throws -> DeviceAppInfo {
+    public func package(_ app: URL, version: IOSVersion, signing: DeviceSigning, icon: URL?) async throws -> DeviceAppInfo {
         try PortPackager.checkContained(app, allowing: [:])
         let (executable, build) = try Self.checkBuild(app)
         // Upstream may ship read-only files, which this changes and signs in place.
@@ -30,6 +30,7 @@ public struct DevicePackager: DevicePackaging {
         for path in ["_CodeSignature", "embedded.mobileprovision", "SC_Info"] + version.view.strip {
             try remove(try PortPackager.location(path, in: app))
         }
+        if let icon { try DeviceIcon.replace(in: app, with: icon) }
         try PortPackager.checkContained(app, allowing: [:])
         try Task.checkCancellation()
 

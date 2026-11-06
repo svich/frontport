@@ -248,13 +248,21 @@ public protocol DevicePackaging: Sendable {
 
     /// In place: refuses an app that isn't one arm64, unencrypted iPhone and iPad app with only frameworks and
     /// libraries nested, sets its `CFBundleIdentifier` to `signing.bundleId`, removes upstream signatures and the iOS
-    /// version's `strip` paths, embeds the Provisioning Profile and signs inside-out with `signing.certificate`. The
-    /// `bundleId` it returns is `signing.bundleId`.
-    func package(_ app: URL, version: IOSVersion, signing: DeviceSigning) async throws -> DeviceAppInfo
+    /// version's `strip` paths, gives it `icon` (an image file) as its home screen icon when there is one, embeds the
+    /// Provisioning Profile and signs inside-out with `signing.certificate`. The `bundleId` it returns is
+    /// `signing.bundleId`.
+    func package(_ app: URL, version: IOSVersion, signing: DeviceSigning, icon: URL?) async throws -> DeviceAppInfo
 
     /// Signs an app it packaged again, with another Provisioning Profile or certificate of the same Apple Team, for
     /// Renew, refusing one whose bundle ID isn't `signing.bundleId`. When that fails, the app is as it was.
     func resign(_ app: URL, signing: DeviceSigning) async throws -> DeviceAppInfo
+}
+
+extension DevicePackaging {
+    /// Packages the app with its own icon.
+    public func package(_ app: URL, version: IOSVersion, signing: DeviceSigning) async throws -> DeviceAppInfo {
+        try await package(app, version: version, signing: signing, icon: nil)
+    }
 }
 
 /// Has macOS lay out a Port's Data folder without running the Port (FrontportPackager).

@@ -133,7 +133,7 @@ enum FakeDevices {
                 minimumOS: "15.0", sdk: nil, families: [1, 2])
         }
 
-        func package(_ app: URL, version: IOSVersion, signing: DeviceSigning) throws -> DeviceAppInfo {
+        func package(_ app: URL, version: IOSVersion, signing: DeviceSigning, icon: URL?) throws -> DeviceAppInfo {
             try resign(app, signing: signing)
         }
 
