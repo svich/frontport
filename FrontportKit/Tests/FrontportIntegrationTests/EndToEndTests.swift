@@ -25,8 +25,8 @@ import Testing
 struct EndToEndTests {
     @Test func bundledCatalogVerifies() async throws {
         let world = try await World()
-        #expect(world.catalog.ports.count == 40)
-        #expect(world.catalog.ports.filter(\.isInstallable).count == 40)
+        #expect(world.catalog.ports.count == 41)
+        #expect(world.catalog.ports.filter(\.isInstallable).count == 41)
     }
 
     /// Zelda 64: Recompiled ships a zip inside a zip; 2 Ship 2 Harkinian a zip holding a DMG.

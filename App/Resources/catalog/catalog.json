@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-06T05:00:00Z",
+  "issued": "2026-11-06T13:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -57,7 +57,8 @@
     { "id": "burnout-3", "name": "Burnout 3: Takedown", "shortName": "Burnout 3", "platform": "xbox", "genres": ["racing"], "steamgriddb": 37348 },
     { "id": "quake", "name": "Quake", "platform": "dos", "genres": ["shooter"], "steamgriddb": 2514 },
     { "id": "quake-ii", "name": "Quake II", "platform": "windows", "genres": ["shooter"], "steamgriddb": 2534 },
-    { "id": "heroes-3", "name": "Heroes of Might and Magic III", "shortName": "Heroes III", "platform": "windows", "genres": ["strategy"], "steamgriddb": 5247456 }
+    { "id": "heroes-3", "name": "Heroes of Might and Magic III", "shortName": "Heroes III", "platform": "windows", "genres": ["strategy"], "steamgriddb": 5247456 },
+    { "id": "plants-vs-zombies", "name": "Plants vs. Zombies", "platform": "windows", "genres": ["strategy"], "steamgriddb": 7127 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -150,7 +151,11 @@
     { "sha1": "6ecb1589c502c6a4ba6b40a057aac3079e41d10a", "game": "outrun", "name": "Revision B (MAME’s outrun set)", "format": "folder" },
     { "sha1": "01d0106268876e380b672afda1ee3a05d5f4734f", "game": "tomb-raider", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 1 folder", "format": "folder",
       "steam": { "app": 2478970, "folder": "1", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
-    { "sha1": "111407d9b711469a67f311c289140bb3c60939a5", "game": "heroes-3", "name": "Complete, Russian (Buka): the Data, Maps and Mp3 folders", "format": "folder" }
+    { "sha1": "111407d9b711469a67f311c289140bb3c60939a5", "game": "heroes-3", "name": "Complete, Russian (Buka): the Data, Maps and Mp3 folders", "format": "folder" },
+    { "sha1": "c01ed8d104bc94e0c84377e7e5842103da2a279e", "game": "plants-vs-zombies", "name": "Game of the Year Edition, Steam for macOS (build 11226): its app’s Resources folder", "format": "folder",
+      "steam": { "app": 3590, "folder": "Plants vs. Zombies.app/Contents/Resources", "depots": [{ "depot": 3593, "manifest": "2896720143485326882" }] } },
+    { "sha1": "04832d7e8c9f0daf898927d1fc9972a763f1c348", "game": "plants-vs-zombies", "name": "Game of the Year Edition, Steam for Windows (build 11226): its folder", "format": "folder",
+      "steam": { "app": 3590, "depots": [{ "depot": 3591, "manifest": "7598841597413163537" }] } }
   ],
   "ports": [
     {
@@ -1476,6 +1481,38 @@
       "screenshots": [],
       "tags": ["mods", "multiplayer", "online", "widescreen"],
       "firstRelease": "2014-07-01T18:04:25Z"
+    },
+    {
+      "id": "pvz-portable",
+      "name": "PvZ-Portable",
+      "kind": "recreation",
+      "game": "plants-vs-zombies",
+      "developer": "wszqkzqk",
+      "summary": "Plants vs. Zombies: Game of the Year Edition, reimplemented to play natively on Apple silicon.",
+      "description": "PvZ-Portable is a community reimplementation of Plants vs. Zombies: Game of the Year Edition, written from public research and play-testing to recreate the original almost exactly: Adventure, the mini-games, puzzles, Survival and the Zen Garden. It renders through OpenGL and SDL, and reads the original game’s profiles and saves. Frontport builds it from source, natively for Apple silicon, and applies the text fixes upstream’s script makes for Steam’s edition as the game starts.\n\nThe game comes as the original’s main.pak and properties folder: Steam’s Mac edition installs them inside its app, and its Windows edition in its folder; Frontport finds either in your Steam library, or downloads it with Steam. Frontport keeps a copy of them in the Port’s Data, where PvZ-Portable also keeps its settings and saves.",
+      "source": "https://github.com/wszqkzqk/PvZ-Portable",
+      "bundleId": "dev.frontport.port.pvz-portable",
+      "releases": {
+        "type": "git",
+        "repo": "wszqkzqk/PvZ-Portable",
+        "refs": { "stable": "0.2.6" },
+        "recipe": "recipes/pvz-portable.sh",
+        "recipeSHA256": "9a9b8ca4dbe3b60b5608966616f6d7dfb3db3957b18bdc10ae6c3e6ccd5bd65e"
+      },
+      "requirements": [
+        {
+          "label": "Plants vs. Zombies",
+          "stage": "runtime",
+          "oneOf": ["c01ed8d104bc94e0c84377e7e5842103da2a279e", "04832d7e8c9f0daf898927d1fc9972a763f1c348"],
+          "seedPath": "Library/Application Support/io.github.wszqkzqk/PvZPortable"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 7127 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": [],
+      "firstRelease": "2026-02-11T07:44:34Z"
     }
   ]
 }

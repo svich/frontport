@@ -617,6 +617,7 @@ The full Catalog, with sources, is in [`catalog/README.md`](../catalog/README.md
 | vkQuake (Quake) | 1.37.0, 2026-10-12 | none: Windows and Linux builds only | Source build of `1.37.0` with Meson against static SDL3 and Vorbis, Vulkan through MoltenVK, patched to play from `Library/Application Support/vkQuake`, where the `id1` folder is Seeded, and to start with triple-buffered vsync |
 | Yamagi Quake II (Quake II) | 8.70, 2026-05-14 | none: Windows builds only | Source build of `QUAKE2_8_70` with CMake against SDL3 and OpenAL Soft, both bundled, patched to play from `Library/Application Support/YamagiQ2`, where the `baseq2` folder is Seeded, and to start in a fullscreen window at the display's resolution |
 | VCMI (Heroes of Might and Magic III) | 1.7.5, 2026-08-15 | Apple silicon and Intel DMGs | Prebuilt Apple silicon DMG, unpatched: its launcher starts the game and map editor as child processes, in its sandbox. The `Data`, `Maps` and `Mp3` folders are Seeded into `Library/Application Support/vcmi` |
+| PvZ-Portable (Plants vs. Zombies) | 0.2.6, 2026-10-25 | bare arm64 executable with Homebrew's dylibs, no app | Source build of `0.2.6` with CMake against static SDL2, libpng, libjpeg-turbo and libopenmpt, patched to read the game from its pref path, `Library/Application Support/io.github.wszqkzqk/PvZPortable`, where `main.pak` and `properties/` are Seeded beside its saves, and to apply Steam's edition's string overrides as it loads |
 
 ## How Steam compares
 

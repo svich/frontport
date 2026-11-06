@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III).
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -77,7 +77,6 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 | Heart of Darkness | hode | Steam |
 | Oddworld: Abe's Oddysee, Abe's Exoddus | R.E.L.I.V.E. | Steam |
 | Sonic Mania | Sonic Mania Decompilation | Steam |
-| Plants vs. Zombies | PvZ-Portable | Steam (GOTY Edition) |
 | Duke Nukem II | RigelEngine | not sold |
 | One Must Fall 2097 | OpenOMF | freeware |
 | Abuse | abuse | freeware |
