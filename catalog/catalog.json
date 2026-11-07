@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-07T12:00:00Z",
+  "issued": "2026-11-08T14:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -59,7 +59,9 @@
     { "id": "quake-ii", "name": "Quake II", "platform": "windows", "genres": ["shooter"], "steamgriddb": 2534 },
     { "id": "heroes-3", "name": "Heroes of Might and Magic III", "shortName": "Heroes III", "platform": "windows", "genres": ["strategy"], "steamgriddb": 5247456 },
     { "id": "plants-vs-zombies", "name": "Plants vs. Zombies", "platform": "windows", "genres": ["strategy"], "steamgriddb": 7127 },
-    { "id": "monkey-island", "name": "The Secret of Monkey Island", "shortName": "Monkey Island", "platform": "dos", "genres": ["adventure"], "steamgriddb": 37740 }
+    { "id": "monkey-island", "name": "The Secret of Monkey Island", "shortName": "Monkey Island", "platform": "dos", "genres": ["adventure"], "steamgriddb": 37740 },
+    { "id": "tomb-raider-2", "name": "Tomb Raider II", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2399 },
+    { "id": "tomb-raider-3", "name": "Tomb Raider III", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2400 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -158,7 +160,11 @@
     { "sha1": "04832d7e8c9f0daf898927d1fc9972a763f1c348", "game": "plants-vs-zombies", "name": "Game of the Year Edition, Steam for Windows (build 11226): its folder", "format": "folder",
       "steam": { "app": 3590, "depots": [{ "depot": 3591, "manifest": "7598841597413163537" }] } },
     { "sha1": "e76a1a9130b51ebb5f09e97c498d797b273b07f6", "game": "monkey-island", "name": "Special Edition, Steam (build 19295): its folder", "format": "folder",
-      "steam": { "app": 32360, "depots": [{ "depot": 32361, "manifest": "5976354238575002765" }] } }
+      "steam": { "app": 32360, "depots": [{ "depot": 32361, "manifest": "5976354238575002765" }] } },
+    { "sha1": "fb9ab806fda640b56918935b5b265fefc4dc0599", "game": "tomb-raider-2", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 2 folder", "format": "folder",
+      "steam": { "app": 2478970, "folder": "2", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
+    { "sha1": "7876b5986989aa66c455f242e35091ee72b68f0b", "game": "tomb-raider-3", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 3 folder", "format": "folder",
+      "steam": { "app": 2478970, "folder": "3", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } }
   ],
   "ports": [
     {
@@ -1580,6 +1586,126 @@
       "screenshots": [],
       "tags": ["shaders"],
       "firstRelease": "2002-01-13T19:49:26Z"
+    },
+    {
+      "id": "trx-tomb-raider",
+      "name": "TRX",
+      "kind": "decomp",
+      "game": "tomb-raider",
+      "developer": "Lost Artefacts",
+      "summary": "Tomb Raider on its own decompiled engine, with modern controls, widescreen and many fixes.",
+      "description": "TRX is the Lost Artefacts’ engine for the classic Tomb Raider games, grown from a decompilation of the original Tomb Raider into one engine for the first three games. It plays the original levels with modern rendering at any resolution and frame rate, smoother animation, fully remappable keyboard and game controller controls, a save crystal or save-anywhere choice, and hundreds of fixes, and its Lua scripting and level format carry the community’s custom levels. Frontport builds it from source and makes it keep its settings, saves and screenshots in the Port’s Data instead of its own folder.\n\nThe game comes as Steam’s Tomb Raider I-III Remastered, which holds the original Tomb Raider in its folder 1: Frontport finds it in your Steam library once Steam has installed it, or downloads it with Steam. Frontport keeps a copy of that folder in the Port’s Data, and TRX plays its levels, music and the PlayStation videos from there.",
+      "website": "https://lostartefacts.dev/",
+      "source": "https://github.com/LostArtefacts/TRX",
+      "bundleId": "dev.frontport.port.trx-tomb-raider",
+      "releases": {
+        "type": "git",
+        "repo": "LostArtefacts/TRX",
+        "refs": { "stable": "trx-1.12" },
+        "recipe": "recipes/trx.sh",
+        "recipeSHA256": "34ac7f11b45d3ea9662b20834b5987de29457a5682c40348ee7358469644688a"
+      },
+      "requirements": [
+        {
+          "label": "Tomb Raider",
+          "stage": "runtime",
+          "oneOf": ["01d0106268876e380b672afda1ee3a05d5f4734f"],
+          "seedPath": "Library/Application Support/TRX/tr1"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2385 },
+      "codeSigning": { "exceptions": [] },
+      "redirects": [
+        { "path": "Contents/Resources/games/tr1/levels", "to": "Library/Application Support/TRX/tr1/DATA" },
+        { "path": "Contents/Resources/games/tr1/fmv", "to": "Library/Application Support/TRX/tr1/FMV/OG" },
+        { "path": "Contents/Resources/games/tr1/music", "to": "Library/Application Support/TRX/tr1/TRACKS" }
+      ],
+      "launch": { "arguments": ["--mod", "tr1"] },
+      "screenshots": [],
+      "tags": ["widescreen", "60fps", "bugfixes", "lua"],
+      "firstRelease": "2021-02-09T23:06:36Z"
+    },
+    {
+      "id": "trx-tomb-raider-2",
+      "name": "TRX",
+      "kind": "decomp",
+      "game": "tomb-raider-2",
+      "developer": "Lost Artefacts",
+      "summary": "Tomb Raider II on its own decompiled engine, with modern controls, widescreen and many fixes.",
+      "description": "TRX is the Lost Artefacts’ engine for the classic Tomb Raider games, grown from a decompilation of the original Tomb Raider into one engine for the first three games. It plays the original levels with modern rendering at any resolution and frame rate, smoother animation, fully remappable keyboard and game controller controls, a save crystal or save-anywhere choice, and hundreds of fixes, and its Lua scripting and level format carry the community’s custom levels. Frontport builds it from source and makes it keep its settings, saves and screenshots in the Port’s Data instead of its own folder.\n\nThe game comes as Steam’s Tomb Raider I-III Remastered, which holds the original Tomb Raider II in its folder 2: Frontport finds it in your Steam library once Steam has installed it, or downloads it with Steam. Frontport keeps a copy of that folder in the Port’s Data, and TRX plays its levels, sounds, music and the PlayStation videos from there.",
+      "website": "https://lostartefacts.dev/",
+      "source": "https://github.com/LostArtefacts/TRX",
+      "bundleId": "dev.frontport.port.trx-tomb-raider-2",
+      "releases": {
+        "type": "git",
+        "repo": "LostArtefacts/TRX",
+        "refs": { "stable": "trx-1.12" },
+        "recipe": "recipes/trx.sh",
+        "recipeSHA256": "34ac7f11b45d3ea9662b20834b5987de29457a5682c40348ee7358469644688a"
+      },
+      "requirements": [
+        {
+          "label": "Tomb Raider II",
+          "stage": "runtime",
+          "oneOf": ["fb9ab806fda640b56918935b5b265fefc4dc0599"],
+          "seedPath": "Library/Application Support/TRX/tr2"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2399 },
+      "codeSigning": { "exceptions": [] },
+      "redirects": [
+        { "path": "Contents/Resources/games/tr2/levels", "to": "Library/Application Support/TRX/tr2/DATA" },
+        { "path": "Contents/Resources/games/tr2/fmv", "to": "Library/Application Support/TRX/tr2/FMV/OG" },
+        { "path": "Contents/Resources/games/tr2/music", "to": "Library/Application Support/TRX/tr2/TRACKS" },
+        { "path": "Contents/Resources/games/tr2/sfx", "to": "Library/Application Support/TRX/tr2/SFX" }
+      ],
+      "launch": { "arguments": ["--mod", "tr2"] },
+      "screenshots": [],
+      "tags": ["widescreen", "60fps", "bugfixes", "lua"],
+      "firstRelease": "2021-02-09T23:06:36Z"
+    },
+    {
+      "id": "trx-tomb-raider-3",
+      "name": "TRX",
+      "kind": "decomp",
+      "game": "tomb-raider-3",
+      "developer": "Lost Artefacts",
+      "summary": "Tomb Raider III on its own decompiled engine, with modern controls, widescreen and many fixes.",
+      "description": "TRX is the Lost Artefacts’ engine for the classic Tomb Raider games, grown from a decompilation of the original Tomb Raider into one engine for the first three games. It plays the original levels with modern rendering at any resolution and frame rate, smoother animation, fully remappable keyboard and game controller controls, a save crystal or save-anywhere choice, and hundreds of fixes, and its Lua scripting and level format carry the community’s custom levels. Frontport builds it from source and makes it keep its settings, saves and screenshots in the Port’s Data instead of its own folder.\n\nThe game comes as Steam’s Tomb Raider I-III Remastered, which holds the original Tomb Raider III in its folder 3: Frontport finds it in your Steam library once Steam has installed it, or downloads it with Steam. Frontport keeps a copy of that folder in the Port’s Data, and TRX plays its levels, sounds, music and cutscenes from there.",
+      "website": "https://lostartefacts.dev/",
+      "source": "https://github.com/LostArtefacts/TRX",
+      "bundleId": "dev.frontport.port.trx-tomb-raider-3",
+      "releases": {
+        "type": "git",
+        "repo": "LostArtefacts/TRX",
+        "refs": { "stable": "trx-1.12" },
+        "recipe": "recipes/trx.sh",
+        "recipeSHA256": "34ac7f11b45d3ea9662b20834b5987de29457a5682c40348ee7358469644688a"
+      },
+      "requirements": [
+        {
+          "label": "Tomb Raider III",
+          "stage": "runtime",
+          "oneOf": ["7876b5986989aa66c455f242e35091ee72b68f0b"],
+          "seedPath": "Library/Application Support/TRX/tr3"
+        }
+      ],
+      "permissions": { "network": false, "controllers": true, "files": false },
+      "artwork": { "fallback": 2400 },
+      "codeSigning": { "exceptions": [] },
+      "redirects": [
+        { "path": "Contents/Resources/games/tr3/levels", "to": "Library/Application Support/TRX/tr3/DATA" },
+        { "path": "Contents/Resources/games/tr3/fmv", "to": "Library/Application Support/TRX/tr3/FMV/OG" },
+        { "path": "Contents/Resources/games/tr3/music", "to": "Library/Application Support/TRX/tr3/TRACKS" },
+        { "path": "Contents/Resources/games/tr3/sfx", "to": "Library/Application Support/TRX/tr3/SFX" },
+        { "path": "Contents/Resources/games/tr3/cuts", "to": "Library/Application Support/TRX/tr3/CUTS" }
+      ],
+      "launch": { "arguments": ["--mod", "tr3"] },
+      "screenshots": [],
+      "tags": ["widescreen", "60fps", "bugfixes", "lua"],
+      "firstRelease": "2021-02-09T23:06:36Z"
     }
   ]
 }

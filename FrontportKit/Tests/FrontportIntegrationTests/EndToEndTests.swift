@@ -25,8 +25,8 @@ import Testing
 struct EndToEndTests {
     @Test func bundledCatalogVerifies() async throws {
         let world = try await World()
-        #expect(world.catalog.ports.count == 42)
-        #expect(world.catalog.ports.filter(\.isInstallable).count == 42)
+        #expect(world.catalog.ports.count == 45)
+        #expect(world.catalog.ports.filter(\.isInstallable).count == 45)
     }
 
     /// Zelda 64: Recompiled ships a zip inside a zip; 2 Ship 2 Harkinian a zip holding a DMG.
@@ -322,16 +322,19 @@ final class Scratch: Sendable {
 // MARK: Checks
 
 /// Signed inside-out under the hardened runtime with the Port's entitlements, its bundle ID, no quarantine. An app linking
-/// to its Build Assets beside it passes every strict check but the one that rejects that link, and may read them.
+/// to its Build Assets beside it, or to its Data through Redirects, passes every strict check but the one that rejects
+/// those links, and may read them.
 func expectSignedPort(
     _ app: URL, entry: CatalogEntry, permissions: Permissions, sourceLocation: SourceLocation = #_sourceLocation
 ) async throws {
     let link = entry.buildAssets.flatMap {
         try? FileManager.default.destinationOfSymbolicLink(atPath: app.appending(path: $0.path).path(percentEncoded: false))
     }
+    // Redirects are links out of the app too, so the Packager verifies those apps the same way.
+    let linksOut = link != nil || !entry.redirects.isEmpty
     let verify = try await ProcessRunner().run(
         URL(filePath: "/usr/bin/codesign"),
-        arguments: ["--verify", link == nil ? "--strict" : "--strict=sideband", "--deep", app.path(percentEncoded: false)])
+        arguments: ["--verify", linksOut ? "--strict=sideband" : "--strict", "--deep", app.path(percentEncoded: false)])
     #expect(verify.succeeded, "\(verify.errorOutput)", sourceLocation: sourceLocation)
 
     let info = try #require(NSDictionary(contentsOf: app.appending(path: "Contents/Info.plist")), sourceLocation: sourceLocation)
