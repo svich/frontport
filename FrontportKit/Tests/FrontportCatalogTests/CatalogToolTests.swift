@@ -395,7 +395,7 @@ import Testing
             "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen", "raze-duke3d",
             "arcanum-ce", "dethrace", "dethrace-splat-pack", "dhewm3-doom-3", "dhewm3-resurrection-of-evil", "fallout-ce", "fallout2-ce", "opengothic", "rbdoom3bfg",
             "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift", "opensupaplex", "cannonball", "openlara", "uqm", "openttd", "b3x", "vkquake", "yquake2", "vcmi",
-            "pvz-portable", "scummvm-monkey-island", "trx-tomb-raider", "trx-tomb-raider-2", "trx-tomb-raider-3",
+            "pvz-portable", "scummvm-monkey-island", "trx-tomb-raider", "trx-tomb-raider-2", "trx-tomb-raider-3", "devilutionx",
         ])
         for entry in document.ports {
             #expect(entry.bundleId == entry.id.conventionalBundleID)

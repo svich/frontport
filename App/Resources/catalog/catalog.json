@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-08T14:00:00Z",
+  "issued": "2026-11-08T15:00:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -61,7 +61,8 @@
     { "id": "plants-vs-zombies", "name": "Plants vs. Zombies", "platform": "windows", "genres": ["strategy"], "steamgriddb": 7127 },
     { "id": "monkey-island", "name": "The Secret of Monkey Island", "shortName": "Monkey Island", "platform": "dos", "genres": ["adventure"], "steamgriddb": 37740 },
     { "id": "tomb-raider-2", "name": "Tomb Raider II", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2399 },
-    { "id": "tomb-raider-3", "name": "Tomb Raider III", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2400 }
+    { "id": "tomb-raider-3", "name": "Tomb Raider III", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2400 },
+    { "id": "diablo", "name": "Diablo", "platform": "windows", "genres": ["rpg"], "steamgriddb": 34237 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -164,7 +165,8 @@
     { "sha1": "fb9ab806fda640b56918935b5b265fefc4dc0599", "game": "tomb-raider-2", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 2 folder", "format": "folder",
       "steam": { "app": 2478970, "folder": "2", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
     { "sha1": "7876b5986989aa66c455f242e35091ee72b68f0b", "game": "tomb-raider-3", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 3 folder", "format": "folder",
-      "steam": { "app": 2478970, "folder": "3", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } }
+      "steam": { "app": 2478970, "folder": "3", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
+    { "sha1": "5cfd971abb25602731fef0c9b43eb7d7447f296e", "game": "diablo", "name": "DIABDAT.MPQ from the CD (1.09) or GOG", "format": "mpq" }
   ],
   "ports": [
     {
@@ -1706,6 +1708,38 @@
       "screenshots": [],
       "tags": ["widescreen", "60fps", "bugfixes", "lua"],
       "firstRelease": "2021-02-09T23:06:36Z"
+    },
+    {
+      "id": "devilutionx",
+      "name": "DevilutionX",
+      "kind": "decomp",
+      "game": "diablo",
+      "developer": "Diasurgical",
+      "summary": "Diablo on its decompiled engine, in widescreen, with controller support and the conveniences of later games.",
+      "description": "DevilutionX is Diasurgical’s engine for Diablo, built on Devilution, a decompilation of the original game. It plays Diablo at any resolution in widescreen, with full game controller support, and adds what later games made standard: automatic gold pickup, item labels and a shared stash, a belt and spells you can bind freely, and many fixes, all of which its settings can turn off for the original experience. It plays online and on a local network.\n\nThe game comes as the DIABDAT.MPQ file from the Diablo CD or the GOG release. Frontport keeps a copy of it in the Port’s Data, where DevilutionX also keeps its settings and saves.",
+      "website": "https://github.com/diasurgical/devilutionX",
+      "source": "https://github.com/diasurgical/devilutionX",
+      "bundleId": "dev.frontport.port.devilutionx",
+      "releases": {
+        "type": "github-release",
+        "repo": "diasurgical/devilutionX",
+        "asset": "devilutionx-macOS-universal.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Diablo",
+          "stage": "runtime",
+          "oneOf": ["5cfd971abb25602731fef0c9b43eb7d7447f296e"],
+          "seedPath": "Library/Application Support/diasurgical/devilution/DIABDAT.MPQ"
+        }
+      ],
+      "permissions": { "network": true, "controllers": true, "files": false },
+      "artwork": { "fallback": 34237 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["widescreen", "controller", "multiplayer", "online", "bugfixes"],
+      "firstRelease": "2019-02-27T03:58:37Z"
     }
   ]
 }

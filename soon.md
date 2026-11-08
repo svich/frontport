@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies), ScummVM (The Secret of Monkey Island, without music), TRX (Tomb Raider I to III).
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies), ScummVM (The Secret of Monkey Island, without music), TRX (Tomb Raider I to III), DevilutionX (Diablo).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -34,7 +34,7 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 
 | Game | Project | Files |
 |---|---|---|
-| Diablo, Hellfire | DevilutionX | GOG |
+| Diablo: Hellfire | DevilutionX (its MPQs for the existing Port) | GOG |
 | Baldur's Gate, Icewind Dale, Planescape: Torment | GemRB | Enhanced Editions only, which GemRB doesn't target |
 | Morrowind | OpenMW | Steam |
 | Daggerfall | Daggerfall Unity | Steam (free) |
