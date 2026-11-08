@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-08T16:04:00Z",
+  "issued": "2026-11-09T01:30:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -64,7 +64,8 @@
     { "id": "tomb-raider-3", "name": "Tomb Raider III", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2400 },
     { "id": "diablo", "name": "Diablo", "platform": "windows", "genres": ["rpg"], "steamgriddb": 34237 },
     { "id": "command-and-conquer", "name": "Command & Conquer", "shortName": "C&C", "platform": "dos", "genres": ["strategy"], "steamgriddb": 34396 },
-    { "id": "red-alert", "name": "Command & Conquer: Red Alert", "shortName": "Red Alert", "platform": "dos", "genres": ["strategy"], "steamgriddb": 36154 }
+    { "id": "red-alert", "name": "Command & Conquer: Red Alert", "shortName": "Red Alert", "platform": "dos", "genres": ["strategy"], "steamgriddb": 36154 },
+    { "id": "theme-hospital", "name": "Theme Hospital", "platform": "dos", "genres": ["simulation"], "steamgriddb": 29846 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -184,7 +185,9 @@
       "download": { "url": "https://downloads.cnc-comm.com/red-alert/iso/RA_Allies.zip", "size": 424655512 } },
     { "sha1": "d30a37caff4e91fa5ddf864b339631b4137bb848", "game": "red-alert", "name": "Freeware (EA, 2008): Soviet disc image", "format": "iso",
       "unpack": { "recipe": "recipes/westwood.sh", "recipeSHA256": "f6daa169e402c66167f27365e97f1e5c2b60f2e142523623859aba00cf2d329b", "yields": ["a4cf8d806881c51357c93cabfb519455051838fa"] },
-      "download": { "url": "https://downloads.cnc-comm.com/red-alert/iso/RA_Soviet.zip", "size": 451669861 } }
+      "download": { "url": "https://downloads.cnc-comm.com/red-alert/iso/RA_Soviet.zip", "size": 451669861 } },
+    { "sha1": "15347329fb1016b8146d5a178201048f1ec0030f", "game": "theme-hospital", "name": "Demo (Bullfrog, 1997): its HOSP folder", "format": "folder",
+      "download": { "url": "https://th.corsix.org/Demo.zip", "size": 12878920 } }
   ],
   "ports": [
     {
@@ -1836,6 +1839,38 @@
       "screenshots": [],
       "tags": ["multiplayer", "bugfixes"],
       "firstRelease": "2020-06-03T19:51:17Z"
+    },
+    {
+      "id": "corsixth",
+      "name": "CorsixTH",
+      "kind": "recreation",
+      "game": "theme-hospital",
+      "developer": "The CorsixTH team",
+      "summary": "Theme Hospital on a new open-source engine, at any resolution, with the original game’s graphics and sounds.",
+      "description": "CorsixTH is an open-source engine for Theme Hospital, written from scratch to play the 1997 game on modern systems. It plays at any resolution, in a window or fullscreen, fixes the original’s bugs and adds what it lacked: zoom, a map editor, custom levels and campaigns, and more settings.\n\nIt draws with the original game’s graphics, sounds and videos. The free Theme Hospital demo, one hospital to run, is enough to play: Frontport downloads it for you. Frontport keeps the game’s files in the Port’s Data, where CorsixTH finds them, and where it keeps its settings and saves.",
+      "website": "https://corsixth.com",
+      "source": "https://github.com/CorsixTH/CorsixTH",
+      "bundleId": "dev.frontport.port.corsixth",
+      "releases": {
+        "type": "github-release",
+        "repo": "CorsixTH/CorsixTH",
+        "asset": "CorsixTH-*.dmg",
+        "channels": ["stable"]
+      },
+      "requirements": [
+        {
+          "label": "Theme Hospital",
+          "stage": "runtime",
+          "oneOf": ["15347329fb1016b8146d5a178201048f1ec0030f"],
+          "seedPath": "ThemeHospital"
+        }
+      ],
+      "permissions": { "network": false, "controllers": false, "files": false },
+      "artwork": { "steamgriddb": 5248321, "fallback": 29846 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["widescreen", "bugfixes"],
+      "firstRelease": "2013-09-27T22:07:59Z"
     }
   ]
 }

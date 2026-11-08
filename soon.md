@@ -2,7 +2,7 @@
 
 Mature Projects for classic DOS, Windows and PlayStation Games, with Mac builds, that could become Ports. No emulators.
 
-Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies), ScummVM (The Secret of Monkey Island, without music), TRX (Tomb Raider I to III), DevilutionX (Diablo), Vanilla Conquer (Command & Conquer, Red Alert).
+Already in Frontport: UZDoom, dethrace, fallout-ce, fallout2-ce, arcanum-ce, dhewm3, RBDOOM-3-BFG, OpenGothic, Xash3D, Raze (Duke Nukem 3D shareware), OpenSupaplex, Cannonball, OpenLara (Tomb Raider), The Ur-Quan Masters (Star Control II), OpenTTD (Transport Tycoon Deluxe), b3x (Burnout 3: Takedown), vkQuake (Quake shareware), Yamagi Quake II (Quake II demo), VCMI (Heroes of Might and Magic III), PvZ-Portable (Plants vs. Zombies), ScummVM (The Secret of Monkey Island, without music), TRX (Tomb Raider I to III), DevilutionX (Diablo), Vanilla Conquer (Command & Conquer, Red Alert), CorsixTH (Theme Hospital demo).
 
 Files says where the user gets the Game's files: Steam, GOG, freeware (a free download), or not sold.
 
@@ -56,7 +56,7 @@ Files says where the user gets the Game's files: Steam, GOG, freeware (a free do
 | Jagged Alliance 2 | JA2 Stracciatella | Steam |
 | Caesar III | Julius, Augustus | Steam |
 | RollerCoaster Tycoon 1 and 2 | OpenRCT2 | Steam |
-| Theme Hospital | CorsixTH | GOG |
+| Theme Hospital (full game) | CorsixTH (a Steam ROM for the existing Port) | Steam |
 | Chris Sawyer's Locomotion | OpenLoco | Steam |
 | Warzone 2100 | Warzone 2100 | Steam (free) |
 | Perimeter | Perimeter | Steam |
