@@ -189,6 +189,20 @@ import Testing
         ])
     }
 
+    @Test func downloadsAreHTTPSFilesOfSomeSize() {
+        func document(_ url: String, size: Int64? = nil) -> CatalogDocument {
+            var document = CatalogFixture.document()
+            document.roms[0].download = KnownROM.Download(url: URL(string: url)!, size: size)
+            return document
+        }
+        let sha1 = CatalogFixture.document().roms[0].sha1
+        #expect(document("https://example.org/files/game.zip", size: 1024).problems() == [])
+        for url in ["http://example.org/game.zip", "https://example.org/", "file:///tmp/game.zip"] {
+            #expect(document(url).problems() == ["ROM \(sha1) has a download that isn’t an https URL of a file."])
+        }
+        #expect(document("https://example.org/game.zip", size: 0).problems() == ["ROM \(sha1) has a download of no size."])
+    }
+
     @Test func redirectsLeadFromContentsIntoData() {
         var document = CatalogFixture.document()
         let log = Redirect(path: "Contents/Resources/log", to: "Library/Application Support/Starship/log")
@@ -395,7 +409,7 @@ import Testing
             "uzdoom-doom", "uzdoom-doom2", "uzdoom-heretic", "uzdoom-hexen", "raze-duke3d",
             "arcanum-ce", "dethrace", "dethrace-splat-pack", "dhewm3-doom-3", "dhewm3-resurrection-of-evil", "fallout-ce", "fallout2-ce", "opengothic", "rbdoom3bfg",
             "xash3d-half-life", "xash3d-opposing-force", "xash3d-blue-shift", "opensupaplex", "cannonball", "openlara", "uqm", "openttd", "b3x", "vkquake", "yquake2", "vcmi",
-            "pvz-portable", "scummvm-monkey-island", "trx-tomb-raider", "trx-tomb-raider-2", "trx-tomb-raider-3", "devilutionx",
+            "pvz-portable", "scummvm-monkey-island", "trx-tomb-raider", "trx-tomb-raider-2", "trx-tomb-raider-3", "devilutionx", "vanilla-conquer-tiberian-dawn", "vanilla-conquer-red-alert",
         ])
         for entry in document.ports {
             #expect(entry.bundleId == entry.id.conventionalBundleID)

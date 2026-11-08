@@ -11,8 +11,10 @@ struct PortOverview: View {
         VStack(alignment: .leading, spacing: 20) {
             if let activity = model.activities[entry.id] {
                 PortActivityCard(entry: entry, activity: activity)
-            } else if model.isDownloadingFromSteam(for: entry.id), let download = model.steamDownload {
-                SteamDownloadCard(download: download)
+            } else if model.isDownloadingFromSteam(for: entry.id) || model.isDownloadingFromWeb(for: entry.id),
+                let download = model.romDownload
+            {
+                ROMDownloadCard(download: download)
             } else if let snapshot = model.switchSnapshots[entry.id] {
                 SwitchCallout(entry: entry, snapshot: snapshot)
             } else if let update = model.survey.updates[entry.id] {
@@ -153,10 +155,20 @@ struct PortActivityCard: View {
     }
 }
 
-/// Steam downloading the ROM the Port needs, with the user's sign-in.
-private struct SteamDownloadCard: View {
+/// Steam downloading the ROM the Port needs, with the user's sign-in, or Frontport downloading it itself.
+private struct ROMDownloadCard: View {
     @Environment(AppModel.self) private var model
-    let download: AppModel.SteamDownload
+    let download: AppModel.ROMDownload
+
+    private var detail: String {
+        switch download.source {
+        case .steam:
+            download.fraction == nil
+                ? "Steam starts the download once it’s open and signed in."
+                : "Frontport checks what Steam downloads, then adds it to ROMs."
+        case .web: "Frontport checks what it downloads, then adds it to ROMs."
+        }
+    }
 
     var body: some View {
         HStack(spacing: 14) {
@@ -165,10 +177,10 @@ private struct SteamDownloadCard: View {
                 .foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text(model.steamDownloadText(download))
+                    Text(model.downloadText(download))
                         .font(.headline)
                     Spacer()
-                    if let percent = model.steamDownloadPercent(download) {
+                    if let percent = model.downloadPercent(download) {
                         Text(percent)
                             .monospacedDigit()
                             .foregroundStyle(.secondary)
@@ -176,9 +188,7 @@ private struct SteamDownloadCard: View {
                 }
                 ProgressView(value: download.fraction)
                     .progressViewStyle(.linear)
-                Text(download.fraction == nil
-                    ? "Steam starts the download once it’s open and signed in."
-                    : "Frontport checks what Steam downloads, then adds it to ROMs.")
+                Text(detail)
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

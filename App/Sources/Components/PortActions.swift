@@ -21,14 +21,18 @@ struct PortActionButton: View {
                     .buttonStyle(.glass)
                     .tint(.accentColor)
             case .addROM? where model.isDownloadingFromSteam(for: port):
-                SteamDownloadIndicator()
+                ROMDownloadIndicator()
                     .accessibilityIdentifier(identifier("steamDownload"))
+            case .addROM? where model.isDownloadingFromWeb(for: port):
+                ROMDownloadIndicator()
+                    .accessibilityIdentifier(identifier("webDownload"))
             case .addROM(let stage)?:
                 // A Build ROM is built into the Port, so there's no installing without it.
-                button(.addROM(stage), status, "addROM", help: stage == .build ? "Frontport needs the ROM to build this Port" : nil)
+                button(.addROM(stage), status, "addROM", help: addROMHelp(stage))
                     .buttonStyle(.addROM)
-                    // Steam downloads one ROM for Frontport at a time.
-                    .disabled(model.steamDownload != nil && model.steamDownload(for: port) != nil)
+                    // One ROM downloads at a time.
+                    .disabled(model.romDownload != nil
+                        && (model.steamDownload(for: port) != nil || !model.webDownloads(for: port).isEmpty))
             case .cancel?:
                 Button {
                     viewState.run(.cancel, for: port, in: model)
@@ -90,6 +94,13 @@ struct PortActionButton: View {
 
     /// "action.install.shipwright": one action per Port on screen at a time.
     private func identifier(_ action: String) -> String { "action.\(action).\(port.rawValue)" }
+
+    private func addROMHelp(_ stage: Stage) -> String? {
+        if !model.webDownloads(for: port).isEmpty, model.steamDownload(for: port) == nil, model.steamOffers(for: port).isEmpty {
+            return "Frontport downloads the free game’s files the Port needs, then adds them to ROMs"
+        }
+        return stage == .build ? "Frontport needs the ROM to build this Port" : nil
+    }
 }
 
 /// Install on iPhone or iPad…, beside the Mac's action for a Port with an iOS version, whether or not it's on this Mac:
@@ -144,22 +155,21 @@ struct AddROMButtonStyle: ButtonStyle {
     }
 }
 
-/// Steam's download of a ROM in place of the button that started it: a ring and the percent, or a spinner while
-/// Steam starts.
-struct SteamDownloadIndicator: View {
+/// A ROM's download in place of the button that started it: a ring and the percent, or a spinner while Steam starts.
+struct ROMDownloadIndicator: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        if let download = model.steamDownload {
+        if let download = model.romDownload {
             HStack(spacing: 6) {
                 ProgressView(value: download.fraction)
                     .progressViewStyle(.circular)
                     .controlSize(.small)
-                Text(model.steamDownloadPercent(download) ?? "Waiting for Steam…")
+                Text(model.downloadPercent(download) ?? model.downloadStatus(download))
                     .font(.callout.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
-            .help(model.steamDownloadText(download))
+            .help(model.downloadText(download))
         }
     }
 }

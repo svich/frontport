@@ -193,6 +193,13 @@ public protocol ROMStoring: Sendable {
     /// Steam downloaded. `progress` gets the fraction done.
     func downloadFromSteam(_ sha1: String, catalog: CatalogDocument, progress: @escaping @Sendable (Double) -> Void) async -> [ROMIntake]
 
+    /// The ROMs and installers the Catalog says where to download that would give a ROM ROMs doesn't hold yet.
+    func webDownloads(catalog: CatalogDocument) async -> [String]
+
+    /// Downloads the ROM or installer `sha1` names from where the Catalog says and adds what arrives, as a file the
+    /// user picked. `progress` gets the fraction done.
+    func downloadFromWeb(_ sha1: String, catalog: CatalogDocument, progress: @escaping @Sendable (Double) -> Void) async -> [ROMIntake]
+
     /// Reads ROMs, and the Data of each entry with an Installation in `installations`, into where each entry's
     /// Requirements stand. A reading is as of now: adding or removing a ROM, a change of Release and anything a Port
     /// does to its Data can make it out of date. It never fails: a Data folder it can't read holds nothing Seeded. Its

@@ -230,6 +230,8 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
     public var configs: [String]?
     /// For a ROM Steam installs: where, so Frontport can find it in the user's Steam library.
     public var steam: Steam?
+    /// For a ROM anyone may download, such as a freeware game's disc image: where, so Frontport can download it.
+    public var download: Download?
     /// The added Catalog that lists it, nil for Frontport's own. Set when Frontport reads the Catalogs as one, never
     /// taken from a document.
     public var catalog: URL?
@@ -280,13 +282,30 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
         public var path: String? { file ?? folder }
     }
 
+    /// Where a ROM, or an installer, can be downloaded. What arrives is added like a file the user picked: it may be a
+    /// zip holding the ROM, and it's taken only if its hash is the ROM's.
+    public struct Download: Codable, Hashable, Sendable {
+        /// An https URL.
+        public var url: URL
+        /// The download's size in bytes, for its progress when the server doesn't say.
+        public var size: Int64?
+
+        public init(url: URL, size: Int64? = nil) {
+            self.url = url
+            self.size = size
+        }
+    }
+
+    /// The ROMs adding it gives: what an installer yields, else the ROM itself.
+    public var gives: [String] { unpack?.yields ?? [sha1] }
+
     public var id: String { sha1 }
 
     public var isFolder: Bool { format == ROMRecord.folderFormat }
 
     public init(
         sha1: String, game: GameID?, platform: PlatformID? = nil, name: String, format: String, unpack: Unpack? = nil,
-        type: ROMType? = nil, configs: [String]? = nil, steam: Steam? = nil, catalog: URL? = nil
+        type: ROMType? = nil, configs: [String]? = nil, steam: Steam? = nil, download: Download? = nil, catalog: URL? = nil
     ) {
         self.sha1 = sha1
         self.game = game
@@ -297,6 +316,7 @@ public struct KnownROM: Codable, Hashable, Sendable, Identifiable {
         self.type = type
         self.configs = configs
         self.steam = steam
+        self.download = download
         self.catalog = catalog
     }
 }

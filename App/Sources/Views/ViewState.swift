@@ -67,9 +67,10 @@ final class ViewState {
     }
 
     /// Takes an action the Port's Status offers, asking first before one that changes its Release or removes
-    /// something. Add ROM… adds what Steam installed when it has the ROMs, or has Steam download one, else opens the
-    /// file importer for a Build ROM, which installing needs, and the ROMs screen for a Runtime ROM. Restore, Channel switches and Permissions
-    /// need a Snapshot, a Channel or Permissions, so their own controls take them.
+    /// something. Add ROM… adds what Steam installed when it has the ROMs, has Steam download one, or downloads what
+    /// the Catalog says where to download, else opens the file importer for a Build ROM, which installing needs, and
+    /// the ROMs screen for a Runtime ROM. Restore, Channel switches and Permissions need a Snapshot, a Channel or
+    /// Permissions, so their own controls take them.
     func run(_ action: Status.Action, for port: PortID, in model: AppModel) {
         switch action {
         case .install: model.install(port)
@@ -77,6 +78,9 @@ final class ViewState {
             Task { await addFromSteam(model.steamOffers(for: port), to: model) }
         case .addROM where model.steamDownload(for: port) != nil:
             if let sha1 = model.steamDownload(for: port) { Task { await downloadFromSteam(sha1, to: model) } }
+        case .addROM where !model.webDownloads(for: port).isEmpty:
+            let downloads = model.webDownloads(for: port)
+            Task { await downloadFromWeb(downloads, to: model) }
         case .addROM(.build): isImportingROMs = true
         case .addROM(.runtime): model.open(.roms)
         case .play: model.play(port)
@@ -118,6 +122,14 @@ final class ViewState {
         isAddingROMs = true
         defer { isAddingROMs = false }
         let results = await model.addFromSteam(offers)
+        intakeReport = IntakeReport(results: results)
+    }
+
+    func downloadFromWeb(_ sha1s: [String], to model: AppModel) async {
+        guard !isAddingROMs, !sha1s.isEmpty else { return }
+        isAddingROMs = true
+        defer { isAddingROMs = false }
+        let results = await model.downloadFromWeb(sha1s)
         intakeReport = IntakeReport(results: results)
     }
 

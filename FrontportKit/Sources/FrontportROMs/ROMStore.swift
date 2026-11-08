@@ -12,14 +12,28 @@ public actor ROMStore: ROMStoring {
     private let unpacker: (any ROMUnpacking)?
     /// Where Steam keeps its libraries, for the ROMs Steam installs.
     private nonisolated let steam: SteamLibrary
+    /// For the ROMs the Catalog says where to download.
+    private nonisolated let session: URLSession
     /// Oldest first. Nil until first read from disk.
     private var index: [ROMRecord]?
 
-    public init(paths: AppPaths = .default, unpacker: (any ROMUnpacking)? = nil, steam: SteamLibrary = .default) {
+    public init(
+        paths: AppPaths = .default, unpacker: (any ROMUnpacking)? = nil, steam: SteamLibrary = .default,
+        session: URLSession = ROMStore.defaultSession
+    ) {
         self.paths = paths
         self.unpacker = unpacker
         self.steam = steam
+        self.session = session
     }
+
+    public static let defaultSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.timeoutIntervalForRequest = 60
+        return URLSession(configuration: configuration)
+    }()
 
     // MARK: Lookup
 
@@ -254,6 +268,67 @@ public actor ROMStore: ROMStoring {
             return [.rejected(file: library.root, sha1: hash ?? sha1, reason: reason)]
         } catch {
             return [.rejected(file: library.root, sha1: sha1, reason: Self.describe(error))]
+        }
+    }
+
+    // MARK: Downloads
+
+    /// The ROMs and installers the Catalog says where to download that would give a ROM ROMs doesn't hold yet.
+    public func webDownloads(catalog: CatalogDocument) -> [String] {
+        catalog.roms.filter { known in
+            known.download != nil
+                && known.gives.contains { sha1 in
+                    catalog.listing(sha1).rom != nil && presentRecord(sha1).map { Self.givesWay($0, to: nil) } ?? true
+                }
+        }.map(\.sha1)
+    }
+
+    /// Downloads the ROM, or installer, from where the Catalog says, and adds what arrives as `add` adds a file the
+    /// user picked. Refused unless it gives the ROMs the Catalog says it does.
+    public func downloadFromWeb(
+        _ sha1: String, catalog: CatalogDocument, progress: @escaping @Sendable (Double) -> Void
+    ) async -> [ROMIntake] {
+        guard let known = catalog.roms.first(where: { $0.sha1 == sha1 }), let download = known.download else {
+            return [.rejected(file: paths.roms, sha1: sha1, reason: "The Catalog doesn’t say where to download this ROM.")]
+        }
+        let gives = Set(known.gives)
+        let name = download.url.lastPathComponent
+        let source = download.url
+        do {
+            let work = try workFolder()
+            defer { try? FileOperations.removeUntrusted(work) }
+            guard !name.isEmpty, name != "/", !name.hasPrefix(".") else {
+                throw FrontportError.romRejected(sha1: sha1, reason: "The Catalog’s download has no usable file name.")
+            }
+            let file = work.appending(path: name)
+            try await Download.run(
+                source, to: file, name: name, session: session, expectedSize: download.size ?? 0,
+                onBytes: { received, total in
+                    if total > 0 { progress(min(Double(received) / Double(total), 1) * 0.9) }
+                })
+            let results = await add(file, catalog: catalog)
+            progress(1)
+            // A mirror that changed its file is caught here: only what the Catalog says the download gives is kept.
+            let gave = results.contains { result in
+                switch result {
+                case .added(let record), .duplicate(let record): gives.contains(record.sha1)
+                case .unknown, .rejected: false
+                }
+            }
+            guard gave else {
+                let reasons = results.compactMap { result -> String? in
+                    if case .rejected(_, _, let reason) = result { reason } else { nil }
+                }
+                let reason = (["\(name) isn’t what the Catalog says it is."] + reasons.prefix(1)).joined(separator: " ")
+                return [.rejected(file: source, sha1: sha1, reason: reason)]
+            }
+            return results
+        } catch is CancellationError {
+            return [.rejected(file: source, sha1: sha1, reason: "Downloading was cancelled.")]
+        } catch FrontportError.romRejected(let hash, let reason) {
+            return [.rejected(file: source, sha1: hash ?? sha1, reason: reason)]
+        } catch {
+            return [.rejected(file: source, sha1: sha1, reason: Self.describe(error))]
         }
     }
 

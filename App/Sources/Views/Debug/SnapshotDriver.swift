@@ -116,7 +116,7 @@ enum SnapshotDriver {
     ]
 
     /// Mario Kart 64, which SpaghettiKart still needs, part downloaded.
-    private static let steamDownload = AppModel.SteamDownload(
+    private static let steamDownload = AppModel.ROMDownload(
         sha1: "579c48e211ae952530ffc8738709f078d5dd215e", name: "Mario Kart 64", fraction: 0.42)
 
     static func run(model: AppModel, viewState: ViewState, openSettings: OpenSettingsAction) async {

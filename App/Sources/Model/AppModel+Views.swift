@@ -149,6 +149,8 @@ struct NeededGame: Identifiable {
     /// The Requirement's label when it's more than the Game's name, such as a Switch game's "Update 1.2.1".
     var detail: String?
     var ports: [CatalogEntry]
+    /// The Ports' Requirements the Game's ROM meets, one per Port.
+    var requirements: [Requirement] = []
     var stages: Set<Stage>
     /// In ROMs, but not yet Seeded into these Ports' Data.
     var isUnseeded = false
@@ -177,13 +179,26 @@ extension AppModel {
         return "\(gameName(for: entry)) · \(entry.kind.name) · by \(entry.developer)"
     }
 
-    /// What Steam's download is doing: waiting for Steam to start it, which may mean signing in, then downloading.
-    func steamDownloadText(_ download: SteamDownload) -> String {
-        download.fraction == nil ? "Waiting for Steam to download \(download.name)…" : "Downloading \(download.name) from Steam…"
+    /// What a ROM's download is doing. Steam's: waiting for Steam to start it, which may mean signing in, then
+    /// downloading. Frontport's own: downloading.
+    func downloadText(_ download: ROMDownload) -> String {
+        switch download.source {
+        case .steam:
+            download.fraction == nil ? "Waiting for Steam to download \(download.name)…" : "Downloading \(download.name) from Steam…"
+        case .web: "Downloading \(download.name)…"
+        }
     }
 
-    /// The download's fraction as "42%", or nil until Steam says how much it downloads.
-    func steamDownloadPercent(_ download: SteamDownload) -> String? {
+    /// What a ROM's download is doing, in a few words: "Waiting for Steam…", "Downloading from Steam…".
+    func downloadStatus(_ download: ROMDownload) -> String {
+        switch download.source {
+        case .steam: download.fraction == nil ? "Waiting for Steam…" : "Downloading from Steam…"
+        case .web: "Downloading…"
+        }
+    }
+
+    /// The download's fraction as "42%", or nil until the download says how much it is.
+    func downloadPercent(_ download: ROMDownload) -> String? {
         download.fraction?.formatted(.percent.precision(.fractionLength(0)))
     }
 
@@ -236,11 +251,12 @@ extension AppModel {
     }
 
     /// Why `action` is disabled for the Port, as help: "Quit Ship of Harkinian to update it". Nil when it isn't.
-    /// An action's title for the Port: Add from Steam for Add ROM… when Steam installed a ROM it accepts, and Download
-    /// from Steam when Steam can download one.
+    /// An action's title for the Port: Add from Steam for Add ROM… when Steam installed a ROM it accepts, Download
+    /// from Steam when Steam can download one, and Download when Frontport can download what it needs itself.
     func title(_ action: Status.Action, for port: PortID) -> String {
         if case .addROM = action, !steamOffers(for: port).isEmpty { return "Add from Steam" }
         if case .addROM = action, steamDownload(for: port) != nil { return "Download from Steam" }
+        if case .addROM = action, !webDownloads(for: port).isEmpty { return "Download" }
         return status(of: port).title(action)
     }
 
@@ -365,9 +381,11 @@ extension AppModel {
             let detail = game.map { [$0.name, $0.displayName].contains(label) } == false ? label : nil
             let group = NeededGame(
                 game: game?.id, label: [game?.displayName ?? label, detail].compactMap { $0 }.joined(separator: " · "),
-                detail: detail, ports: [entry], stages: [needed.requirement.stage], isUnseeded: needed.isUnseeded)
+                detail: detail, ports: [entry], requirements: [needed.requirement], stages: [needed.requirement.stage],
+                isUnseeded: needed.isUnseeded)
             if let index = groups.firstIndex(where: { $0.id == group.id }) {
                 groups[index].ports.append(entry)
+                groups[index].requirements.append(needed.requirement)
                 groups[index].stages.insert(needed.requirement.stage)
             } else {
                 groups.append(group)

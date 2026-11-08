@@ -1,12 +1,11 @@
 import Foundation
-import FrontportCore
 import Synchronization
 
 /// Streams one HTTP GET into a file, reporting bytes as they arrive. Cancelling the calling Task cancels the
 /// request and throws `CancellationError`.
-final class Download: NSObject, URLSessionDataDelegate, Sendable {
+public final class Download: NSObject, URLSessionDataDelegate, Sendable {
     /// Bytes received so far and the expected total.
-    typealias BytesHandler = @Sendable (_ received: Int64, _ total: Int64) -> Void
+    public typealias BytesHandler = @Sendable (_ received: Int64, _ total: Int64) -> Void
 
     private struct State {
         var received: Int64 = 0
@@ -29,7 +28,7 @@ final class Download: NSObject, URLSessionDataDelegate, Sendable {
     }
 
     /// Downloads `url` into `file`, replacing it.
-    static func run(
+    public static func run(
         _ url: URL, to file: URL, name: String, session: URLSession, expectedSize: Int64,
         onBytes: @escaping BytesHandler
     ) async throws {
@@ -55,7 +54,7 @@ final class Download: NSObject, URLSessionDataDelegate, Sendable {
         }
     }
 
-    func urlSession(
+    public func urlSession(
         _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
         completionHandler: @escaping @Sendable (URLSession.ResponseDisposition) -> Void
     ) {
@@ -70,7 +69,7 @@ final class Download: NSObject, URLSessionDataDelegate, Sendable {
         completionHandler(.allow)
     }
 
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         do {
             try handle.write(contentsOf: data)
         } catch {
@@ -85,7 +84,7 @@ final class Download: NSObject, URLSessionDataDelegate, Sendable {
         onBytes(received, total)
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
         try? handle.close()
         let (continuation, failure) = state.withLock { state -> (CheckedContinuation<Void, any Error>?, (any Error)?) in
             guard !state.finished else { return (nil, nil) }

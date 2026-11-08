@@ -120,14 +120,32 @@ private struct NeededCard: View {
                 Button("Add from Steam") { Task { await viewState.addFromSteam(steamOffers, to: model) } }
                     .buttonStyle(.addROM)
                     .disabled(viewState.isAddingROMs)
-            } else if !needed.isUnseeded, let download = model.steamDownload, download.sha1 == steamDownload {
+            } else if !needed.isUnseeded, let download = model.romDownload, download.source == .steam,
+                download.sha1 == steamDownload
+            {
                 ProgressView(value: download.fraction) {
-                    Text(download.fraction == nil ? "Waiting for Steam…" : "Downloading from Steam…").font(.callout)
+                    Text(model.downloadStatus(download)).font(.callout)
                 } currentValueLabel: {
-                    if let percent = model.steamDownloadPercent(download) { Text(percent).monospacedDigit() }
+                    if let percent = model.downloadPercent(download) { Text(percent).monospacedDigit() }
                 }
                 .frame(width: 180)
-                .help(model.steamDownloadText(download))
+                .help(model.downloadText(download))
+            } else if !needed.isUnseeded, let download = model.romDownload, download.source == .web,
+                download.sha1 == webDownload
+            {
+                ProgressView(value: download.fraction) {
+                    Text(model.downloadStatus(download)).font(.callout)
+                } currentValueLabel: {
+                    if let percent = model.downloadPercent(download) { Text(percent).monospacedDigit() }
+                }
+                .frame(width: 180)
+                .help(model.downloadText(download))
+            } else if !needed.isUnseeded, steamDownload == nil, let download = webDownload {
+                Button("Download") { Task { await viewState.downloadFromWeb([download], to: model) } }
+                    .buttonStyle(.addROM)
+                    .disabled(viewState.isAddingROMs)
+                    .help("Frontport downloads the free game’s files from where the Catalog says, then adds them to ROMs.")
+                    .accessibilityIdentifier("roms.web.download.\(download)")
             } else if !needed.isUnseeded, let download = steamDownload {
                 Button("Download from Steam") { Task { await viewState.downloadFromSteam(download, to: model) } }
                     .buttonStyle(.addROM)
@@ -162,6 +180,11 @@ private struct NeededCard: View {
     /// Whether Steam could download what these Ports accept once it's installed.
     private var needsSteam: Bool {
         steamDownload == nil && needed.ports.contains { model.needsSteamToDownload(for: $0.id) }
+    }
+
+    /// What Frontport can download itself that these Ports accept.
+    private var webDownload: String? {
+        needed.requirements.lazy.compactMap { model.webDownload(for: $0) }.first
     }
 
     /// What Steam can download that these Ports accept, when it hasn't installed one.

@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "issued": "2026-11-08T15:00:00Z",
+  "issued": "2026-11-08T16:04:00Z",
   "platforms": [
     { "id": "n64", "name": "Nintendo 64", "shortName": "N64", "medium": "cartridge" },
     { "id": "snes", "name": "Super Nintendo", "shortName": "SNES", "medium": "cartridge" },
@@ -62,7 +62,9 @@
     { "id": "monkey-island", "name": "The Secret of Monkey Island", "shortName": "Monkey Island", "platform": "dos", "genres": ["adventure"], "steamgriddb": 37740 },
     { "id": "tomb-raider-2", "name": "Tomb Raider II", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2399 },
     { "id": "tomb-raider-3", "name": "Tomb Raider III", "platform": "windows", "genres": ["adventure"], "steamgriddb": 2400 },
-    { "id": "diablo", "name": "Diablo", "platform": "windows", "genres": ["rpg"], "steamgriddb": 34237 }
+    { "id": "diablo", "name": "Diablo", "platform": "windows", "genres": ["rpg"], "steamgriddb": 34237 },
+    { "id": "command-and-conquer", "name": "Command & Conquer", "shortName": "C&C", "platform": "dos", "genres": ["strategy"], "steamgriddb": 34396 },
+    { "id": "red-alert", "name": "Command & Conquer: Red Alert", "shortName": "Red Alert", "platform": "dos", "genres": ["strategy"], "steamgriddb": 36154 }
   ],
   "roms": [
     { "sha1": "d6133ace5afaa0882cf214cf88daba39e266c078", "game": "majoras-mask", "name": "NTSC 1.0 (US)", "format": "z64" },
@@ -166,7 +168,23 @@
       "steam": { "app": 2478970, "folder": "2", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
     { "sha1": "7876b5986989aa66c455f242e35091ee72b68f0b", "game": "tomb-raider-3", "name": "Steam’s Tomb Raider I-III Remastered (build 25209630): the 3 folder", "format": "folder",
       "steam": { "app": 2478970, "folder": "3", "depots": [{ "depot": 2478971, "manifest": "8119698525739072643" }] } },
-    { "sha1": "5cfd971abb25602731fef0c9b43eb7d7447f296e", "game": "diablo", "name": "DIABDAT.MPQ from the CD (1.09) or GOG", "format": "mpq" }
+    { "sha1": "5cfd971abb25602731fef0c9b43eb7d7447f296e", "game": "diablo", "name": "DIABDAT.MPQ from the CD (1.09) or GOG", "format": "mpq" },
+    { "sha1": "3fe87949ebb0fe9fd13e4e1c8894d73017ca9556", "game": "command-and-conquer", "name": "Gold, freeware (EA, 2007): the GDI disc’s MIX files", "format": "folder" },
+    { "sha1": "3745b74d487a2076e9d3573e9c4380c6f8afa1d8", "game": "command-and-conquer", "name": "Gold, freeware (EA, 2007): the Nod disc’s MIX files", "format": "folder" },
+    { "sha1": "b3ab4b5641d4716ab9c75934fa0e83bd8913b0b3", "game": "command-and-conquer", "name": "Gold, freeware (EA, 2007): GDI disc image", "format": "iso",
+      "unpack": { "recipe": "recipes/westwood.sh", "recipeSHA256": "f6daa169e402c66167f27365e97f1e5c2b60f2e142523623859aba00cf2d329b", "yields": ["3fe87949ebb0fe9fd13e4e1c8894d73017ca9556"] },
+      "download": { "url": "https://downloads.cnc-comm.com/command-and-conquer/iso/CNC95_GDI.zip", "size": 426763840 } },
+    { "sha1": "a7ea582cf3e13f3cd1e7ad94de49edea5cb71e7b", "game": "command-and-conquer", "name": "Gold, freeware (EA, 2007): Nod disc image", "format": "iso",
+      "unpack": { "recipe": "recipes/westwood.sh", "recipeSHA256": "f6daa169e402c66167f27365e97f1e5c2b60f2e142523623859aba00cf2d329b", "yields": ["3745b74d487a2076e9d3573e9c4380c6f8afa1d8"] },
+      "download": { "url": "https://downloads.cnc-comm.com/command-and-conquer/iso/CNC95_Nod.zip", "size": 414935763 } },
+    { "sha1": "01ca7fe4b825e7758f3423bd5f5f8783ab88e8ce", "game": "red-alert", "name": "Freeware (EA, 2008): the Allied disc’s MIX files", "format": "folder" },
+    { "sha1": "a4cf8d806881c51357c93cabfb519455051838fa", "game": "red-alert", "name": "Freeware (EA, 2008): the Soviet disc’s MIX files", "format": "folder" },
+    { "sha1": "4f347c38d087faf8ae28636d8a56e56c748eb8dd", "game": "red-alert", "name": "Freeware (EA, 2008): Allied disc image", "format": "iso",
+      "unpack": { "recipe": "recipes/westwood.sh", "recipeSHA256": "f6daa169e402c66167f27365e97f1e5c2b60f2e142523623859aba00cf2d329b", "yields": ["01ca7fe4b825e7758f3423bd5f5f8783ab88e8ce"] },
+      "download": { "url": "https://downloads.cnc-comm.com/red-alert/iso/RA_Allies.zip", "size": 424655512 } },
+    { "sha1": "d30a37caff4e91fa5ddf864b339631b4137bb848", "game": "red-alert", "name": "Freeware (EA, 2008): Soviet disc image", "format": "iso",
+      "unpack": { "recipe": "recipes/westwood.sh", "recipeSHA256": "f6daa169e402c66167f27365e97f1e5c2b60f2e142523623859aba00cf2d329b", "yields": ["a4cf8d806881c51357c93cabfb519455051838fa"] },
+      "download": { "url": "https://downloads.cnc-comm.com/red-alert/iso/RA_Soviet.zip", "size": 451669861 } }
   ],
   "ports": [
     {
@@ -1740,6 +1758,84 @@
       "screenshots": [],
       "tags": ["widescreen", "controller", "multiplayer", "online", "bugfixes"],
       "firstRelease": "2019-02-27T03:58:37Z"
+    },
+    {
+      "id": "vanilla-conquer-tiberian-dawn",
+      "name": "Vanilla Conquer",
+      "kind": "sourceport",
+      "game": "command-and-conquer",
+      "developer": "The Assembly Armada",
+      "summary": "Command & Conquer as it was in 1995, on the engine EA released as open source.",
+      "description": "Vanilla Conquer is The Assembly Armada’s engine for the first Command & Conquer games, built from the source code EA released in 2020. It aims to play exactly as the original did, with the same missions, AI and balance, while running at your display’s resolution with a choice of scaling, on modern macOS, with bug fixes and network play. Frontport builds it from source, with SDL inside the app.\n\nEA made Command & Conquer Gold freeware: the game comes as its GDI and Nod disc images, which Frontport downloads for you, or takes as you got them. Frontport keeps the discs’ game files in the Port’s Data, where Vanilla Conquer also keeps its settings and saves, and plays their full-motion videos and music.",
+      "website": "https://github.com/TheAssemblyArmada/Vanilla-Conquer",
+      "source": "https://github.com/TheAssemblyArmada/Vanilla-Conquer",
+      "bundleId": "dev.frontport.port.vanilla-conquer-tiberian-dawn",
+      "releases": {
+        "type": "git",
+        "repo": "TheAssemblyArmada/Vanilla-Conquer",
+        "refs": { "stable": "ce83b59edd99cccac6cebaae054ca04962c744b7" },
+        "recipe": "recipes/vanilla-conquer.sh",
+        "recipeSHA256": "5b964eb1afd92bcbaf4018dfe48b15ecd6e3a0a43bab6b1e2a3a6cb3f2ca5082"
+      },
+      "requirements": [
+        {
+          "label": "GDI disc",
+          "stage": "runtime",
+          "oneOf": ["3fe87949ebb0fe9fd13e4e1c8894d73017ca9556"],
+          "seedPath": "Library/Application Support/Vanilla-Conquer/vanillatd/gdi"
+        },
+        {
+          "label": "Nod disc",
+          "stage": "runtime",
+          "oneOf": ["3745b74d487a2076e9d3573e9c4380c6f8afa1d8"],
+          "seedPath": "Library/Application Support/Vanilla-Conquer/vanillatd/nod"
+        }
+      ],
+      "permissions": { "network": true, "controllers": true, "files": false },
+      "artwork": { "fallback": 34396 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["multiplayer", "bugfixes"],
+      "firstRelease": "2020-06-03T19:51:17Z"
+    },
+    {
+      "id": "vanilla-conquer-red-alert",
+      "name": "Vanilla Conquer",
+      "kind": "sourceport",
+      "game": "red-alert",
+      "developer": "The Assembly Armada",
+      "summary": "Red Alert as it was in 1996, on the engine EA released as open source.",
+      "description": "Vanilla Conquer is The Assembly Armada’s engine for the first Command & Conquer games, built from the source code EA released in 2020. It aims to play exactly as the original did, with the same missions, AI and balance, while running at your display’s resolution with a choice of scaling, on modern macOS, with bug fixes and network play. Frontport builds it from source, with SDL inside the app.\n\nEA made Red Alert freeware: the game comes as its Allied and Soviet disc images, which Frontport downloads for you, or takes as you got them. Frontport keeps the discs’ game files in the Port’s Data, where Vanilla Conquer also keeps its settings and saves, and plays their full-motion videos and music.",
+      "website": "https://github.com/TheAssemblyArmada/Vanilla-Conquer",
+      "source": "https://github.com/TheAssemblyArmada/Vanilla-Conquer",
+      "bundleId": "dev.frontport.port.vanilla-conquer-red-alert",
+      "releases": {
+        "type": "git",
+        "repo": "TheAssemblyArmada/Vanilla-Conquer",
+        "refs": { "stable": "ce83b59edd99cccac6cebaae054ca04962c744b7" },
+        "recipe": "recipes/vanilla-conquer.sh",
+        "recipeSHA256": "5b964eb1afd92bcbaf4018dfe48b15ecd6e3a0a43bab6b1e2a3a6cb3f2ca5082"
+      },
+      "requirements": [
+        {
+          "label": "Allied disc",
+          "stage": "runtime",
+          "oneOf": ["01ca7fe4b825e7758f3423bd5f5f8783ab88e8ce"],
+          "seedPath": "Library/Application Support/Vanilla-Conquer/vanillara/allied"
+        },
+        {
+          "label": "Soviet disc",
+          "stage": "runtime",
+          "oneOf": ["a4cf8d806881c51357c93cabfb519455051838fa"],
+          "seedPath": "Library/Application Support/Vanilla-Conquer/vanillara/soviet"
+        }
+      ],
+      "permissions": { "network": true, "controllers": true, "files": false },
+      "artwork": { "fallback": 36154 },
+      "codeSigning": { "exceptions": [] },
+      "screenshots": [],
+      "tags": ["multiplayer", "bugfixes"],
+      "firstRelease": "2020-06-03T19:51:17Z"
     }
   ]
 }

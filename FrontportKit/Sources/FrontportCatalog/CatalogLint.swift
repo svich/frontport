@@ -88,6 +88,14 @@ extension CatalogDocument {
                     problems.append("ROM \(rom.sha1) has a Steam path outside the install folder: \(path).")
                 }
             }
+            if let download = rom.download {
+                if download.url.scheme != "https" || (download.url.host() ?? "").isEmpty || download.url.lastPathComponent.isEmpty
+                    || download.url.lastPathComponent == "/"
+                {
+                    problems.append("ROM \(rom.sha1) has a download that isn’t an https URL of a file.")
+                }
+                if let size = download.size, size <= 0 { problems.append("ROM \(rom.sha1) has a download of no size.") }
+            }
             guard let unpack = rom.unpack else {
                 if !accepted.contains(rom.sha1) { problems.append("ROM \(rom.sha1) isn’t accepted by any Requirement.") }
                 continue
