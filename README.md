@@ -9,8 +9,9 @@ Frontport has no emulators: every Port runs its Game as native Mac code.
 Emulators, such as DOSBox or RetroArch, and compatibility layers, such as
 Wine or CrossOver, which run a Game's original binaries, aren't Ports.
 
-Frontport is in development and has no release yet. To try it, build it from
-source.
+Frontport is in development. [Download the latest
+release](https://github.com/svich/frontport/releases/latest), signed and
+notarized, which updates itself; or build it from source.
 
 ## What it does
 

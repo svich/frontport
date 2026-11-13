@@ -48,7 +48,11 @@ setup="See scripts/README.md, “One-time setup”."
 # The identity and team come from App/Signing.local.xcconfig, which App/Signing.xcconfig includes, unless
 # FRONTPORT_SIGNING_IDENTITY and FRONTPORT_TEAM_ID override them for this run.
 overrides=()
-if [[ -n "${FRONTPORT_SIGNING_IDENTITY:-}" ]]; then overrides+=("CODE_SIGN_IDENTITY=$FRONTPORT_SIGNING_IDENTITY"); fi
+# A command-line override reaches every target, the Swift packages' resource bundles too, which sign automatically
+# and refuse a manually chosen identity; Developer ID needs no profile, so they sign manually as well.
+if [[ -n "${FRONTPORT_SIGNING_IDENTITY:-}" ]]; then
+    overrides+=("CODE_SIGN_IDENTITY=$FRONTPORT_SIGNING_IDENTITY" CODE_SIGN_STYLE=Manual)
+fi
 if [[ -n "${FRONTPORT_TEAM_ID:-}" ]]; then overrides+=("DEVELOPMENT_TEAM=$FRONTPORT_TEAM_ID"); fi
 
 # MARK: Steps that need no credential
@@ -100,7 +104,7 @@ if [[ -z "$public_key" ]]; then
     problems+=("App/Resources/Info.plist has no SUPublicEDKey, so the release couldn’t update itself.")
 fi
 if [[ "$feed" != https://* || "$feed" == *.invalid/* ]]; then
-    problems+=("App/Resources/Info.plist’s SUFeedURL is “$feed”, not the real https:// appcast URL.")
+    problems+=("App/Resources/Info.plist’s SUFeedURL is “${feed}”, not the real https:// appcast URL.")
 fi
 if ((${#problems[@]})); then
     # A release stops on these once its credentials are checked.
@@ -115,14 +119,14 @@ if [[ -z "$download_prefix" && -n "$feed" ]]; then download_prefix="${feed%/*}/"
 if ((dry_run)); then
     step "Dry run: stopping before the first step that needs a credential"
     if [[ "$identity" == Developer\ ID\ Application* && -n "$team" ]]; then
-        note "Next: sign with “$identity” (team $team), which must be in the login keychain."
+        note "Next: sign with “${identity}” (team $team), which must be in the login keychain."
     else
         note "Next: sign with a Developer ID Application identity. None is configured (CODE_SIGN_IDENTITY is"
-        note "“$identity”), so a release would stop there. Set it in App/Signing.local.xcconfig, or set"
+        note "“${identity}”), so a release would stop there. Set it in App/Signing.local.xcconfig, or set"
         note "FRONTPORT_SIGNING_IDENTITY and FRONTPORT_TEAM_ID."
     fi
-    note "Then: notarize with the notarytool profile “$profile”, and sign the appcast with the Sparkle key in the"
-    note "Keychain account “$key_account”. Neither was checked, nor the SteamGridDB key, which is optional."
+    note "Then: notarize with the notarytool profile “${profile}”, and sign the appcast with the Sparkle key in the"
+    note "Keychain account “${key_account}”. Neither was checked, nor the SteamGridDB key, which is optional."
     if ((${#problems[@]})); then
         note "A release would also stop at the Info.plist problems above, after these and before building."
         exit 1
@@ -132,24 +136,24 @@ fi
 
 step "Checking the Developer ID identity"
 if [[ "$identity" != Developer\ ID\ Application* || -z "$team" ]]; then
-    die "No Developer ID Application identity is configured (CODE_SIGN_IDENTITY is “$identity”, DEVELOPMENT_TEAM is “$team”)." \
+    die "No Developer ID Application identity is configured (CODE_SIGN_IDENTITY is “${identity}”, DEVELOPMENT_TEAM is “${team}”)." \
         "Set them in App/Signing.local.xcconfig, or set FRONTPORT_SIGNING_IDENTITY and FRONTPORT_TEAM_ID." "$setup"
 fi
-[[ "$hardened" == YES ]] || die "ENABLE_HARDENED_RUNTIME is “$hardened” for “$identity”; App/Signing.xcconfig should turn it on."
+[[ "$hardened" == YES ]] || die "ENABLE_HARDENED_RUNTIME is “${hardened}” for “${identity}”; App/Signing.xcconfig should turn it on."
 identities="$(security find-identity -v -p codesigning)"
 grep -F "$identity" <<< "$identities" | grep -qF "($team)" ||
-    die "The login keychain has no valid “$identity” certificate for team $team." "$setup"
+    die "The login keychain has no valid “${identity}” certificate for team $team." "$setup"
 note "$identity (team $team), hardened runtime on"
 
-step "Checking the notarytool profile “$profile”"
+step "Checking the notarytool profile “${profile}”"
 xcrun notarytool history --keychain-profile "$profile" > /dev/null 2>&1 ||
-    die "notarytool can’t use the Keychain profile “$profile”: it’s missing or its credentials don’t work." \
+    die "notarytool can’t use the Keychain profile “${profile}”: it’s missing or its credentials don’t work." \
         "Create it with xcrun notarytool store-credentials \"$profile\" …, or pass --profile." "$setup"
 
-step "Checking the Sparkle key in the Keychain account “$key_account” and Info.plist"
+step "Checking the Sparkle key in the Keychain account “${key_account}” and Info.plist"
 keychain_key="$("$sparkle/generate_keys" --account "$key_account" -p 2> /dev/null || true)"
 [[ -n "$keychain_key" ]] ||
-    die "The Keychain has no Sparkle EdDSA key for the account “$key_account”." \
+    die "The Keychain has no Sparkle EdDSA key for the account “${key_account}”." \
         "Create one with $sparkle/generate_keys --account $key_account, or pass --key-account." "$setup"
 ((${#problems[@]} == 0)) || die "${problems[@]}" "$setup"
 [[ "$keychain_key" == "$public_key" ]] ||
@@ -207,7 +211,7 @@ status="$(plutil -extract status raw -o - "$result" 2> /dev/null || echo "no ans
 if [[ "$status" != Accepted ]]; then
     id="$(plutil -extract id raw -o - "$result" 2> /dev/null || true)"
     [[ -n "$id" ]] && xcrun notarytool log "$id" --keychain-profile "$profile" "$output/notarization-log.json" > /dev/null 2>&1 || true
-    die "Notarization ended with status “$status”." "See $result and $output/notarization-log.json."
+    die "Notarization ended with status “${status}”." "See $result and $output/notarization-log.json."
 fi
 rm -f "$upload"
 note "Accepted"

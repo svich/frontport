@@ -38,6 +38,8 @@
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
 	<key>SUFeedURL</key>
-	<string>https://frontport.invalid/appcast.xml</string>
+	<string>https://github.com/svich/frontport/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>8TQ+OaCYyP3Ujq37XhX7gcf39qSXw8vvgupqYRbbTCs=</string>
 </dict>
 </plist>

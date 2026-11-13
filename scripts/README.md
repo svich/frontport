@@ -60,8 +60,10 @@ In order, it:
    <key>SUPublicEDKey</key>
    <string><the public key generate_keys printed></string>
    <key>SUFeedURL</key>
-   <string>https://<host>/appcast.xml</string>
+   <string>https://github.com/svich/frontport/releases/latest/download/appcast.xml</string>
    ```
+
+   Frontport's feed is the appcast attached to the latest GitHub Release; GitHub redirects that URL to it.
 
    Sparkle starts only when `SUPublicEDKey` is present, so builds without it never check for updates.
 
@@ -76,6 +78,16 @@ In order, it:
 ## Each release
 
 1. Raise `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`. Sparkle orders updates by `CURRENT_PROJECT_VERSION` (`CFBundleVersion`), so it must grow every release.
-2. Keep `build/release/updates/` from the last release, or put the published `appcast.xml` and recent zips back into it: `generate_appcast` adds to the appcast it finds there and makes delta updates from the older zips.
-3. Run `scripts/release.sh`.
-4. Upload `updates/Frontport-<version>.zip` and any new deltas to the download location, then `updates/appcast.xml` to `SUFeedURL`.
+2. Keep `build/release/updates/` from the last release, or put the published `appcast.xml` and recent zips back into it (`gh release download --dir build/release/updates`): `generate_appcast` adds to the appcast it finds there and makes delta updates from the older zips.
+3. Run the script with the Developer ID and this release's download folder. `App/Signing.local.xcconfig` can keep Apple Development for everyday builds:
+
+   ```sh
+   FRONTPORT_SIGNING_IDENTITY="Developer ID Application" FRONTPORT_TEAM_ID=<team ID> \
+       scripts/release.sh --download-url-prefix https://github.com/svich/frontport/releases/download/v<version>/
+   ```
+
+4. Commit, then publish the zip and the appcast as the release, adding the new `.delta` files when there are any:
+
+   ```sh
+   gh release create v<version> build/release/updates/Frontport-<version>.zip build/release/updates/appcast.xml
+   ```

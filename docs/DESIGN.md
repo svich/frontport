@@ -37,7 +37,7 @@ Not planned:
 - **Requirements:** Apple silicon only, macOS 26 or later.
 - **Hardened runtime:** on whenever Frontport is signed with a Developer ID, for the app and `frontport-primer` together. Builds without one are signed ad-hoc and leave it off in every configuration, because the runtime's library validation rejects ad-hoc nested code such as Sparkle (see [Signing and Permissions](#signing-and-permissions)). `App/Signing.xcconfig` holds this, and a git-ignored `App/Signing.local.xcconfig` sets the identity and team. Release builds never carry `get-task-allow`.
 - **Self-updates:** Sparkle, with a signed update feed. It starts only when Info.plist carries `SUPublicEDKey`, so development builds never show a Sparkle error.
-- **Releases:** [`scripts/release.sh`](../scripts/release.sh) checks the Developer ID identity, the notarytool profile, the Sparkle key and Info.plist before building, then archives and exports for Developer ID, verifies the signature and the hardened runtime, notarizes, staples, and adds the release to the Sparkle appcast. The one-time setup is in [`scripts/README.md`](../scripts/README.md).
+- **Releases:** [`scripts/release.sh`](../scripts/release.sh) checks the Developer ID identity, the notarytool profile, the Sparkle key and Info.plist before building, then archives and exports for Developer ID, verifies the signature and the hardened runtime, notarizes, staples, and adds the release to the Sparkle appcast. Each release is a GitHub Release carrying its zip and the whole appcast, so the feed is `releases/latest/download/appcast.xml` and no server is needed. The one-time setup is in [`scripts/README.md`](../scripts/README.md).
 - **Update checks:** only while Frontport is open, at launch and every 6 hours. No background helper and no login item. Each check refreshes the Catalog, enforces Blocks right away, then discovers Releases and refreshes artwork. A failed Catalog refresh is logged and the cached Catalog kept.
 
 ### Components
@@ -589,7 +589,6 @@ Not yet verified:
 - Gameplay that needs JIT in the Recomp Ports.
 - The Catalog refresh from its real URL, which now serves the Catalog. `refresh()` is verified only against a local server.
 - Devices: only Fallout CE and Xash3D's Half-Life, Opposing Force and Blue Shift have been installed, by `DeviceAppRootTests` rather than the app's own buttons, the Xash3D ones over Wi-Fi as well as USB. Making a Provisioning Profile for a free Apple Team and a Device going away are unchecked. Renew and Update have run only through stand-ins; whether Xcode makes a later Provisioning Profile for Renew while the one it has is still valid, rather than signing the stub with that, is unchecked (`ProfileMakerDeviceTests` runs the make path for a throwaway bundle ID). Seeding on a Device has run only through stand-ins; `DeviceEndToEndTests` checks it on a real one. Fallout CE's loose icons, its saves, and why its first launch showed only black are unchecked.
-- A Developer ID release. `scripts/release.sh` is written and its dry run works, but no identity, notarytool profile or Sparkle key exists here, so signing, notarization, stapling and the appcast haven't run.
 
 ## Port landscape (2026-10-24)
 
