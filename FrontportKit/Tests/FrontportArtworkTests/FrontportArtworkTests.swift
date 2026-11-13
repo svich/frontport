@@ -5,13 +5,6 @@ import Synchronization
 import Testing
 @testable import FrontportArtwork
 
-final class MemoryKeyStore: APIKeyStoring {
-    let key: Mutex<String?>
-    init(_ key: String? = nil) { self.key = Mutex(key) }
-    func read() throws -> String? { key.withLock { $0 } }
-    func write(_ key: String?) throws { self.key.withLock { $0 = key } }
-}
-
 final class TestClock: Sendable {
     let date = Mutex(Date(timeIntervalSince1970: 1_792_800_000))
     func now() -> Date { date.withLock { $0 } }
@@ -25,18 +18,14 @@ struct ArtworkFixture {
     let directory: TemporaryDirectory
     let paths: AppPaths
     let server = StubServer()
-    let keys: MemoryKeyStore
     let clock = TestClock()
     let store: ArtworkStore
 
-    init(key: String? = "secret", builtInKey: String? = nil) throws {
+    init() throws {
         directory = try TemporaryDirectory()
         paths = AppPaths(root: try directory.folder("Frontport"), containers: try directory.folder("Containers"))
-        keys = MemoryKeyStore(key)
         let clock = clock
-        store = ArtworkStore(
-            paths: paths, keyStore: keys, builtInKey: builtInKey, session: server.session, apiBase: server.url("api/v2/"),
-            now: { clock.now() })
+        store = ArtworkStore(paths: paths, session: server.session, base: server.url("v1/"), now: { clock.now() })
     }
 
     var entry: CatalogEntry {
@@ -48,94 +37,54 @@ struct ArtworkFixture {
             artwork: Artwork(steamgriddb: Self.portID, fallback: Self.gameID))
     }
 
-    /// Serves `images` (id, width, height) for a kind and game, each downloadable as PNG bytes of its id.
-    func serve(_ kind: String, game: Int, _ images: [(id: Int, width: Int, height: Int)], author: String = "artist") {
-        let data = images.map { image in
-            """
-            { "id": \(image.id), "score": 0, "style": "alternate", "width": \(image.width), "height": \(image.height),
-              "nsfw": false, "humor": false, "mime": "image/png", "language": "en",
-              "url": "\(server.url("file/\(image.id).png"))", "thumb": "\(server.url("thumb/\(image.id).png"))",
-              "lock": false, "epilepsy": false, "upvotes": 0, "downvotes": 0,
-              "author": { "name": "\(author)", "steam64": "1", "avatar": "https://example.org/a.png" } }
-            """
-        }
-        server.set("api/v2/\(kind)/game/\(game)", body: Data(#"{ "success": true, "data": [\#(data.joined(separator: ","))] }"#.utf8))
-        for image in images {
-            server.set("file/\(image.id).png", body: Data("png \(image.id)".utf8), contentType: "image/png")
-        }
+    static func path(_ kind: ArtworkKind, game: Int) -> String { "v1/\(game)/\(kind.rawValue)" }
+
+    /// The Worker's answer for a kind and game: the image, as PNG bytes of its asset id unless given.
+    func serve(_ kind: ArtworkKind, game: Int, asset: Int, author: String = "artist", data: Data? = nil) {
+        server.set(
+            Self.path(kind, game: game), body: data ?? Data("png \(asset)".utf8), contentType: "image/png",
+            headers: credit(asset: asset, author: author))
     }
 
-    func apiRequests() -> [URLRequest] { server.requests.filter { $0.url?.path.hasPrefix("/api/") == true } }
+    /// The Worker's answer when SteamGridDB has no artwork of the kind for the game.
+    func serveNone(_ kind: ArtworkKind, game: Int) {
+        server.set(Self.path(kind, game: game), status: 404, body: Data(#"{"error":"none"}"#.utf8), contentType: "application/json")
+    }
+
+    /// The Worker's answer when the app already has SteamGridDB's pick.
+    func serveUnchanged(_ kind: ArtworkKind, game: Int, asset: Int, author: String = "artist") {
+        server.set(Self.path(kind, game: game), status: 304, body: Data(), headers: credit(asset: asset, author: author))
+    }
+
+    private func credit(asset: Int, author: String) -> [String: String] {
+        [
+            "ETag": "\"\(asset)\"", "X-Artwork-Asset": "\(asset)",
+            "X-Artwork-Author": author.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!,
+            "X-Artwork-Source": "https://cdn.example/\(asset).png",
+        ]
+    }
+
+    func requests(_ kind: ArtworkKind, game: Int) -> [URLRequest] { server.requests(to: Self.path(kind, game: game)) }
 }
 
 @Suite struct ArtworkStoreTests {
-    @Test(arguments: [nil, "", " \n"])
-    func withoutAKeyNeverCallsTheAPI(builtInKey: String?) async throws {
-        // A build without a key of its own has an empty one in its Info.plist.
-        let fixture = try ArtworkFixture(key: nil, builtInKey: builtInKey)
-        fixture.serve("grids", game: ArtworkFixture.portID, [(1, 920, 430)])
-        #expect(await fixture.store.artwork(.grid, for: fixture.entry) == nil)
-        await fixture.store.refresh([fixture.entry])
-        #expect(fixture.server.requests.isEmpty)
-        #expect(await fixture.store.apiKeySource() == nil)
-    }
-
-    @Test func usesTheBuiltInKeyUntilTheUserSavesOne() async throws {
-        let fixture = try ArtworkFixture(key: nil, builtInKey: " frontport\n")
-        fixture.serve("grids", game: ArtworkFixture.portID, [(1, 920, 430)])
-        fixture.serve("logos", game: ArtworkFixture.portID, [(2, 800, 300)])
-        fixture.serve("icons", game: ArtworkFixture.portID, [(3, 256, 256)])
-        #expect(await fixture.store.apiKeySource() == .builtIn)
-        _ = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
-        #expect(fixture.apiRequests().last?.value(forHTTPHeaderField: "Authorization") == "Bearer frontport")
-
-        try await fixture.store.setAPIKey("mine")
-        #expect(await fixture.store.apiKeySource() == .user)
-        _ = try #require(await fixture.store.artwork(.logo, for: fixture.entry))
-        #expect(fixture.apiRequests().last?.value(forHTTPHeaderField: "Authorization") == "Bearer mine")
-
-        // Removing the user's key goes back to the built-in one.
-        try await fixture.store.setAPIKey(nil)
-        #expect(await fixture.store.apiKeySource() == .builtIn)
-        _ = try #require(await fixture.store.artwork(.icon, for: fixture.entry))
-        #expect(fixture.apiRequests().last?.value(forHTTPHeaderField: "Authorization") == "Bearer frontport")
-    }
-
-    @Test func withoutAKeyStillReturnsCachedArtwork() async throws {
+    @Test func fetchesFromTheWorkerAndCachesWithTheCredit() async throws {
         let fixture = try ArtworkFixture()
-        fixture.serve("grids", game: ArtworkFixture.portID, [(1, 920, 430)])
-        let cached = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
-
-        try await fixture.store.setAPIKey(nil)
-        let requests = fixture.server.requests.count
-        #expect(await fixture.store.artwork(.grid, for: fixture.entry) == cached)
-        #expect(fixture.server.requests.count == requests)
-    }
-
-    @Test func fetchesTheLandscapeGridOfThePortsOwnEntry() async throws {
-        let fixture = try ArtworkFixture()
-        fixture.serve("grids", game: ArtworkFixture.portID, [(10, 460, 215), (11, 920, 430), (12, 920, 430)])
+        fixture.serve(.grid, game: ArtworkFixture.portID, asset: 11, author: "Zoë Q")
 
         let file = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
         #expect(file == fixture.paths.artwork(steamgriddb: ArtworkFixture.portID).appending(path: "grid.png"))
         #expect(try Data(contentsOf: file) == Data("png 11".utf8))
 
-        let api = try #require(fixture.apiRequests().first)
-        #expect(api.value(forHTTPHeaderField: "Authorization") == "Bearer secret")
-        #expect(api.value(forHTTPHeaderField: "User-Agent") == "Frontport")
-        let apiURL = try #require(api.url)
-        let query = try #require(URLComponents(url: apiURL, resolvingAgainstBaseURL: false)?.queryItems)
-        #expect(query.contains(URLQueryItem(name: "dimensions", value: "920x430,460x215")))
-        #expect(query.contains(URLQueryItem(name: "types", value: "static")))
-        #expect(query.contains(URLQueryItem(name: "nsfw", value: "false")))
-        // The key goes only to the API, never to the image host.
-        let download = try #require(fixture.server.requests(to: "file/11.png").first)
-        #expect(download.value(forHTTPHeaderField: "Authorization") == nil)
-        #expect(download.value(forHTTPHeaderField: "User-Agent") == "Frontport")
+        let request = try #require(fixture.requests(.grid, game: ArtworkFixture.portID).first)
+        #expect(request.value(forHTTPHeaderField: "User-Agent") == "Frontport")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
+        #expect(request.value(forHTTPHeaderField: "If-None-Match") == nil)
 
         let record = try #require(await fixture.store.record(.grid, for: fixture.entry))
         #expect(record.assetID == 11)
-        #expect(record.author == "artist")
+        #expect(record.author == "Zoë Q")
+        #expect(record.source == URL(string: "https://cdn.example/11.png"))
         #expect(record.fetched == fixture.clock.now())
 
         // Cached: no more requests.
@@ -146,33 +95,33 @@ struct ArtworkFixture {
 
     @Test func fallsBackToTheGameWhenThePortHasNone() async throws {
         let fixture = try ArtworkFixture()
-        fixture.serve("heroes", game: ArtworkFixture.portID, [])
-        fixture.serve("heroes", game: ArtworkFixture.gameID, [(20, 1920, 620)])
+        fixture.serveNone(.hero, game: ArtworkFixture.portID)
+        fixture.serve(.hero, game: ArtworkFixture.gameID, asset: 20)
 
         let file = try #require(await fixture.store.artwork(.hero, for: fixture.entry))
         #expect(file == fixture.paths.artwork(steamgriddb: ArtworkFixture.gameID).appending(path: "hero.png"))
-        #expect(fixture.apiRequests().count == 2)
+        #expect(fixture.server.requests.count == 2)
 
         // The Port's empty answer is remembered for a while.
         #expect(await fixture.store.artwork(.hero, for: fixture.entry) == file)
-        #expect(fixture.apiRequests().count == 2)
+        #expect(fixture.server.requests.count == 2)
     }
 
-    @Test func unknownGamesAndRejectedKeysCacheNothingUseful() async throws {
+    @Test func failuresCacheNothing() async throws {
         let fixture = try ArtworkFixture()
-        // Nothing served: SteamGridDB answers 404, meaning it has no such game.
+        // A 404 that isn't the Worker's "none", such as a wrong address, isn't taken as having no artwork.
         #expect(await fixture.store.artwork(.logo, for: fixture.entry) == nil)
-
-        fixture.server.set("api/v2/icons/game/\(ArtworkFixture.portID)", status: 401, body: Data("{}".utf8))
-        fixture.server.set("api/v2/icons/game/\(ArtworkFixture.gameID)", status: 401, body: Data("{}".utf8))
+        fixture.server.set(ArtworkFixture.path(.icon, game: ArtworkFixture.portID), status: 502, body: Data("{}".utf8))
+        fixture.server.set(ArtworkFixture.path(.icon, game: ArtworkFixture.gameID), status: 502, body: Data("{}".utf8))
         #expect(await fixture.store.artwork(.icon, for: fixture.entry) == nil)
         let folder = fixture.paths.artwork(steamgriddb: ArtworkFixture.portID)
+        #expect(!FileManager.default.fileExists(atPath: folder.appending(path: "logo.json").path(percentEncoded: false)))
         #expect(!FileManager.default.fileExists(atPath: folder.appending(path: "icon.json").path(percentEncoded: false)))
     }
 
-    @Test func refreshRefetchesOnlyStaleArtworkItWasAskedFor() async throws {
+    @Test func refreshAsksAgainOnlyForStaleArtworkItWasAskedFor() async throws {
         let fixture = try ArtworkFixture()
-        fixture.serve("grids", game: ArtworkFixture.portID, [(1, 920, 430)])
+        fixture.serve(.grid, game: ArtworkFixture.portID, asset: 1)
         _ = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
         let initial = fixture.server.requests.count
 
@@ -180,28 +129,42 @@ struct ArtworkFixture {
         await fixture.store.refresh([fixture.entry])
         #expect(fixture.server.requests.count == initial)
 
-        // Stale, same asset: the record is renewed without downloading the image again.
+        // Stale, same asset: the app names what it has, and the record is renewed without the image.
         fixture.clock.advance(days: 8)
+        fixture.serveUnchanged(.grid, game: ArtworkFixture.portID, asset: 1, author: "renamed")
         await fixture.store.refresh([fixture.entry])
-        #expect(fixture.apiRequests().count == 2)
-        #expect(fixture.server.requests(to: "file/1.png").count == 1)
-        #expect(await fixture.store.record(.grid, for: fixture.entry)?.fetched == fixture.clock.now())
+        let asked = try #require(fixture.requests(.grid, game: ArtworkFixture.portID).last)
+        #expect(asked.value(forHTTPHeaderField: "If-None-Match") == "\"1\"")
+        let renewed = try #require(await fixture.store.record(.grid, for: fixture.entry))
+        #expect(renewed.fetched == fixture.clock.now())
+        #expect(renewed.author == "renamed")
+        let file = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
+        #expect(try Data(contentsOf: file) == Data("png 1".utf8))
 
         // Stale, new asset: replaced.
         fixture.clock.advance(days: 8)
-        fixture.serve("grids", game: ArtworkFixture.portID, [(2, 920, 430)], author: "someone else")
+        fixture.serve(.grid, game: ArtworkFixture.portID, asset: 2, author: "someone else")
         await fixture.store.refresh([fixture.entry])
-        let file = try #require(await fixture.store.artwork(.grid, for: fixture.entry))
-        #expect(try Data(contentsOf: file) == Data("png 2".utf8))
+        #expect(try Data(contentsOf: try #require(await fixture.store.artwork(.grid, for: fixture.entry))) == Data("png 2".utf8))
         #expect(await fixture.store.record(.grid, for: fixture.entry)?.author == "someone else")
 
         // Kinds never asked for are never fetched.
-        #expect(fixture.server.requests.allSatisfy { $0.url?.path.contains("/grids/") == true || $0.url?.path.hasPrefix("/file/") == true })
+        #expect(fixture.server.requests.allSatisfy { $0.url?.path.hasSuffix("/grid") == true })
+    }
+
+    @Test func aStaleRefreshThatFailsKeepsTheCachedArtwork() async throws {
+        let fixture = try ArtworkFixture()
+        fixture.serve(.icon, game: ArtworkFixture.portID, asset: 3)
+        let file = try #require(await fixture.store.artwork(.icon, for: fixture.entry))
+        fixture.clock.advance(days: 8)
+        fixture.server.set(ArtworkFixture.path(.icon, game: ArtworkFixture.portID), status: 502, body: Data())
+        await fixture.store.refresh([fixture.entry])
+        #expect(await fixture.store.artwork(.icon, for: fixture.entry) == file)
     }
 
     @Test func concurrentRequestsShareOneFetch() async throws {
         let fixture = try ArtworkFixture()
-        fixture.serve("logos", game: ArtworkFixture.portID, [(5, 800, 300)])
+        fixture.serve(.logo, game: ArtworkFixture.portID, asset: 5)
         let store = fixture.store
         let entry = fixture.entry
         let results = await withTaskGroup(of: URL?.self) { group in
@@ -210,43 +173,30 @@ struct ArtworkFixture {
         }
         #expect(Set(results).count == 1)
         #expect(results.first! != nil)
-        #expect(fixture.apiRequests().count == 1)
+        #expect(fixture.server.requests.count == 1)
     }
 
     @Test func looksUpGamesByTheirOwnEntry() async throws {
         let fixture = try ArtworkFixture()
-        fixture.serve("icons", game: 34302, [(7, 256, 256)])
+        fixture.serve(.icon, game: 34302, asset: 7)
         let game = Game(id: "majoras-mask", name: "Majora’s Mask", platform: "n64", steamgriddb: 34302)
         let file = try #require(await fixture.store.artwork(.icon, for: game))
         #expect(file.lastPathComponent == "icon.png")
-        let query = try #require(fixture.apiRequests().first?.url?.query())
-        #expect(query.contains("mimes=image/png"))
         #expect(await fixture.store.artwork(.icon, for: Game(id: "x", name: "X", platform: "n64")) == nil)
     }
 
-    @Test func storesTheKeyInItsKeyStore() async throws {
-        let fixture = try ArtworkFixture(key: nil)
-        try await fixture.store.setAPIKey("  abc \n")
-        #expect(try fixture.keys.read() == "abc")
-        #expect(await fixture.store.apiKeySource() == .user)
-        try await fixture.store.setAPIKey("")
-        #expect(try fixture.keys.read() == nil)
-        #expect(await fixture.store.apiKeySource() == nil)
-    }
-
     @Test func choosesFileExtensionsFromTheMimeType() {
-        let url = URL(string: "https://cdn.example/a/b.webp")!
-        #expect(SteamGridDB.fileExtension(mime: "image/jpeg", url: url) == "jpg")
-        #expect(SteamGridDB.fileExtension(mime: "image/png", url: url) == "png")
-        #expect(SteamGridDB.fileExtension(mime: nil, url: url) == "webp")
+        let source = URL(string: "https://cdn.example/a/b.webp")!
+        #expect(ArtworkWorker.fileExtension(mime: "image/jpeg", source: source) == "jpg")
+        #expect(ArtworkWorker.fileExtension(mime: "image/png", source: source) == "png")
+        #expect(ArtworkWorker.fileExtension(mime: nil, source: source) == "webp")
+        #expect(ArtworkWorker.fileExtension(mime: nil, source: nil) == "img")
     }
 
     @Test func scalesLargeArtworkDownToTheSizeItsShownAt() async throws {
         let fixture = try ArtworkFixture()
-        fixture.serve("heroes", game: ArtworkFixture.portID, [(30, 3840, 1240)])
-        fixture.server.set("file/30.png", body: try PNG.make(width: 3840, height: 1240, opaque: true), contentType: "image/png")
-        fixture.serve("logos", game: ArtworkFixture.portID, [(31, 3000, 400)])
-        fixture.server.set("file/31.png", body: try PNG.make(width: 3000, height: 400, opaque: false), contentType: "image/png")
+        fixture.serve(.hero, game: ArtworkFixture.portID, asset: 30, data: try PNG.make(width: 3840, height: 1240, opaque: true))
+        fixture.serve(.logo, game: ArtworkFixture.portID, asset: 31, data: try PNG.make(width: 3000, height: 400, opaque: false))
 
         let hero = try #require(await fixture.store.artwork(.hero, for: fixture.entry))
         #expect(hero.lastPathComponent == "hero.heic")
@@ -258,7 +208,7 @@ struct ArtworkFixture {
     }
 
     @Test func compactScalesArtworkCachedAsItCame() async throws {
-        let fixture = try ArtworkFixture(key: nil)
+        let fixture = try ArtworkFixture()
         let folder = fixture.paths.artwork(steamgriddb: ArtworkFixture.portID)
         try FileOperations.createDirectory(folder)
         try PNG.make(width: 3840, height: 1240, opaque: true).write(to: folder.appending(path: "hero.png"))

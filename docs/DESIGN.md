@@ -248,15 +248,15 @@ An Unsupported Port carries `"unsupported": "<reason>"`. It's listed in the Cata
 
 ## Artwork
 
-Covers come from [SteamGridDB](https://www.steamgriddb.com):
+Covers come from [SteamGridDB](https://www.steamgriddb.com), through Frontport's artwork Worker ([ADR 0018](adr/0018-serve-artwork-from-a-worker.md)):
 - **Lookup:** each Catalog entry pins a SteamGridDB game ID, so Frontport never guesses by name. It uses the Port's own entry when there is one (most Ports have one), and otherwise the Game's.
 - **Where each kind goes:** a landscape grid on Catalog cards, the hero and logo atop the Port page, and the icon in the sidebar. Game cards and the Game page show the Game's own grid, from its `steamgriddb` id, and Project tiles and update cards show the Games' icons. On Devices, the Device Packager makes the Port's icon the app's home screen icon, as opaque squares at the sizes iPhone and iPad show, in place of the engine logo or none a Recipe or upstream gives; without one cached, the app keeps its own.
-- **Caching:** Frontport caches artwork in `Artwork/` with the asset ID and author for the credit, and re-fetches artwork older than 7 days during update checks. An empty answer is cached too.
+- **Caching:** Frontport caches artwork in `Artwork/` with the asset ID and author for the credit, and asks again for artwork older than 7 days during update checks, naming the asset it has (`If-None-Match`) so an unchanged image isn't downloaded again. An empty answer is cached too.
 - **Size:** each image is scaled when it's fetched to twice the largest size Frontport shows it at (`ArtworkKind.maxPixels`), as HEIC, or PNG when it has transparency: a 3840-pixel PNG hero becomes a few hundred KB that decodes several times faster. Artwork cached before scaling is scaled once at launch. The app keeps decoded artwork in memory and decodes what the Catalog, the sidebar and the Library's Port pages show right after launch, so screens show it at once; while artwork the Catalog names is loading, its frame shows a skeleton.
-- **API key:** the user's own SteamGridDB key, entered in Settings and kept in the Keychain, or else the key a release build ships with ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Without either, Frontport never calls the API and shows only cached artwork or the fallback. While Frontport is signed ad-hoc, the Keychain item is tied to each build, so a rebuild asks for Keychain access again.
-- **Requests:** each sends `User-Agent: Frontport`, so SteamGridDB can tell Frontport's traffic apart. Only API requests carry the key, never image downloads.
+- **Worker:** [`worker/`](../worker/README.md), a Cloudflare Worker at `https://frontport-artwork.frontport.workers.dev`, holds the SteamGridDB key as a secret, picks the image (the 920×430 grid, then 460×215, else the top pick; static, no NSFW, humor or epilepsy flags) and keeps the original in R2, asking SteamGridDB again after a week. The app needs no key and has no setting for one.
+- **Requests:** each sends `User-Agent: Frontport` and nothing about the user. The Worker does the same toward SteamGridDB, and only its API requests carry the key.
 - **Fallback:** without artwork, a flat color with the Game's name. The color comes from a hash of the Game ID, so it's stable.
-- **Terms:** SteamGridDB allows only personal, non-commercial use, and no automated use of the site. So each Mac fetches artwork for its own Library through the v2 API, Frontport never bundles or rehosts it, and the UI credits SteamGridDB.
+- **Terms:** SteamGridDB allows only personal, non-commercial use, and no automated use of the site; it gave Frontport written permission to fetch with one key and serve from the Worker. Frontport never bundles artwork in the app, and the UI credits SteamGridDB and the artist.
 - **Naming:** call these artwork, never Assets, which are ROM-derived files.
 
 ## Releases
@@ -645,7 +645,7 @@ Answered during the first implementation: the build profiles ([Build sandbox](#b
 
 1. Catalog curation: who reviews entries, how Permissions are tested, and the release signing key. The Catalog is served from `catalog/` on `main`.
 2. Whether Seeding or taking Snapshots from a Developer ID–signed Frontport triggers a privacy prompt.
-3. SteamGridDB API access: whether SteamGridDB permits a key in release builds ([ADR 0013](adr/0013-ship-a-steamgriddb-key-in-releases.md)). Also whether entries pin specific artwork or take the top-rated.
+3. The artwork Worker ([ADR 0018](adr/0018-serve-artwork-from-a-worker.md)) answers any SteamGridDB game ID, so anyone could make it spend the key on IDs Frontport never shows: limit it to IDs a Catalog pins, rate-limit per IP, or both. Also whether entries pin specific artwork or take the top-rated.
 4. Permissions not yet modeled: `network.server` for hosting (sm64coopdx), and whether Recomp Ports need Files for their in-app pickers.
 5. Requirements that a single `oneOf` can't express: Starship's voice-pack extras and zelda3's language ROMs.
 6. Devices: whether Snapshots of a Device's Data (`devicectl device copy from`) are worth having before updates, and whether to offer the iOS Simulator for testing iOS Recipes.

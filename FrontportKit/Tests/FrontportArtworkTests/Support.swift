@@ -9,6 +9,7 @@ final class StubServer: Sendable {
         var status: Int
         var body: Data
         var contentType: String?
+        var headers: [String: String] = [:]
     }
 
     let host = "\(UUID().uuidString.lowercased()).test"
@@ -32,8 +33,8 @@ final class StubServer: Sendable {
     /// `https://<host>/<path>`.
     func url(_ path: String = "") -> URL { URL(string: "https://\(host)/\(path)")! }
 
-    func set(_ path: String, status: Int = 200, body: Data, contentType: String? = nil) {
-        routes.withLock { $0["/" + path] = Response(status: status, body: body, contentType: contentType) }
+    func set(_ path: String, status: Int = 200, body: Data, contentType: String? = nil, headers: [String: String] = [:]) {
+        routes.withLock { $0["/" + path] = Response(status: status, body: body, contentType: contentType, headers: headers) }
     }
 
     func remove(_ path: String) {
@@ -69,7 +70,7 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
             return
         }
         let response = server.respond(to: request)
-        var headers: [String: String] = [:]
+        var headers = response.headers
         if let contentType = response.contentType { headers["Content-Type"] = contentType }
         let http = HTTPURLResponse(url: url, statusCode: response.status, httpVersion: "HTTP/1.1", headerFields: headers)!
         client?.urlProtocol(self, didReceive: http, cacheStoragePolicy: .notAllowed)

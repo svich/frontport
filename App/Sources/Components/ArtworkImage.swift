@@ -61,7 +61,7 @@ struct ArtworkImage: View {
             }
             .clipped()
             .accessibilityHidden(true)
-            .task(id: TaskID(key: key, generation: model.artworkGeneration)) {
+            .task(id: key) {
                 let image = await ArtworkCache.shared.load(key, model: model)
                 if !Task.isCancelled { loaded = (key, image) }
             }
@@ -75,11 +75,6 @@ struct ArtworkImage: View {
             return artwork.steamgriddb != nil || artwork.fallback != nil
         case .game(let id): return model.survey.catalog?.game(id)?.steamgriddb != nil
         }
-    }
-
-    private struct TaskID: Hashable {
-        var key: ArtworkCache.Key
-        var generation: Int
     }
 
     @ViewBuilder private var fallback: some View {
@@ -228,17 +223,12 @@ final class ArtworkCache {
         return cache
     }()
     private var sources: [Key: Source] = [:]
-    /// Looked up and found to have no artwork, so views show their stand-in at once. Forgotten after each refresh and
-    /// a new SteamGridDB key, since a failed fetch looks the same.
+    /// Looked up and found to have no artwork, so views show their stand-in at once. Forgotten after each refresh,
+    /// since a failed fetch looks the same.
     private var missing: Set<Key> = []
-    /// Loads under way, by key and `AppModel.artworkGeneration`, so one started before a new key isn't shared after.
-    private var loading: [LoadKey: Task<NSImage?, Never>] = [:]
+    /// Loads under way, so callers asking together share one.
+    private var loading: [Key: Task<NSImage?, Never>] = [:]
     private var isPrefetching = false
-
-    private struct LoadKey: Hashable {
-        var key: Key
-        var generation: Int
-    }
 
     private static func name(_ key: Key) -> NSString {
         switch key.subject {
@@ -257,12 +247,11 @@ final class ArtworkCache {
 
     /// The image for `key`, decoded unless the same file, unchanged, already is. Callers asking together share one load.
     func load(_ key: Key, model: AppModel, priority: TaskPriority = .userInitiated) async -> NSImage? {
-        let id = LoadKey(key: key, generation: model.artworkGeneration)
-        if let running = loading[id] { return await running.value }
+        if let running = loading[key] { return await running.value }
         let task = Task(priority: priority) { await self.decode(key, model: model, priority: priority) }
-        loading[id] = task
+        loading[key] = task
         let image = await task.value
-        loading[id] = nil
+        loading[key] = nil
         return image
     }
 

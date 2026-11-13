@@ -29,14 +29,11 @@ public struct ArtworkRecord: Codable, Hashable, Sendable {
     }
 }
 
-/// SteamGridDB artwork, fetched through the v2 API and cached in `Artwork/`. The user's key comes first, then the
-/// key a release build ships with.
-///
-/// SteamGridDB's terms allow personal use only, so artwork is fetched only for entries the app asks about,
-/// one Mac at a time, and never bundled. Without a key nothing is fetched: cached files are still returned.
+/// SteamGridDB artwork, fetched through Frontport's artwork Worker and cached in `Artwork/`. The Worker holds the
+/// SteamGridDB key and keeps every image in Cloudflare R2, with SteamGridDB's permission (ADR 0018).
 public actor ArtworkStore: ArtworkProviding {
-    public static let defaultAPIBase = URL(string: "https://www.steamgriddb.com/api/v2/")!
-    /// Cached artwork older than this is fetched again by `refresh`.
+    public static let defaultBase = URL(string: "https://frontport-artwork.frontport.workers.dev/v1/")!
+    /// Cached artwork older than this is checked again by `refresh`.
     public static let defaultMaxAge: TimeInterval = 7 * 24 * 60 * 60
 
     private struct CacheKey: Hashable {
@@ -45,25 +42,17 @@ public actor ArtworkStore: ArtworkProviding {
     }
 
     private let paths: AppPaths
-    private let keyStore: any APIKeyStoring
-    private let builtInKey: String?
-    private let api: SteamGridDB
+    private let worker: ArtworkWorker
     private let maxAge: TimeInterval
     private let now: @Sendable () -> Date
-    /// The user's key; nil until the key store has been read.
-    private var userKey: String??
     private var inFlight: [CacheKey: Task<ArtworkRecord?, Never>] = [:]
 
-    /// - Parameter builtInKey: the key this build ships with, if any; empty counts as none.
     public init(
-        paths: AppPaths, keyStore: any APIKeyStoring = KeychainAPIKeyStore(), builtInKey: String? = nil,
-        session: URLSession = .shared, apiBase: URL = ArtworkStore.defaultAPIBase,
+        paths: AppPaths, session: URLSession = .shared, base: URL = ArtworkStore.defaultBase,
         maxAge: TimeInterval = ArtworkStore.defaultMaxAge, now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.paths = paths
-        self.keyStore = keyStore
-        self.builtInKey = Self.normalized(builtInKey)
-        self.api = SteamGridDB(base: apiBase, session: session)
+        self.worker = ArtworkWorker(base: base, session: session)
         self.maxAge = maxAge
         self.now = now
     }
@@ -79,26 +68,14 @@ public actor ArtworkStore: ArtworkProviding {
     }
 
     public func refresh(_ entries: [CatalogEntry]) async {
-        guard let key = apiKey() else { return }
         let ids = Set(entries.flatMap(Self.ids(for:)))
         for id in ids.sorted() {
             for kind in ArtworkKind.allCases {
                 // Only what the app has asked for before is cached, so only that is refreshed.
                 guard let record = record(kind, id: id), isStale(record) else { continue }
-                _ = await fetch(kind, id: id, key: key)
+                _ = await fetch(kind, id: id)
             }
         }
-    }
-
-    public func apiKeySource() async -> APIKeySource? {
-        if storedUserKey() != nil { return .user }
-        return builtInKey == nil ? nil : .builtIn
-    }
-
-    public func setAPIKey(_ key: String?) async throws {
-        let value = Self.normalized(key)
-        try keyStore.write(value)
-        userKey = .some(value)
     }
 
     public func compact() async {
@@ -143,26 +120,11 @@ public actor ArtworkStore: ArtworkProviding {
                 // SteamGridDB had none of this kind recently: try the next id without asking again.
                 if record.assetID == nil, !isStale(record) { continue }
             }
-            guard let key = apiKey() else { continue }
-            if let record = await fetch(kind, id: id, key: key), let file = file(for: record) {
+            if let record = await fetch(kind, id: id), let file = file(for: record) {
                 return file
             }
         }
         return nil
-    }
-
-    private func apiKey() -> String? { storedUserKey() ?? builtInKey }
-
-    private func storedUserKey() -> String? {
-        if let userKey { return userKey }
-        let stored = (try? keyStore.read()).flatMap(\.self)
-        userKey = .some(stored)
-        return stored
-    }
-
-    private static func normalized(_ key: String?) -> String? {
-        guard let trimmed = key?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else { return nil }
-        return trimmed
     }
 
     private func isStale(_ record: ArtworkRecord) -> Bool {
@@ -190,41 +152,41 @@ public actor ArtworkStore: ArtworkProviding {
     // MARK: Fetching
 
     /// Fetches once per kind and id at a time; concurrent callers share the result.
-    private func fetch(_ kind: ArtworkKind, id: Int, key: String) async -> ArtworkRecord? {
+    private func fetch(_ kind: ArtworkKind, id: Int) async -> ArtworkRecord? {
         let cacheKey = CacheKey(id: id, kind: kind)
         if let running = inFlight[cacheKey] { return await running.value }
-        let task = Task { await self.download(kind, id: id, key: key) }
+        let task = Task { await self.download(kind, id: id) }
         inFlight[cacheKey] = task
         let result = await task.value
         inFlight[cacheKey] = nil
         return result
     }
 
-    /// Asks SteamGridDB for the artwork and caches it. Nil on any failure, leaving the cache as it was.
-    private func download(_ kind: ArtworkKind, id: Int, key: String) async -> ArtworkRecord? {
+    /// Asks the Worker for the artwork and caches it. Nil on any failure, leaving the cache as it was.
+    private func download(_ kind: ArtworkKind, id: Int) async -> ArtworkRecord? {
         let previous = record(kind, id: id)
+        let cachedAsset = previous.flatMap { file(for: $0) == nil ? nil : $0.assetID }
         do {
-            let images = try await api.images(kind, game: id, key: key)
-            guard let image = SteamGridDB.choose(images, for: kind) else {
+            switch try await worker.artwork(kind, game: id, unless: cachedAsset) {
+            case .none:
                 let none = ArtworkRecord(kind: kind, steamgriddb: id, fetched: now())
                 try save(none, data: nil)
                 return none
-            }
-            if let previous, previous.assetID == image.id, file(for: previous) != nil {
-                var refreshed = previous
-                refreshed.author = image.author?.name
+            case .unchanged(let credit):
+                guard var refreshed = previous, cachedAsset == credit.asset else { return nil }
+                refreshed.author = credit.author
                 refreshed.fetched = now()
                 try save(refreshed, data: nil)
                 return refreshed
+            case .image(let credit, let original, let mime):
+                let scaled = await Task.detached(priority: .utility) { ArtworkScaling.scaled(original, kind: kind) }.value
+                let fileExtension = scaled?.fileExtension ?? ArtworkWorker.fileExtension(mime: mime, source: credit.source)
+                let record = ArtworkRecord(
+                    kind: kind, steamgriddb: id, assetID: credit.asset, file: "\(kind.rawValue).\(fileExtension)",
+                    author: credit.author, source: credit.source, fetched: now())
+                try save(record, data: scaled?.data ?? original)
+                return record
             }
-            let (original, mime) = try await api.download(image)
-            let scaled = await Task.detached(priority: .utility) { ArtworkScaling.scaled(original, kind: kind) }.value
-            let fileExtension = scaled?.fileExtension ?? SteamGridDB.fileExtension(mime: mime ?? image.mime, url: image.url)
-            let record = ArtworkRecord(
-                kind: kind, steamgriddb: id, assetID: image.id, file: "\(kind.rawValue).\(fileExtension)",
-                author: image.author?.name, source: image.url, fetched: now())
-            try save(record, data: scaled?.data ?? original)
-            return record
         } catch {
             return nil
         }

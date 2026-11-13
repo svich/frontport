@@ -309,10 +309,10 @@ public protocol PortLaunching: Sendable {
     func events() async -> AsyncStream<LaunchEvent>
 }
 
-/// SteamGridDB artwork, cached in `Artwork/` (FrontportArtwork).
+/// SteamGridDB artwork, fetched through Frontport's artwork Worker and cached in `Artwork/` (FrontportArtwork).
 public protocol ArtworkProviding: Sendable {
     /// The cached file, fetching it if needed, using the Port's own entry or the Game's. Nil when there is
-    /// none, no API key is set, or the fetch fails: the UI then shows a flat color with the Game's name.
+    /// none or the fetch fails: the UI then shows a flat color with the Game's name.
     func artwork(_ kind: ArtworkKind, for entry: CatalogEntry) async -> URL?
 
     func artwork(_ kind: ArtworkKind, for game: Game) async -> URL?
@@ -320,26 +320,12 @@ public protocol ArtworkProviding: Sendable {
     /// Refetches cached artwork for these entries; run during update checks.
     func refresh(_ entries: [CatalogEntry]) async
 
-    /// Whose key artwork is fetched with; nil when there is none.
-    func apiKeySource() async -> APIKeySource?
-
-    /// Stores the user's SteamGridDB API key in the Keychain; nil removes it.
-    func setAPIKey(_ key: String?) async throws
-
     /// Scales artwork cached before Frontport scaled it when fetching down to `ArtworkKind.maxPixels`.
     func compact() async
 }
 
 extension ArtworkProviding {
     public func compact() async {}
-}
-
-/// Whose SteamGridDB API key Frontport fetches artwork with.
-public enum APIKeySource: Sendable {
-    /// The user's own, saved in Settings.
-    case user
-    /// The key a release build ships with, used while the user has none of their own.
-    case builtIn
 }
 
 /// Installations and everything that changes them (FrontportLibrary). Orchestrates the other services.

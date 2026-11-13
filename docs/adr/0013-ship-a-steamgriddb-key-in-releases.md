@@ -1,6 +1,6 @@
 # Ship a SteamGridDB key in release builds, with SteamGridDB's permission, and let the user's own key come first
 
-**Status:** accepted; no release ships a key until SteamGridDB gives written permission.
+**Status:** accepted; no release ships a key until SteamGridDB gives written permission. Superseded by [ADR 0018](0018-serve-artwork-from-a-worker.md): a Worker holds the key and serves the artwork, and the app takes no key at all.
 
 Artwork needs a SteamGridDB API key. Until now each user made a SteamGridDB account and pasted their own key into Settings, so a new install showed flat colors. SteamGridDB's terms allow personal, non-commercial use only, and no distribution of the service without their written permission. So:
 

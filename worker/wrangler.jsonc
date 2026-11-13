@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "frontport-artwork",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "r2_buckets": [{ "binding": "ARTWORK", "bucket_name": "frontport-artwork" }],
+  "observability": { "enabled": true }
+  // STEAMGRIDDB_KEY is a secret: `npx wrangler secret put STEAMGRIDDB_KEY`, or .dev.vars locally.
+}

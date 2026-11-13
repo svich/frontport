@@ -128,12 +128,8 @@ final class AppModel {
     private(set) var runs: [PortID: [Run]] = [:]
     /// Whether `load()` has read the Catalog, the Library and ROMs once; until then screens show skeletons.
     private(set) var isLoaded = false
-    /// Whose SteamGridDB key artwork is fetched with; nil when there is none.
-    private(set) var steamGridDBKey: APIKeySource?
     /// The Catalogs the user added, for Settings and the store page.
     private(set) var addedCatalogs: [CatalogSummary] = []
-    /// Bumped when artwork may have changed (a new SteamGridDB key), so artwork views look again.
-    private(set) var artworkGeneration = 0
     /// The paired Devices as last read, the Apple Team chosen, and what Frontport Seeds and Renews on them on its own.
     let deviceUpkeep: DeviceUpkeep
     /// Which Devices to install a Port's prepared iOS version on, asked in a sheet on the main window once it's
@@ -318,7 +314,6 @@ final class AppModel {
         isLoaded = true
         launched = await services.launcher.running()
         refreshOpened()
-        steamGridDBKey = await services.artwork.apiKeySource()
         addedCatalogs = await services.catalogs.added()
         await refreshSteamOffers()
     }
@@ -795,18 +790,6 @@ final class AppModel {
         guard let services else { return }
         snapshots[port] = await services.library.snapshots(for: port)
         runs[port] = await services.launcher.runs(for: port)
-    }
-
-    func setSteamGridDBKey(_ key: String?) async {
-        guard let services else { return }
-        do {
-            try await services.artwork.setAPIKey(key)
-        } catch {
-            present(error)
-        }
-        steamGridDBKey = await services.artwork.apiKeySource()
-        ArtworkCache.shared.forgetMissing()
-        artworkGeneration += 1
     }
 
     // MARK: Catalogs

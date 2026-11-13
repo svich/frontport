@@ -2,65 +2,27 @@ import AppKit
 import FrontportCore
 import SwiftUI
 
-/// The Settings scene: SteamGridDB artwork, the Catalogs, update checks, the Library location, and the Apple Team and
+/// The Settings scene: where artwork comes from, the Catalogs, update checks, the Library location, and the Apple Team and
 /// Devices that Ports are installed on iPhones and iPads with.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
-    @State private var key = ""
-    @State private var isSaving = false
     @State private var isAddingCatalog = false
 
-    private static let apiKeyPage = URL(string: "https://www.steamgriddb.com/profile/preferences/api")!
+    private static let steamGridDB = URL(string: "https://www.steamgriddb.com")!
 
     var body: some View {
         Form {
             Section {
-                LabeledContent("API Key") {
-                    HStack(spacing: 8) {
-                        SecureField("API Key", text: $key, prompt: Text(model.steamGridDBKey == .user ? "Saved in your Keychain" : "Paste your key"))
-                            .labelsHidden()
-                            .onSubmit(save)
-                        Button("Save", action: save)
-                            .disabled(key.isEmpty || isSaving)
-                    }
-                }
-                switch model.steamGridDBKey {
-                case .user:
-                    LabeledContent("Status") {
-                        HStack(spacing: 10) {
-                            Label("Saved in your Keychain", systemImage: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                            Button("Remove") {
-                                Task { await model.setSteamGridDBKey(nil) }
-                            }
-                        }
-                    }
-                case .builtIn:
-                    LabeledContent("Status") {
-                        Label("Using Frontport’s key", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    }
-                case nil:
-                    EmptyView()
-                }
-                Link(destination: Self.apiKeyPage) {
-                    Label("Get an API key on steamgriddb.com", systemImage: "arrow.up.forward.square")
+                LabeledContent("Source") {
+                    Link("SteamGridDB", destination: Self.steamGridDB)
                 }
             } header: {
                 Text("Artwork")
             } footer: {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Covers, heroes, logos and icons come from SteamGridDB. Frontport fetches artwork only for this Mac, and never shares your key.")
-                    if model.steamGridDBKey == .builtIn {
-                        Text("This copy of Frontport comes with a key of its own. Save yours to use it instead.")
-                    } else {
-                        Text("Without a key, Ports show a flat color with the Game’s name.")
-                    }
-                    Text("SteamGridDB allows personal, non-commercial use only.")
-                }
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                Text("Covers, heroes, logos and icons come from SteamGridDB’s artists, through Frontport’s artwork server, with SteamGridDB’s permission. Frontport asks it only for the Games it shows.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Section {
@@ -139,16 +101,6 @@ struct SettingsView: View {
         .sheet(isPresented: $isAddingCatalog) {
             AddCatalogSheet()
                 .environment(model)
-        }
-    }
-
-    private func save() {
-        guard !key.isEmpty else { return }
-        isSaving = true
-        Task {
-            await model.setSteamGridDBKey(key)
-            key = ""
-            isSaving = false
         }
     }
 

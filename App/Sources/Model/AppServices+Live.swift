@@ -27,10 +27,7 @@ extension AppServices {
             paths: paths, catalog: catalog, releases: releases, fetcher: fetcher,
             builder: builder, roms: roms, packager: PortPackager(paths: paths, primer: primer), launcher: launcher,
             primer: primer)
-        let artwork = ArtworkStore(
-            paths: paths, keyStore: KeychainAPIKeyStore(),
-            // Set only by scripts/release.sh; empty in every other build.
-            builtInKey: bundle.object(forInfoDictionaryKey: "FrontportSteamGridDBKey") as? String)
+        let artwork = ArtworkStore(paths: paths)
         let (control, provisioning, devicePackager) = deviceServices(paths: paths)
         // The same Builder too, for iOS Recipes.
         let devices = DeviceLibrary(

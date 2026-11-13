@@ -43,3 +43,8 @@ swift test --filter 'DeviceSigningTests|DeviceHostTests|DeviceEndToEndTests|Prof
 [tasks.release]
 description = "Build, sign, notarize and staple a release, and update the Sparkle appcast (see scripts/README.md)"
 run = "scripts/release.sh"
+
+[tasks.worker-test]
+description = "Run the artwork Worker's tests"
+dir = "worker"
+run = "npm test"
