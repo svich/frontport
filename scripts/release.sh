@@ -126,7 +126,7 @@ if ((dry_run)); then
         note "FRONTPORT_SIGNING_IDENTITY and FRONTPORT_TEAM_ID."
     fi
     note "Then: notarize with the notarytool profile “${profile}”, and sign the appcast with the Sparkle key in the"
-    note "Keychain account “${key_account}”. Neither was checked, nor the SteamGridDB key, which is optional."
+    note "Keychain account “${key_account}”. Neither was checked."
     if ((${#problems[@]})); then
         note "A release would also stop at the Info.plist problems above, after these and before building."
         exit 1

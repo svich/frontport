@@ -29,7 +29,19 @@ In order, it:
 
 ## One-time setup
 
-1. **Developer ID certificate.** Create a Developer ID Application certificate (the team's Account Holder can, in Xcode: Settings → Accounts → Manage Certificates), so it's in the login keychain. Then put the identity and team in `App/Signing.local.xcconfig`, which git ignores and `App/Signing.xcconfig` includes:
+1. **Developer ID certificate.** Only the team's Account Holder can create a Developer ID Application certificate. Xcode's Settings → Accounts → Manage Certificates → + may refuse with "only be performed by the Account Holder" even for the holder of an Individual membership; the website works:
+
+   ```sh
+   openssl genrsa -out key.pem 2048
+   openssl rsa -in key.pem -out key1.pem -traditional   # security import takes PKCS#1, not OpenSSL 3's PKCS#8
+   security import key1.pem -k ~/Library/Keychains/login.keychain-db -t priv -f openssl -T /usr/bin/codesign -T /usr/bin/security
+   openssl req -new -key key.pem -out DeveloperID.certSigningRequest -subj "/CN=<name> Developer ID/C=<country>"
+   rm -P key.pem key1.pem
+   ```
+
+   Upload the request at [developer.apple.com/account/resources/certificates/add](https://developer.apple.com/account/resources/certificates/add) as Developer ID Application (G2 Sub-CA), download the `.cer` and `security import` it into the login keychain, where it pairs with the key. Export the pair as a `.p12` from Keychain Access as a backup. `security find-identity -v -p codesigning` then lists `Developer ID Application: <name> (<team ID>)`.
+
+   Pass the identity to the script per run (see [Each release](#each-release)), so `App/Signing.local.xcconfig` keeps Apple Development for everyday builds. Putting it there instead also works:
 
    ```text
    CODE_SIGN_IDENTITY = Developer ID Application
@@ -67,27 +79,44 @@ In order, it:
 
    Sparkle starts only when `SUPublicEDKey` is present, so builds without it never check for updates.
 
-5. **SteamGridDB key (optional).** Only with SteamGridDB's written permission, since their terms allow personal use only. Keep the key in the login Keychain, never in the repository:
-
-   ```sh
-   security add-generic-password -s frontport-steamgriddb -a api-key -w
-   ```
-
-   Without it, a release fetches artwork only with each user's own key, entered in Settings. With it, a user's own key still comes first.
-
 ## Each release
 
-1. Raise `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`. Sparkle orders updates by `CURRENT_PROJECT_VERSION` (`CFBundleVersion`), so it must grow every release.
-2. Keep `build/release/updates/` from the last release, or put the published `appcast.xml` and recent zips back into it (`gh release download --dir build/release/updates`): `generate_appcast` adds to the appcast it finds there and makes delta updates from the older zips.
-3. Run the script with the Developer ID and this release's download folder. `App/Signing.local.xcconfig` can keep Apple Development for everyday builds:
+Each release is a GitHub Release, `v<version>`, carrying its zip and the whole appcast. `SUFeedURL` is the latest release's `appcast.xml`, so publishing a release is publishing the update; older entries keep pointing at their own release's zip.
+
+1. **Version.** Raise `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`. Sparkle orders updates by `CURRENT_PROJECT_VERSION` (`CFBundleVersion`), so it must grow every release. Commit, and push `main`, so the tag names the commit that was built.
+2. **Appcast.** Start from the published appcast alone, without any zips:
+
+   ```sh
+   rm -rf build/release/updates
+   gh release download --repo svich/frontport --pattern appcast.xml --dir build/release/updates
+   ```
+
+   `generate_appcast` rewrites the URL of every entry whose zip it finds in the folder to this release's `--download-url-prefix`, which would point older entries at files this release doesn't carry. Without the older zips it adds the new entry and leaves the others alone, at the cost of delta updates.
+3. **Build.** Run the script with the Developer ID and this release's download folder (about 5 minutes, most of it notarization):
 
    ```sh
    FRONTPORT_SIGNING_IDENTITY="Developer ID Application" FRONTPORT_TEAM_ID=<team ID> \
        scripts/release.sh --download-url-prefix https://github.com/svich/frontport/releases/download/v<version>/
    ```
 
-4. Commit, then publish the zip and the appcast as the release, adding the new `.delta` files when there are any:
+   It stops before building if a credential is missing, and saves notarytool's log in `build/release/` on a rejection.
+4. **Publish:**
 
    ```sh
-   gh release create v<version> build/release/updates/Frontport-<version>.zip build/release/updates/appcast.xml
+   gh release create v<version> --repo svich/frontport --target <commit> --title "Frontport <version>" --notes "<what changed>" \
+       build/release/updates/Frontport-<version>.zip build/release/updates/appcast.xml
    ```
+
+5. **Check** that the feed serves the new appcast and that the published zip passes Gatekeeper:
+
+   ```sh
+   curl -sL https://github.com/svich/frontport/releases/latest/download/appcast.xml | cmp - build/release/updates/appcast.xml
+   ditto -x -k <downloaded zip> <empty folder> && spctl -a -vv <empty folder>/Frontport.app   # source=Notarized Developer ID
+   ```
+
+## What expires
+
+- **Apple Developer Program membership:** renews every year. Without it notarization stops, so no new releases; releases already out keep working.
+- **Developer ID Application certificate:** until the date the portal shows (the current one, Dec 13, 2027; `security find-certificate -c "Developer ID Application" -p | openssl x509 -noout -enddate`). Releases signed before it expires keep working, thanks to the secure timestamp. Make a new one as in step 1 of the setup.
+- **notarytool profile:** stops working if its app-specific password is revoked. Store it again with `store-credentials`.
+- **Sparkle key:** never expires, but can't be replaced: installed copies accept only updates signed with it. Restore a lost Keychain copy from the backup with `generate_keys -f <file>`.
